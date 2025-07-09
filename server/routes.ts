@@ -168,13 +168,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = req.body;
       
+      console.log("Login attempt:", { username, password });
+      
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
       }
       
       const admin = await storage.getAdminByUsername(username);
+      console.log("Found admin:", admin);
       
       if (!admin || admin.password !== password) {
+        console.log("Auth failed - admin:", admin, "password match:", admin?.password === password);
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
@@ -184,6 +188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         admin: { id: admin.id, username: admin.username }
       });
     } catch (error) {
+      console.error("Login error:", error);
       res.status(500).json({ message: "Login failed" });
     }
   });
