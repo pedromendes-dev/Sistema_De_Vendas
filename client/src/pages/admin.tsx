@@ -195,7 +195,7 @@ export default function Admin() {
         <Header />
         <Navigation />
 
-        <main className="max-w-md mx-auto px-4 py-16">
+        <main className="mobile-safe max-w-md py-8 sm:py-12 lg:py-16">
           <Card className="bg-card border-border">
             <CardContent className="p-8">
               <div className="text-center mb-8">
@@ -263,7 +263,7 @@ export default function Admin() {
       <Header />
       <Navigation />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="mobile-safe max-w-7xl py-4 sm:py-6 lg:py-8">
         {/* Admin Dashboard Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-3">

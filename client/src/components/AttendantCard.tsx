@@ -34,10 +34,10 @@ export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: At
   };
 
   return (
-    <Card className="bg-card border-border hover:border-success/50 transition-all duration-200 h-full">
-      <CardHeader className="text-center p-4 sm:p-6">
+    <Card className="bg-card border-border hover:border-success/50 transition-all duration-200 h-full w-full">
+      <CardHeader className="text-center p-3 sm:p-4 lg:p-6">
         <div className="relative mx-auto mb-3 sm:mb-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full overflow-hidden bg-secondary-dark border-2 border-success/20">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full overflow-hidden bg-secondary-dark border-2 border-success/20 mx-auto">
             {attendant.imageUrl ? (
               <img 
                 src={attendant.imageUrl} 
@@ -46,26 +46,26 @@ export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: At
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <User className="w-8 h-8 sm:w-10 sm:h-10 text-secondary-light" />
+                <User className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-secondary-light" />
               </div>
             )}
           </div>
         </div>
-        <CardTitle className="text-lg sm:text-xl font-bold text-primary-light">
+        <CardTitle className="text-base sm:text-lg lg:text-xl font-bold text-primary-light truncate">
           {attendant.name}
         </CardTitle>
-        <div className="flex items-center justify-center gap-2 text-success">
-          <DollarSign size={16} />
-          <span className="text-lg sm:text-xl font-bold">
+        <div className="flex items-center justify-center gap-1 sm:gap-2 text-success">
+          <DollarSign size={14} className="sm:w-4 sm:h-4" />
+          <span className="text-base sm:text-lg lg:text-xl font-bold">
             R$ {parseFloat(attendant.earnings).toFixed(2)}
           </span>
         </div>
       </CardHeader>
       
-      <CardContent className="p-4 sm:p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <CardContent className="p-3 sm:p-4 lg:p-6">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div className="space-y-2">
-            <Label htmlFor={`sale-${attendant.id}`} className="text-primary-light text-sm">
+            <Label htmlFor={`sale-${attendant.id}`} className="text-primary-light text-xs sm:text-sm">
               Valor da Venda
             </Label>
             <Input
@@ -76,25 +76,25 @@ export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: At
               value={saleValue}
               onChange={(e) => setSaleValue(e.target.value)}
               placeholder="0.00"
-              className="bg-secondary-dark border-gray-600 text-primary-light text-center text-lg sm:text-xl"
+              className="bg-secondary-dark border-gray-600 text-primary-light text-center text-base sm:text-lg lg:text-xl h-10 sm:h-11 lg:h-12"
               disabled={isLoading}
             />
           </div>
           
           <Button 
             type="submit" 
-            className="w-full bg-success hover:bg-success-dark text-white font-medium py-2 sm:py-3 text-sm sm:text-base"
+            className="w-full bg-success hover:bg-success-dark text-white font-medium py-2 sm:py-3 text-xs sm:text-sm lg:text-base"
             disabled={isLoading}
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Registrando...
+                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span className="text-xs sm:text-sm">Registrando...</span>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <TrendingUp size={16} />
-                Registrar Venda
+                <TrendingUp size={14} className="sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm">Registrar Venda</span>
               </div>
             )}
           </Button>

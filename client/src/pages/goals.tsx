@@ -184,7 +184,7 @@ export default function GoalsPage() {
       <Header />
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="mobile-safe max-w-6xl py-4 sm:py-6 lg:py-8">
         {/* Goals Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-3">

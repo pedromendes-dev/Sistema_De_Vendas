@@ -4,6 +4,16 @@
 
 /* Mobile-first responsive utilities */
 @layer utilities {
+  /* Mobile viewport fix */
+  .mobile-container {
+    @apply w-full min-w-0 max-w-full overflow-x-hidden;
+  }
+  
+  .mobile-safe {
+    @apply px-4 mx-auto max-w-full;
+  }
+  
+  /* Text utilities */
   .text-responsive {
     @apply text-sm sm:text-base;
   }
@@ -20,6 +30,7 @@
     @apply text-xl sm:text-2xl;
   }
   
+  /* Spacing utilities */
   .p-responsive {
     @apply p-3 sm:p-4 lg:p-6;
   }
@@ -36,10 +47,16 @@
     @apply gap-3 sm:gap-4 lg:gap-6;
   }
   
+  /* Grid utilities */
   .grid-responsive {
     @apply grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3;
   }
   
+  .grid-mobile-center {
+    @apply grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center;
+  }
+  
+  /* Component utilities */
   .card-responsive {
     @apply p-4 sm:p-6;
   }
@@ -50,6 +67,17 @@
   
   .input-responsive {
     @apply h-10 sm:h-11 text-sm sm:text-base;
+  }
+  
+  /* Mobile navigation */
+  .nav-mobile {
+    @apply overflow-x-auto scrollbar-hide;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .nav-mobile::-webkit-scrollbar {
+    display: none;
   }
 }
 

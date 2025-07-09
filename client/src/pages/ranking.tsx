@@ -81,7 +81,7 @@ export default function Ranking() {
       <Header />
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="mobile-safe max-w-6xl py-4 sm:py-6 lg:py-8">
         {/* Ranking Header */}
         <div className="flex items-center gap-3 mb-6">
           <Trophy className="text-gold" size={32} />

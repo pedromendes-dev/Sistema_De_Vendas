@@ -43,15 +43,15 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-primary-dark">
+    <div className="min-h-screen bg-primary-dark mobile-container">
       <Header />
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+      <main className="mobile-safe max-w-6xl py-4 sm:py-6 lg:py-8">
+        <div className="grid-mobile-center w-full">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-card border-border">
+              <Card key={i} className="bg-card border-border w-full max-w-sm">
                 <CardContent className="p-4 sm:p-6">
                   <div className="space-y-4">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gray-700 rounded-full mx-auto animate-pulse" />
@@ -63,12 +63,13 @@ export default function Home() {
             ))
           ) : (
             attendants?.map((attendant: Attendant) => (
-              <AttendantCard 
-                key={attendant.id} 
-                attendant={attendant} 
-                onSaleSubmit={handleSaleSubmit}
-                isLoading={createSaleMutation.isPending}
-              />
+              <div key={attendant.id} className="w-full max-w-sm">
+                <AttendantCard 
+                  attendant={attendant} 
+                  onSaleSubmit={handleSaleSubmit}
+                  isLoading={createSaleMutation.isPending}
+                />
+              </div>
             ))
           )}
         </div>
