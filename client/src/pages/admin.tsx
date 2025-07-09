@@ -8,7 +8,7 @@ import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, P
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import Header from "@/components/Header";
+import ModernHeader from "@/components/ModernHeader";
 import Navigation from "@/components/Navigation";
 import DragDropManager from "@/components/DragDropManager";
 import ContentBuilder from "@/components/ContentBuilder";
@@ -250,64 +250,80 @@ export default function Admin() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-primary-dark">
-        <Header />
+        <ModernHeader />
         <Navigation />
 
-        <main className="mobile-safe max-w-md py-8 sm:py-12 lg:py-16">
-          <Card className="bg-card border-border">
+        <main className="flex items-center justify-center min-h-[60vh] px-4 py-8">
+          <Card className="w-full max-w-md bg-card/90 border-border backdrop-blur-sm shadow-2xl">
             <CardContent className="p-8">
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-danger rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shield className="text-primary-light" size={32} />
+                <div className="w-20 h-20 bg-gradient-to-r from-danger to-danger/80 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Shield className="text-white" size={36} />
                 </div>
-                <h2 className="text-2xl font-bold text-primary-light mb-2">Área Restrita</h2>
-                <p className="text-secondary-light">Acesso exclusivo para gestores</p>
+                <h2 className="text-2xl font-bold text-primary-light mb-2">Área do Gestor</h2>
+                <p className="text-secondary-light">Acesso restrito para administradores</p>
               </div>
 
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <Label htmlFor="username" className="text-secondary-light">Usuário</Label>
+              <form onSubmit={handleLogin} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="text-secondary-light font-medium">Usuário</Label>
                   <Input
                     id="username"
                     type="text"
                     value={credentials.username}
                     onChange={(e) => setCredentials({...credentials, username: e.target.value})}
-                    placeholder="Digite o usuário"
-                    className="bg-input border-border text-primary-light placeholder:text-muted-light"
+                    placeholder="Digite seu usuário"
+                    className="bg-input border-border text-primary-light h-12 text-lg"
                     required
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="password" className="text-secondary-light">Senha</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-secondary-light font-medium">Senha</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       value={credentials.password}
                       onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                      placeholder="Digite a senha"
-                      className="bg-input border-border text-primary-light placeholder:text-muted-light pr-10"
+                      placeholder="Digite sua senha"
+                      className="bg-input border-border text-primary-light pr-12 h-12 text-lg"
                       required
                     />
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-accent/50"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-light hover:text-secondary-light"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
                 <Button 
                   type="submit" 
                   disabled={isLoading}
-                  className="w-full bg-success text-primary-light hover:bg-success-dark disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-danger to-danger/80 hover:from-danger/90 hover:to-danger/70 text-white font-semibold h-12 text-lg transition-all duration-300 transform hover:scale-105"
                 >
-                  <Lock size={18} className="mr-2" />
-                  {isLoading ? "Verificando..." : "Acessar Painel"}
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Entrando...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Shield size={20} />
+                      Entrar no Sistema
+                    </div>
+                  )}
                 </Button>
+
+                <div className="bg-accent/20 border border-border/50 rounded-lg p-4 text-center">
+                  <p className="text-sm text-secondary-light mb-2">Credenciais de Demonstração:</p>
+                  <p className="text-sm font-mono text-info">administrador / root123</p>
+                </div>
               </form>
             </CardContent>
           </Card>
@@ -317,11 +333,11 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-primary-dark">
-      <Header />
+    <div className="min-h-screen bg-gradient-to-br from-primary-dark via-primary-dark to-secondary-dark/50">
+      <ModernHeader />
       <Navigation />
 
-      <main className="px-4 py-4 pb-20 sm:pb-8 mx-auto max-w-7xl sm:px-6 lg:px-8 sm:py-6 lg:py-8">
+      <main className="px-4 py-6 pb-20 sm:pb-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Admin Dashboard Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-3">
@@ -343,37 +359,55 @@ export default function Admin() {
 
         {/* Management Tabs */}
         <Tabs defaultValue="attendants" className="space-y-6">
-          {/* Mobile and Desktop Tabs */}
-          <TabsList className="grid grid-cols-3 lg:grid-cols-7 gap-1 bg-card border-border p-1 h-auto">
-            <TabsTrigger value="attendants" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16">
-              <Users size={14} />
-              <span className="text-xs leading-tight">Atendentes</span>
-            </TabsTrigger>
-            <TabsTrigger value="sales" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16">
-              <DollarSign size={14} />
-              <span className="text-xs leading-tight">Vendas</span>
-            </TabsTrigger>
-            <TabsTrigger value="goals" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16">
-              <Target size={14} />
-              <span className="text-xs leading-tight">Metas</span>
-            </TabsTrigger>
-            <TabsTrigger value="achievements" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16">
-              <Trophy size={14} />
-              <span className="text-xs leading-tight">Conquistas</span>
-            </TabsTrigger>
-            <TabsTrigger value="admins" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16">
-              <Shield size={14} />
-              <span className="text-xs leading-tight">Admins</span>
-            </TabsTrigger>
-            <TabsTrigger value="dragdrop" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16">
-              <Grip size={14} />
-              <span className="text-xs leading-tight">Organizar</span>
-            </TabsTrigger>
-            <TabsTrigger value="layout" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16">
-              <Layout size={14} />
-              <span className="text-xs leading-tight">Layout</span>
-            </TabsTrigger>
-          </TabsList>
+          {/* Mobile Tabs - Scrollable */}
+          <div className="block lg:hidden">
+            <div className="overflow-x-auto scrollbar-hide admin-tabs-mobile">
+              <TabsList className="flex w-max space-x-2 bg-transparent p-0 px-1">
+                {[
+                  { value: 'attendants', icon: Users, label: 'Atendentes' },
+                  { value: 'sales', icon: DollarSign, label: 'Vendas' },
+                  { value: 'goals', icon: Target, label: 'Metas' },
+                  { value: 'achievements', icon: Trophy, label: 'Conquistas' },
+                  { value: 'admins', icon: Shield, label: 'Admins' },
+                  { value: 'dragdrop', icon: Grip, label: 'Organizar' },
+                  { value: 'layout', icon: Layout, label: 'Layout' }
+                ].map(({ value, icon: Icon, label }) => (
+                  <TabsTrigger
+                    key={value}
+                    value={value}
+                    className="flex-shrink-0 flex flex-col items-center gap-2 px-4 py-3 bg-card border border-border rounded-lg text-xs min-w-[80px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-success data-[state=active]:to-info data-[state=active]:text-white"
+                  >
+                    <Icon size={16} />
+                    <span className="leading-tight">{label}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+          </div>
+          
+          {/* Desktop Tabs */}
+          <div className="hidden lg:block">
+            <TabsList className="grid grid-cols-7 gap-2 bg-transparent p-0">
+              {[
+                { value: 'attendants', icon: Users, label: 'Atendentes' },
+                { value: 'sales', icon: DollarSign, label: 'Vendas' },
+                { value: 'goals', icon: Target, label: 'Metas' },
+                { value: 'achievements', icon: Trophy, label: 'Conquistas' },
+                { value: 'admins', icon: Shield, label: 'Administradores' },
+                { value: 'dragdrop', icon: Grip, label: 'Organizar' },
+                { value: 'layout', icon: Layout, label: 'Layout' }
+              ].map(({ value, icon: Icon, label }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-success data-[state=active]:to-info data-[state=active]:text-white"
+                >
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
 
 
