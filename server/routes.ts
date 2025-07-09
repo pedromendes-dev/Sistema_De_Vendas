@@ -254,14 +254,179 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!admin || admin.password !== password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
+
+      if (admin.isActive === 0) {
+        return res.status(401).json({ message: "Account is inactive" });
+      }
       
       res.json({ 
         success: true, 
         message: "Login successful",
-        admin: { id: admin.id, username: admin.username }
+        admin: { 
+          id: admin.id, 
+          username: admin.username, 
+          role: admin.role,
+          email: admin.email 
+        }
       });
     } catch (error) {
       res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Get all admins
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      const admins = await storage.getAllAdmins();
+      const safeAdmins = admins.map(admin => ({
+        id: admin.id,
+        username: admin.username,
+        email: admin.email,
+        role: admin.role,
+        isActive: admin.isActive,
+        createdBy: admin.createdBy,
+        createdAt: admin.createdAt,
+        updatedAt: admin.updatedAt
+      }));
+      res.json(safeAdmins);
+    } catch (error) {
+      console.error("Get admins error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Create new admin
+  app.post("/api/admin/users", async (req, res) => {
+    try {
+      const { username, password, email, role = "admin", createdBy } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+
+      // Check if username already exists
+      const existingAdmin = await storage.getAdminByUsername(username);
+      if (existingAdmin) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      const newAdmin = await storage.createAdmin({
+        username,
+        password,
+        email,
+        role,
+        createdBy
+      });
+
+      const safeAdmin = {
+        id: newAdmin.id,
+        username: newAdmin.username,
+        email: newAdmin.email,
+        role: newAdmin.role,
+        isActive: newAdmin.isActive,
+        createdBy: newAdmin.createdBy,
+        createdAt: newAdmin.createdAt,
+        updatedAt: newAdmin.updatedAt
+      };
+
+      // Create notification for new admin creation
+      await storage.createNotification({
+        type: "admin",
+        title: "Novo Administrador",
+        message: `Administrador "${username}" foi criado com sucesso`,
+        priority: "normal"
+      });
+
+      res.status(201).json(safeAdmin);
+    } catch (error) {
+      console.error("Create admin error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Update admin
+  app.put("/api/admin/users/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { username, email, role, isActive } = req.body;
+      
+      const updates: any = {};
+      if (username !== undefined) updates.username = username;
+      if (email !== undefined) updates.email = email;
+      if (role !== undefined) updates.role = role;
+      if (isActive !== undefined) updates.isActive = isActive;
+
+      const updatedAdmin = await storage.updateAdmin(parseInt(id), updates);
+      if (!updatedAdmin) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
+
+      const safeAdmin = {
+        id: updatedAdmin.id,
+        username: updatedAdmin.username,
+        email: updatedAdmin.email,
+        role: updatedAdmin.role,
+        isActive: updatedAdmin.isActive,
+        createdBy: updatedAdmin.createdBy,
+        createdAt: updatedAdmin.createdAt,
+        updatedAt: updatedAdmin.updatedAt
+      };
+
+      res.json(safeAdmin);
+    } catch (error) {
+      console.error("Update admin error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Delete admin
+  app.delete("/api/admin/users/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteAdmin(parseInt(id));
+      
+      if (!success) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
+
+      res.json({ message: "Admin deleted successfully" });
+    } catch (error) {
+      console.error("Delete admin error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Activate admin
+  app.put("/api/admin/users/:id/activate", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const admin = await storage.activateAdmin(parseInt(id));
+      
+      if (!admin) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
+
+      res.json({ message: "Admin activated successfully" });
+    } catch (error) {
+      console.error("Activate admin error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Deactivate admin
+  app.put("/api/admin/users/:id/deactivate", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const admin = await storage.deactivateAdmin(parseInt(id));
+      
+      if (!admin) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
+
+      res.json({ message: "Admin deactivated successfully" });
+    } catch (error) {
+      console.error("Deactivate admin error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 

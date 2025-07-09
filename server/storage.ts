@@ -11,6 +11,7 @@ import {
   type Sale, 
   type InsertSale, 
   type Admin, 
+  type InsertAdmin,
   type Goal, 
   type InsertGoal, 
   type Achievement, 
@@ -38,7 +39,13 @@ export interface IStorage {
   deleteSale(id: number): Promise<boolean>;
   
   // Admins
+  getAllAdmins(): Promise<Admin[]>;
   getAdminByUsername(username: string): Promise<Admin | undefined>;
+  createAdmin(admin: InsertAdmin): Promise<Admin>;
+  updateAdmin(id: number, updates: Partial<Admin>): Promise<Admin | undefined>;
+  deleteAdmin(id: number): Promise<boolean>;
+  activateAdmin(id: number): Promise<Admin | undefined>;
+  deactivateAdmin(id: number): Promise<Admin | undefined>;
   
   // Goals
   getAllGoals(): Promise<Goal[]>;
@@ -165,8 +172,53 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getAllAdmins(): Promise<Admin[]> {
+    const result = await db.select().from(admins).orderBy(asc(admins.createdAt));
+    return result;
+  }
+
   async getAdminByUsername(username: string): Promise<Admin | undefined> {
     const [admin] = await db.select().from(admins).where(eq(admins.username, username));
+    return admin || undefined;
+  }
+
+  async createAdmin(insertAdmin: InsertAdmin): Promise<Admin> {
+    const [admin] = await db
+      .insert(admins)
+      .values(insertAdmin)
+      .returning();
+    return admin;
+  }
+
+  async updateAdmin(id: number, updates: Partial<Admin>): Promise<Admin | undefined> {
+    const [admin] = await db
+      .update(admins)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(admins.id, id))
+      .returning();
+    return admin || undefined;
+  }
+
+  async deleteAdmin(id: number): Promise<boolean> {
+    const result = await db.delete(admins).where(eq(admins.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async activateAdmin(id: number): Promise<Admin | undefined> {
+    const [admin] = await db
+      .update(admins)
+      .set({ isActive: 1, updatedAt: new Date() })
+      .where(eq(admins.id, id))
+      .returning();
+    return admin || undefined;
+  }
+
+  async deactivateAdmin(id: number): Promise<Admin | undefined> {
+    const [admin] = await db
+      .update(admins)
+      .set({ isActive: 0, updatedAt: new Date() })
+      .where(eq(admins.id, id))
+      .returning();
     return admin || undefined;
   }
 

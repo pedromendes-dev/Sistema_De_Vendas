@@ -20,7 +20,12 @@ export const admins = pgTable("admins", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  email: text("email"),
+  role: text("role").default("admin").notNull(), // 'admin', 'super_admin'
+  isActive: integer("is_active").default(1).notNull(), // 1 for active, 0 for inactive
+  createdBy: integer("created_by"), // ID of the admin who created this admin
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const goals = pgTable("goals", {
@@ -83,6 +88,7 @@ export const insertSaleSchema = createInsertSchema(sales).omit({
 export const insertAdminSchema = createInsertSchema(admins).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export const insertGoalSchema = createInsertSchema(goals).omit({

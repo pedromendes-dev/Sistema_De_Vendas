@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip } from "lucide-react";
+import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -24,6 +24,7 @@ export default function Admin() {
   });
   const [editingAttendant, setEditingAttendant] = useState<Attendant | null>(null);
   const [newAttendant, setNewAttendant] = useState({ name: "", imageUrl: "" });
+  const [newAdmin, setNewAdmin] = useState({ username: "", password: "", email: "", role: "admin" });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -69,6 +70,11 @@ export default function Admin() {
     enabled: isAuthenticated
   });
 
+  const { data: admins = [], isLoading: adminsLoading } = useQuery({
+    queryKey: ["/api/admin/users"],
+    enabled: isAuthenticated
+  });
+
   // Mutations
   const deleteAttendantMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -98,6 +104,57 @@ export default function Admin() {
     },
     onError: () => {
       toast({ title: "Erro ao criar atendente", variant: "destructive" });
+    }
+  });
+
+  const createAdminMutation = useMutation({
+    mutationFn: async (data: { username: string; password: string; email: string; role: string }) => {
+      const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
+      const response = await apiRequest("POST", "/api/admin/users", { ...data, createdBy: currentUser.id });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create admin");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setNewAdmin({ username: "", password: "", email: "", role: "admin" });
+      toast({ title: "Administrador criado com sucesso!" });
+    },
+    onError: (error: Error) => {
+      toast({ title: error.message, variant: "destructive" });
+    }
+  });
+
+  const deleteAdminMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/admin/users/${id}`);
+      if (!response.ok) throw new Error("Failed to delete admin");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({ title: "Administrador removido com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao remover administrador", variant: "destructive" });
+    }
+  });
+
+  const toggleAdminStatusMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
+      const endpoint = isActive ? "activate" : "deactivate";
+      const response = await apiRequest("PUT", `/api/admin/users/${id}/${endpoint}`);
+      if (!response.ok) throw new Error("Failed to update admin status");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({ title: "Status do administrador atualizado!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar status", variant: "destructive" });
     }
   });
 
@@ -152,6 +209,7 @@ export default function Admin() {
         // Save authentication state to localStorage
         localStorage.setItem('admin_authenticated', 'true');
         localStorage.setItem('admin_auth_timestamp', Date.now().toString());
+        localStorage.setItem('admin_user', JSON.stringify(result.user));
         
         toast({
           title: "Login realizado com sucesso!",
@@ -285,7 +343,7 @@ export default function Admin() {
 
         {/* Management Tabs */}
         <Tabs defaultValue="attendants" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 bg-card border-border">
+          <TabsList className="grid w-full grid-cols-7 bg-card border-border">
             <TabsTrigger value="attendants" className="flex items-center gap-2">
               <Users size={16} />
               Atendentes
@@ -301,6 +359,10 @@ export default function Admin() {
             <TabsTrigger value="achievements" className="flex items-center gap-2">
               <Trophy size={16} />
               Conquistas
+            </TabsTrigger>
+            <TabsTrigger value="admins" className="flex items-center gap-2">
+              <Shield size={16} />
+              Admins
             </TabsTrigger>
             <TabsTrigger value="dragdrop" className="flex items-center gap-2">
               <Grip size={16} />
@@ -508,6 +570,123 @@ export default function Admin() {
                         </div>
                       );
                     })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Admins Management */}
+          <TabsContent value="admins" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light flex items-center gap-2">
+                  <UserPlus size={20} />
+                  Adicionar Novo Administrador
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-secondary-light">Nome de usuário</Label>
+                    <Input
+                      value={newAdmin.username}
+                      onChange={(e) => setNewAdmin({...newAdmin, username: e.target.value})}
+                      placeholder="Nome de usuário"
+                      className="bg-input border-border text-primary-light"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-secondary-light">Email</Label>
+                    <Input
+                      value={newAdmin.email}
+                      onChange={(e) => setNewAdmin({...newAdmin, email: e.target.value})}
+                      placeholder="email@exemplo.com"
+                      className="bg-input border-border text-primary-light"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-secondary-light">Senha</Label>
+                    <Input
+                      type="password"
+                      value={newAdmin.password}
+                      onChange={(e) => setNewAdmin({...newAdmin, password: e.target.value})}
+                      placeholder="Senha do administrador"
+                      className="bg-input border-border text-primary-light"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-secondary-light">Função</Label>
+                    <select
+                      value={newAdmin.role}
+                      onChange={(e) => setNewAdmin({...newAdmin, role: e.target.value})}
+                      className="bg-input border-border text-primary-light w-full p-2 rounded"
+                    >
+                      <option value="admin">Administrador</option>
+                      <option value="super_admin">Super Admin</option>
+                    </select>
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => createAdminMutation.mutate(newAdmin)}
+                  disabled={!newAdmin.username || !newAdmin.password || createAdminMutation.isPending}
+                  className="bg-success text-primary-light hover:bg-success-dark"
+                >
+                  {createAdminMutation.isPending ? "Criando..." : "Criar Administrador"}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light">Administradores do Sistema</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {adminsLoading ? (
+                  <p className="text-secondary-light">Carregando...</p>
+                ) : (
+                  <div className="space-y-2">
+                    {admins.map((admin: any) => (
+                      <div key={admin.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-danger rounded-full flex items-center justify-center">
+                            <Shield className="text-white" size={20} />
+                          </div>
+                          <div>
+                            <h4 className="text-primary-light font-medium">{admin.username}</h4>
+                            <p className="text-secondary-light text-sm">
+                              {admin.email} • {admin.role}
+                              <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                                admin.isActive ? 'bg-success text-white' : 'bg-danger text-white'
+                              }`}>
+                                {admin.isActive ? 'Ativo' : 'Inativo'}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => toggleAdminStatusMutation.mutate({ 
+                              id: admin.id, 
+                              isActive: !admin.isActive 
+                            })}
+                            disabled={toggleAdminStatusMutation.isPending}
+                            variant={admin.isActive ? "destructive" : "default"}
+                            size="sm"
+                          >
+                            {admin.isActive ? <UserX size={16} /> : <UserCheck size={16} />}
+                          </Button>
+                          <Button
+                            onClick={() => deleteAdminMutation.mutate(admin.id)}
+                            disabled={deleteAdminMutation.isPending}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
