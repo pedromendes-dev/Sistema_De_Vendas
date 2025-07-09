@@ -321,7 +321,7 @@ export default function Admin() {
       <Header />
       <Navigation />
 
-      <main className="mobile-safe max-w-7xl py-4 sm:py-6 lg:py-8">
+      <main className="px-4 py-4 pb-20 sm:pb-8 mx-auto max-w-7xl sm:px-6 lg:px-8 sm:py-6 lg:py-8">
         {/* Admin Dashboard Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-3">
@@ -343,38 +343,38 @@ export default function Admin() {
 
         {/* Management Tabs */}
         <Tabs defaultValue="attendants" className="space-y-6">
-          {/* Mobile Tabs - Scrollable */}
-          <div className="block sm:hidden overflow-x-auto scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-            <TabsList className="flex w-max min-w-full bg-card border-border p-1">
-              <TabsTrigger value="attendants" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
-                <Users size={16} />
-                <span className="whitespace-nowrap">Atendentes</span>
+          {/* Mobile Tabs - Grid 2x4 */}
+          <div className="block sm:hidden">
+            <div className="grid grid-cols-4 gap-1 bg-card border-border rounded-lg p-2">
+              <TabsTrigger value="attendants" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16 rounded">
+                <Users size={14} />
+                <span className="text-xs leading-tight">Atendentes</span>
               </TabsTrigger>
-              <TabsTrigger value="sales" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
-                <DollarSign size={16} />
-                <span className="whitespace-nowrap">Vendas</span>
+              <TabsTrigger value="sales" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16 rounded">
+                <DollarSign size={14} />
+                <span className="text-xs leading-tight">Vendas</span>
               </TabsTrigger>
-              <TabsTrigger value="goals" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
-                <Target size={16} />
-                <span className="whitespace-nowrap">Metas</span>
+              <TabsTrigger value="goals" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16 rounded">
+                <Target size={14} />
+                <span className="text-xs leading-tight">Metas</span>
               </TabsTrigger>
-              <TabsTrigger value="achievements" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
-                <Trophy size={16} />
-                <span className="whitespace-nowrap">Conquistas</span>
+              <TabsTrigger value="achievements" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16 rounded">
+                <Trophy size={14} />
+                <span className="text-xs leading-tight">Conquistas</span>
               </TabsTrigger>
-              <TabsTrigger value="admins" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
-                <Shield size={16} />
-                <span className="whitespace-nowrap">Admins</span>
+              <TabsTrigger value="admins" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16 rounded">
+                <Shield size={14} />
+                <span className="text-xs leading-tight">Admins</span>
               </TabsTrigger>
-              <TabsTrigger value="dragdrop" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
-                <Grip size={16} />
-                <span className="whitespace-nowrap">Organizar</span>
+              <TabsTrigger value="dragdrop" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16 rounded">
+                <Grip size={14} />
+                <span className="text-xs leading-tight">Organizar</span>
               </TabsTrigger>
-              <TabsTrigger value="layout" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
-                <Layout size={16} />
-                <span className="whitespace-nowrap">Layout</span>
+              <TabsTrigger value="layout" className="flex flex-col items-center justify-center gap-1 px-2 py-3 text-xs h-16 rounded col-span-2">
+                <Layout size={14} />
+                <span className="text-xs leading-tight">Layout</span>
               </TabsTrigger>
-            </TabsList>
+            </div>
           </div>
 
           {/* Desktop Tabs - Grid */}

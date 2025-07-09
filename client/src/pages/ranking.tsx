@@ -81,7 +81,7 @@ export default function Ranking() {
       <Header />
       <Navigation />
 
-      <main className="mobile-safe max-w-6xl py-4 sm:py-6 lg:py-8">
+      <main className="px-4 py-4 pb-20 sm:pb-8 mx-auto max-w-6xl sm:px-6 lg:px-8 sm:py-6 lg:py-8">
         {/* Ranking Header */}
         <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
           <Trophy className="text-gold" size={24} />
@@ -92,52 +92,66 @@ export default function Ranking() {
         </div>
 
         {/* Ranking Cards */}
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-4 sm:space-y-4">
           {rankingData.map((attendant, index) => (
-            <Card key={attendant.id} className={`${getRankBgColor(index)} border-2`}>
-              <CardContent className="p-3 sm:p-4 lg:p-6">
+            <Card key={attendant.id} className={`${getRankBgColor(index)} border-2 overflow-hidden`}>
+              <CardContent className="p-4 sm:p-4 lg:p-6">
                 {/* Mobile Layout */}
-                <div className="block sm:hidden space-y-4">
-                  {/* Header com posição e valor total */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {getRankIcon(index)}
-                      <span className="text-xl font-bold text-primary-light">
-                        {index + 1}º
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xl font-bold text-success">
-                        R$ {attendant.totalValue.toFixed(2)}
+                <div className="block sm:hidden">
+                  <div className="space-y-4">
+                    {/* Header: Posição e Valor */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {getRankIcon(index)}
+                        <span className="text-xl font-bold text-primary-light">
+                          {index + 1}º
+                        </span>
                       </div>
-                      <div className="text-xs text-secondary-light">Total Faturamento</div>
-                    </div>
-                  </div>
-                  
-                  {/* Informações do atendente */}
-                  <div className="flex items-center gap-4">
-                    <img 
-                      src={attendant.imageUrl}
-                      alt={attendant.name}
-                      className="w-16 h-16 rounded-full object-cover border-2 border-border flex-shrink-0"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-lg font-bold text-primary-light truncate mb-1">{attendant.name}</h3>
-                      <div className="text-sm text-secondary-light">
-                        {attendant.completionRate.toFixed(1)}% de performance
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-success">
+                          R$ {attendant.totalValue.toFixed(2)}
+                        </div>
+                        <div className="text-xs text-secondary-light mt-1">
+                          Faturamento Total
+                        </div>
                       </div>
                     </div>
-                  </div>
+                    
+                    {/* Perfil do Atendente */}
+                    <div className="flex items-center gap-4 pb-4 border-b border-border/30">
+                      <img 
+                        src={attendant.imageUrl}
+                        alt={attendant.name}
+                        className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-bold text-primary-light mb-1 truncate">
+                          {attendant.name}
+                        </h3>
+                        <div className="text-sm text-secondary-light">
+                          Performance: {attendant.completionRate.toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
 
-                  {/* Estatísticas */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-secondary-dark/30 rounded-lg p-4 text-center min-h-[60px] flex flex-col justify-center">
-                      <div className="text-lg font-bold text-info leading-tight">{attendant.totalSales}</div>
-                      <div className="text-xs text-secondary-light mt-2 leading-tight">Vendas</div>
-                    </div>
-                    <div className="bg-secondary-dark/30 rounded-lg p-4 text-center min-h-[60px] flex flex-col justify-center">
-                      <div className="text-lg font-bold text-warning leading-tight">R$ {attendant.averageTicket.toFixed(2)}</div>
-                      <div className="text-xs text-secondary-light mt-2 leading-tight">Ticket Médio</div>
+                    {/* Estatísticas */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-info/10 border border-info/20 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-info mb-1">
+                          {attendant.totalSales}
+                        </div>
+                        <div className="text-xs text-secondary-light">
+                          Vendas
+                        </div>
+                      </div>
+                      <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-warning mb-1">
+                          R$ {attendant.averageTicket.toFixed(0)}
+                        </div>
+                        <div className="text-xs text-secondary-light">
+                          Ticket Médio
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

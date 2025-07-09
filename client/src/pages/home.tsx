@@ -47,7 +47,7 @@ export default function Home() {
       <Header />
       <Navigation />
 
-      <main className="mobile-safe max-w-6xl py-4 sm:py-6 lg:py-8 mobile-native-scroll">
+      <main className="px-4 py-4 pb-20 sm:pb-8 mx-auto max-w-6xl sm:px-6 lg:px-8 sm:py-6 lg:py-8">
         <div className="mobile-grid-enhanced mobile-flutter-slide">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (

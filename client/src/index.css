@@ -80,6 +80,33 @@
     display: none;
   }
 
+  /* Mobile text fixes */
+  .mobile-text-fix {
+    line-height: 1.4;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  .mobile-no-wrap {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Mobile layout improvements */
+  .mobile-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mobile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 2.5rem;
+  }
+
   /* Advanced mobile optimizations */
   .mobile-touch-optimized {
     @apply min-h-[44px] min-w-[44px] cursor-pointer select-none;

@@ -20,40 +20,71 @@ export default function Navigation() {
   const [location] = useLocation();
 
   return (
-    <nav className="bg-secondary-dark border-b border-gray-700 mobile-container mobile-safe-area mobile-gpu-accelerated">
-      <div className="mobile-safe max-w-6xl">
-        <div className="nav-mobile flex space-x-1 sm:space-x-4 lg:space-x-8 mobile-smooth-scroll">
-          {navigationItems.map((item, index) => {
-            const Icon = item.icon;
-            const isActive = location === item.path;
+    <>
+      {/* Desktop Navigation */}
+      <nav className="hidden sm:block bg-secondary-dark border-b border-gray-700">
+        <div className="px-4 mx-auto max-w-6xl">
+          <div className="flex space-x-8 overflow-x-auto">
+            {navigationItems.map((item, index) => {
+              const Icon = item.icon;
+              const isActive = location === item.path;
+              
+              return (
+                <Link key={item.path} href={item.path}>
+                  <div
+                    className={`
+                      flex items-center gap-2 px-4 py-4 text-sm font-medium transition-all duration-200 cursor-pointer
+                      border-b-2 border-transparent whitespace-nowrap
+                      hover:transform hover:scale-105
+                      ${
+                        isActive
+                          ? "text-success border-success bg-success/5 shadow-lg transform scale-105"
+                          : "text-secondary-light hover:text-primary-light hover:border-gray-600 hover:bg-accent-dark/30"
+                      }
+                    `}
+                  >
+                    <Icon size={18} />
+                    <span>{item.label}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Navigation - Bottom Fixed */}
+      <div className="sm:hidden bg-card border-t border-border/30 fixed bottom-0 left-0 right-0 z-50">
+        <div className="grid grid-cols-6 h-16">
+          {navigationItems.map(({ path, label, icon: Icon }) => {
+            const isActive = location === path;
             
             return (
-              <Link key={item.path} href={item.path}>
-                <div
-                  className={`
-                    flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 lg:px-4 py-2 sm:py-3 lg:py-4 text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer
-                    border-b-2 border-transparent whitespace-nowrap flex-shrink-0 min-w-max
-                    mobile-touch-optimized
-                    mobile-ripple
-                    mobile-text-optimized
-                    mobile-fade-in
-                    hover:transform hover:scale-105
-                    ${
-                      isActive
-                        ? "text-success border-success bg-success/5 shadow-lg transform scale-105"
-                        : "text-secondary-light hover:text-primary-light hover:border-gray-600 hover:bg-accent-dark/30"
-                    }
-                  `}
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  <Icon size={14} className="sm:w-4 sm:h-4 lg:w-[18px] lg:h-[18px] mobile-gpu-accelerated" />
-                  <span className="text-xs sm:text-sm leading-tight text-center mobile-text-optimized">{item.label}</span>
-                </div>
+              <Link 
+                key={path} 
+                href={path}
+                className={`
+                  flex flex-col items-center justify-center gap-1 p-1 transition-all duration-200 h-16 min-h-0
+                  ${isActive 
+                    ? 'text-success bg-success/10 border-t-2 border-success' 
+                    : 'text-secondary-light hover:text-primary-light hover:bg-card/50'
+                  }
+                `}
+              >
+                <Icon size={16} className="flex-shrink-0" />
+                <span className="text-xs font-medium leading-tight text-center max-w-full truncate px-1">
+                  {label}
+                </span>
               </Link>
             );
           })}
         </div>
+        {/* Safe area padding for devices with home indicator */}
+        <div className="h-safe-area-inset-bottom bg-card"></div>
       </div>
-    </nav>
+
+      {/* Spacer for mobile navigation */}
+      <div className="sm:hidden h-16"></div>
+    </>
   );
 }
