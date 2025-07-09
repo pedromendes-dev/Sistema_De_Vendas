@@ -31,8 +31,8 @@ export default function Navigation() {
               <Link key={item.path} href={item.path}>
                 <div
                   className={`
-                    flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors cursor-pointer
-                    border-b-2 border-transparent whitespace-nowrap flex-shrink-0
+                    flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-4 text-xs sm:text-sm font-medium transition-colors cursor-pointer
+                    border-b-2 border-transparent whitespace-nowrap flex-shrink-0 min-w-0
                     ${
                       isActive
                         ? "text-success border-success bg-success/5"
@@ -41,7 +41,7 @@ export default function Navigation() {
                   `}
                 >
                   <Icon size={16} className="sm:w-[18px] sm:h-[18px]" />
-                  <span className="hidden xs:inline sm:inline">{item.label}</span>
+                  <span className="text-xs sm:text-sm leading-tight">{item.label}</span>
                 </div>
               </Link>
             );
