@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck, Search, Filter, Grid, List, BarChart3, Calendar, TrendingUp, Award, Star } from "lucide-react";
+import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck, Search, Filter, Grid, List, BarChart3, Calendar, TrendingUp, Award, Star, Download, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -24,10 +24,28 @@ export default function Admin() {
     password: ""
   });
   const [editingAttendant, setEditingAttendant] = useState<Attendant | null>(null);
-  const [newAttendant, setNewAttendant] = useState({ name: "", imageUrl: "" });
+  const [newAttendant, setNewAttendant] = useState({ 
+    name: "", 
+    imageUrl: "",
+    email: "",
+    phone: "",
+    department: "",
+    commission: "",
+    startDate: "",
+    status: "active"
+  });
   const [newAdmin, setNewAdmin] = useState({ username: "", password: "", email: "", role: "admin" });
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editAttendantData, setEditAttendantData] = useState({ name: "", imageUrl: "" });
+  const [editAttendantData, setEditAttendantData] = useState({ 
+    name: "", 
+    imageUrl: "", 
+    email: "", 
+    phone: "", 
+    department: "", 
+    commission: "", 
+    startDate: "", 
+    status: "active" 
+  });
   const [attendantViewMode, setAttendantViewMode] = useState<'cards' | 'table' | 'detailed'>('cards');
   const [attendantSearchQuery, setAttendantSearchQuery] = useState('');
   const [attendantSortBy, setAttendantSortBy] = useState<'name' | 'earnings' | 'createdAt'>('name');
@@ -68,6 +86,32 @@ export default function Admin() {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Function to download images
+  const downloadImage = async (imageUrl: string, fileName: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${fileName}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast({
+        title: "Download concluído!",
+        description: `Imagem de ${fileName} baixada com sucesso.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro no download",
+        description: "Não foi possível baixar a imagem.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Check for saved authentication state on component mount
   useEffect(() => {
@@ -119,8 +163,52 @@ export default function Admin() {
   // Handle edit attendant
   const handleEditAttendant = (attendant: Attendant) => {
     setEditingAttendant(attendant);
-    setEditAttendantData({ name: attendant.name, imageUrl: attendant.imageUrl });
+    setEditAttendantData({ 
+      name: attendant.name, 
+      imageUrl: attendant.imageUrl,
+      email: attendant.email || "",
+      phone: attendant.phone || "",
+      department: attendant.department || "",
+      commission: attendant.commission || "",
+      startDate: attendant.startDate || "",
+      status: attendant.status || "active"
+    });
     setShowEditModal(true);
+  };
+
+  const handleImageDownload = async (imageUrl: string, attendantName: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${attendantName.replace(/\s+/g, '_')}_photo.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast({ title: "Imagem baixada com sucesso!" });
+    } catch (error) {
+      toast({ title: "Erro ao baixar imagem", variant: "destructive" });
+    }
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({ title: "Arquivo muito grande (máximo 5MB)", variant: "destructive" });
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setEditAttendantData({...editAttendantData, imageUrl: result});
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Sale management handlers
@@ -736,45 +824,240 @@ export default function Admin() {
                   <Plus size={20} />
                   Adicionar Novo Atendente
                 </CardTitle>
+                <p className="text-secondary-light">Preencha as informações para criar um novo atendente</p>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-secondary-light">Nome</Label>
-                    <Input
-                      value={newAttendant.name}
-                      onChange={(e) => setNewAttendant({...newAttendant, name: e.target.value})}
-                      placeholder="Nome do atendente"
-                      className="bg-input border-border text-primary-light"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-secondary-light">URL da Imagem</Label>
-                    <Input
-                      value={newAttendant.imageUrl}
-                      onChange={(e) => setNewAttendant({...newAttendant, imageUrl: e.target.value})}
-                      placeholder="https://exemplo.com/imagem.jpg"
-                      className="bg-input border-border text-primary-light"
-                    />
-                  </div>
+              <CardContent className="space-y-6">
+                <Tabs defaultValue="basic" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 bg-secondary-dark">
+                    <TabsTrigger value="basic" className="text-secondary-light data-[state=active]:text-primary-light">
+                      Básico
+                    </TabsTrigger>
+                    <TabsTrigger value="contact" className="text-secondary-light data-[state=active]:text-primary-light">
+                      Contato
+                    </TabsTrigger>
+                    <TabsTrigger value="image" className="text-secondary-light data-[state=active]:text-primary-light">
+                      Imagem
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="basic" className="space-y-4 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-secondary-light">Nome Completo *</Label>
+                        <Input
+                          value={newAttendant.name}
+                          onChange={(e) => setNewAttendant({...newAttendant, name: e.target.value})}
+                          placeholder="Nome completo do atendente"
+                          className="bg-input border-border text-primary-light"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-secondary-light">Data de Início</Label>
+                        <Input
+                          type="date"
+                          value={newAttendant.startDate}
+                          onChange={(e) => setNewAttendant({...newAttendant, startDate: e.target.value})}
+                          className="bg-input border-border text-primary-light"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-secondary-light">Departamento</Label>
+                        <select
+                          value={newAttendant.department}
+                          onChange={(e) => setNewAttendant({...newAttendant, department: e.target.value})}
+                          className="w-full bg-input border-border text-primary-light px-3 py-2 rounded"
+                        >
+                          <option value="">Selecione o departamento</option>
+                          <option value="vendas">Vendas</option>
+                          <option value="atendimento">Atendimento</option>
+                          <option value="telemarketing">Telemarketing</option>
+                          <option value="supervisao">Supervisão</option>
+                          <option value="gerencia">Gerência</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label className="text-secondary-light">Status</Label>
+                        <select
+                          value={newAttendant.status}
+                          onChange={(e) => setNewAttendant({...newAttendant, status: e.target.value})}
+                          className="w-full bg-input border-border text-primary-light px-3 py-2 rounded"
+                        >
+                          <option value="active">Ativo</option>
+                          <option value="training">Em Treinamento</option>
+                          <option value="inactive">Inativo</option>
+                        </select>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="contact" className="space-y-4 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-secondary-light">E-mail</Label>
+                        <Input
+                          type="email"
+                          value={newAttendant.email}
+                          onChange={(e) => setNewAttendant({...newAttendant, email: e.target.value})}
+                          placeholder="email@exemplo.com"
+                          className="bg-input border-border text-primary-light"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-secondary-light">Telefone</Label>
+                        <Input
+                          value={newAttendant.phone}
+                          onChange={(e) => setNewAttendant({...newAttendant, phone: e.target.value})}
+                          placeholder="(11) 99999-9999"
+                          className="bg-input border-border text-primary-light"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-secondary-light">Comissão (%)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="100"
+                        value={newAttendant.commission}
+                        onChange={(e) => setNewAttendant({...newAttendant, commission: e.target.value})}
+                        placeholder="5.5"
+                        className="bg-input border-border text-primary-light"
+                      />
+                      <p className="text-xs text-secondary-light mt-1">
+                        Percentual de comissão sobre as vendas
+                      </p>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="image" className="space-y-4 mt-4">
+                    <div>
+                      <Label className="text-secondary-light">Upload de Imagem</Label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 5 * 1024 * 1024) {
+                                toast({ title: "Arquivo muito grande (máximo 5MB)", variant: "destructive" });
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                const result = event.target?.result as string;
+                                setNewAttendant({...newAttendant, imageUrl: result});
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                          id="new-attendant-image-upload"
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => document.getElementById('new-attendant-image-upload')?.click()}
+                          variant="outline"
+                          className="border-border text-secondary-light hover:bg-accent"
+                        >
+                          <Upload size={16} className="mr-2" />
+                          Escolher Arquivo
+                        </Button>
+                        <span className="text-xs text-secondary-light">
+                          Max: 5MB | JPG, PNG, GIF
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t border-border pt-4">
+                      <Label className="text-secondary-light">URL da Imagem</Label>
+                      <Input
+                        value={newAttendant.imageUrl}
+                        onChange={(e) => setNewAttendant({...newAttendant, imageUrl: e.target.value})}
+                        placeholder="https://exemplo.com/imagem.jpg"
+                        className="bg-input border-border text-primary-light"
+                      />
+                      <p className="text-xs text-secondary-light mt-1">
+                        Ou cole aqui a URL de uma imagem existente
+                      </p>
+                    </div>
+
+                    {newAttendant.imageUrl && (
+                      <div className="p-4 bg-input/20 rounded-lg border border-border">
+                        <Label className="text-secondary-light">Prévia da Imagem</Label>
+                        <div className="flex items-center gap-4 mt-2">
+                          <img 
+                            src={newAttendant.imageUrl} 
+                            alt="Prévia"
+                            className="w-20 h-20 rounded-full object-cover border-2 border-border"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                          <div className="flex-1">
+                            <div className="text-sm text-success font-medium">
+                              ✓ Imagem carregada com sucesso
+                            </div>
+                            <div className="text-xs text-secondary-light mt-1">
+                              Esta imagem será usada no perfil do atendente
+                            </div>
+                            <Button
+                              type="button"
+                              onClick={() => setNewAttendant({...newAttendant, imageUrl: ""})}
+                              variant="outline"
+                              size="sm"
+                              className="border-destructive text-destructive hover:bg-destructive hover:text-white mt-2"
+                            >
+                              <Trash2 size={14} className="mr-1" />
+                              Remover Imagem
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4 border-t border-border">
+                  <Button 
+                    onClick={() => createAttendantMutation.mutate(newAttendant)}
+                    disabled={!newAttendant.name || !newAttendant.imageUrl || createAttendantMutation.isPending}
+                    className="bg-success text-white hover:bg-success-dark flex-1"
+                  >
+                    {createAttendantMutation.isPending ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Criando...
+                      </>
+                    ) : (
+                      <>
+                        <Plus size={16} className="mr-2" />
+                        Criar Atendente
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setNewAttendant({ 
+                      name: "", 
+                      imageUrl: "", 
+                      email: "", 
+                      phone: "", 
+                      department: "", 
+                      commission: "", 
+                      startDate: "", 
+                      status: "active" 
+                    })}
+                    variant="outline"
+                    className="border-border text-secondary-light hover:bg-accent"
+                  >
+                    Limpar
+                  </Button>
                 </div>
-                {newAttendant.imageUrl && (
-                  <div className="flex items-center gap-4">
-                    <img 
-                      src={newAttendant.imageUrl} 
-                      alt="Prévia" 
-                      className="w-16 h-16 rounded-full object-cover border-2 border-border"
-                    />
-                    <span className="text-sm text-secondary-light">Prévia da imagem</span>
-                  </div>
-                )}
-                <Button 
-                  onClick={() => createAttendantMutation.mutate(newAttendant)}
-                  disabled={!newAttendant.name || !newAttendant.imageUrl || createAttendantMutation.isPending}
-                  className="bg-success text-primary-light hover:bg-success-dark"
-                >
-                  {createAttendantMutation.isPending ? "Criando..." : "Criar Atendente"}
-                </Button>
               </CardContent>
             </Card>
 
@@ -899,7 +1182,7 @@ export default function Admin() {
                                   <div className="text-secondary-light">Conquistas</div>
                                 </div>
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex gap-1">
                                 <Button
                                   onClick={() => handleViewAttendantDetails(attendant)}
                                   variant="outline"
@@ -915,6 +1198,15 @@ export default function Admin() {
                                   className="flex-1 border-warning text-warning hover:bg-warning hover:text-white"
                                 >
                                   <Edit size={14} />
+                                </Button>
+                                <Button
+                                  onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
+                                  title="Baixar imagem do perfil"
+                                >
+                                  <Download size={14} />
                                 </Button>
                                 <Button
                                   onClick={() => deleteAttendantMutation.mutate(attendant.id)}
@@ -979,6 +1271,15 @@ export default function Admin() {
                                         className="border-warning text-warning hover:bg-warning hover:text-white"
                                       >
                                         <Edit size={14} />
+                                      </Button>
+                                      <Button
+                                        onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
+                                        title="Baixar imagem do perfil"
+                                      >
+                                        <Download size={14} />
                                       </Button>
                                       <Button
                                         onClick={() => deleteAttendantMutation.mutate(attendant.id)}
@@ -1913,47 +2214,194 @@ export default function Admin() {
               </div>
             )}
 
-            {/* Edit Form */}
-            <div className="space-y-4">
-              <div>
-                <Label className="text-secondary-light">Nome</Label>
-                <Input
-                  value={editAttendantData.name}
-                  onChange={(e) => setEditAttendantData({...editAttendantData, name: e.target.value})}
-                  placeholder="Nome do atendente"
-                  className="bg-input border-border text-primary-light"
-                />
-              </div>
-              <div>
-                <Label className="text-secondary-light">URL da Imagem</Label>
-                <Input
-                  value={editAttendantData.imageUrl}
-                  onChange={(e) => setEditAttendantData({...editAttendantData, imageUrl: e.target.value})}
-                  placeholder="https://exemplo.com/imagem.jpg"
-                  className="bg-input border-border text-primary-light"
-                />
-                <p className="text-xs text-secondary-light mt-1">
-                  Cole aqui a URL de uma imagem para o perfil do atendente
-                </p>
-              </div>
-              {editAttendantData.imageUrl && (
-                <div>
-                  <Label className="text-secondary-light">Prévia da Nova Imagem</Label>
-                  <div className="flex items-center gap-4 mt-2">
-                    <img 
-                      src={editAttendantData.imageUrl} 
-                      alt="Prévia"
-                      className="w-16 h-16 rounded-full object-cover border-2 border-border"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
+            {/* Edit Form with Tabs */}
+            <div className="space-y-6">
+              <Tabs defaultValue="basic" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 bg-secondary-dark">
+                  <TabsTrigger value="basic" className="text-secondary-light data-[state=active]:text-primary-light">
+                    Informações Básicas
+                  </TabsTrigger>
+                  <TabsTrigger value="contact" className="text-secondary-light data-[state=active]:text-primary-light">
+                    Contato & Cargo
+                  </TabsTrigger>
+                  <TabsTrigger value="image" className="text-secondary-light data-[state=active]:text-primary-light">
+                    Imagem & Mídia
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="basic" className="space-y-4 mt-4">
+                  <div>
+                    <Label className="text-secondary-light">Nome Completo</Label>
+                    <Input
+                      value={editAttendantData.name}
+                      onChange={(e) => setEditAttendantData({...editAttendantData, name: e.target.value})}
+                      placeholder="Nome completo do atendente"
+                      className="bg-input border-border text-primary-light"
                     />
-                    <div className="text-xs text-secondary-light">
-                      ✓ Imagem carregada com sucesso
+                  </div>
+                  <div>
+                    <Label className="text-secondary-light">Data de Início</Label>
+                    <Input
+                      type="date"
+                      value={editAttendantData.startDate}
+                      onChange={(e) => setEditAttendantData({...editAttendantData, startDate: e.target.value})}
+                      className="bg-input border-border text-primary-light"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-secondary-light">Status</Label>
+                    <select
+                      value={editAttendantData.status}
+                      onChange={(e) => setEditAttendantData({...editAttendantData, status: e.target.value})}
+                      className="w-full bg-input border-border text-primary-light px-3 py-2 rounded"
+                    >
+                      <option value="active">Ativo</option>
+                      <option value="inactive">Inativo</option>
+                      <option value="training">Em Treinamento</option>
+                      <option value="vacation">Férias</option>
+                    </select>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="contact" className="space-y-4 mt-4">
+                  <div>
+                    <Label className="text-secondary-light">E-mail</Label>
+                    <Input
+                      type="email"
+                      value={editAttendantData.email}
+                      onChange={(e) => setEditAttendantData({...editAttendantData, email: e.target.value})}
+                      placeholder="email@exemplo.com"
+                      className="bg-input border-border text-primary-light"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-secondary-light">Telefone</Label>
+                    <Input
+                      value={editAttendantData.phone}
+                      onChange={(e) => setEditAttendantData({...editAttendantData, phone: e.target.value})}
+                      placeholder="(11) 99999-9999"
+                      className="bg-input border-border text-primary-light"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-secondary-light">Departamento</Label>
+                    <select
+                      value={editAttendantData.department}
+                      onChange={(e) => setEditAttendantData({...editAttendantData, department: e.target.value})}
+                      className="w-full bg-input border-border text-primary-light px-3 py-2 rounded"
+                    >
+                      <option value="">Selecione o departamento</option>
+                      <option value="vendas">Vendas</option>
+                      <option value="atendimento">Atendimento</option>
+                      <option value="telemarketing">Telemarketing</option>
+                      <option value="supervisao">Supervisão</option>
+                      <option value="gerencia">Gerência</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label className="text-secondary-light">Comissão (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="100"
+                      value={editAttendantData.commission}
+                      onChange={(e) => setEditAttendantData({...editAttendantData, commission: e.target.value})}
+                      placeholder="5.5"
+                      className="bg-input border-border text-primary-light"
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="image" className="space-y-4 mt-4">
+                  <div>
+                    <Label className="text-secondary-light">Upload de Imagem</Label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => document.getElementById('image-upload')?.click()}
+                        variant="outline"
+                        className="border-border text-secondary-light hover:bg-accent"
+                      >
+                        <Upload size={16} className="mr-2" />
+                        Escolher Arquivo
+                      </Button>
+                      <span className="text-xs text-secondary-light">
+                        Max: 5MB | JPG, PNG, GIF
+                      </span>
                     </div>
                   </div>
-                </div>
-              )}
+                  
+                  <div className="border-t border-border pt-4">
+                    <Label className="text-secondary-light">URL da Imagem</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={editAttendantData.imageUrl}
+                        onChange={(e) => setEditAttendantData({...editAttendantData, imageUrl: e.target.value})}
+                        placeholder="https://exemplo.com/imagem.jpg"
+                        className="bg-input border-border text-primary-light flex-1"
+                      />
+                      {editAttendantData.imageUrl && (
+                        <Button
+                          type="button"
+                          onClick={() => handleImageDownload(editAttendantData.imageUrl, editAttendantData.name)}
+                          variant="outline"
+                          size="sm"
+                          className="border-info text-info hover:bg-info hover:text-white"
+                        >
+                          <Download size={16} />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-secondary-light mt-1">
+                      Ou cole aqui a URL de uma imagem existente
+                    </p>
+                  </div>
+
+                  {editAttendantData.imageUrl && (
+                    <div>
+                      <Label className="text-secondary-light">Prévia da Imagem</Label>
+                      <div className="flex items-center gap-4 mt-2 p-4 bg-input/20 rounded-lg border border-border">
+                        <img 
+                          src={editAttendantData.imageUrl} 
+                          alt="Prévia"
+                          className="w-20 h-20 rounded-full object-cover border-2 border-border"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                        <div className="flex-1">
+                          <div className="text-sm text-success font-medium">
+                            ✓ Imagem carregada com sucesso
+                          </div>
+                          <div className="text-xs text-secondary-light mt-1">
+                            A imagem será usada no perfil do atendente
+                          </div>
+                          <div className="flex gap-2 mt-2">
+                            <Button
+                              type="button"
+                              onClick={() => setEditAttendantData({...editAttendantData, imageUrl: ""})}
+                              variant="outline"
+                              size="sm"
+                              className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                            >
+                              <Trash2 size={14} className="mr-1" />
+                              Remover
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
 
             {/* Action Buttons */}
