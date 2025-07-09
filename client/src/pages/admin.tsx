@@ -25,15 +25,16 @@ export default function Admin() {
     
     try {
       const response = await apiRequest("POST", "/api/admin/login", credentials);
-      const result = await response.json();
       
       if (response.ok) {
+        const result = await response.json();
         setIsAuthenticated(true);
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo à área do gestor.",
         });
       } else {
+        const result = await response.json();
         toast({
           title: "Credenciais inválidas",
           description: result.message || "Usuário ou senha incorretos.",
@@ -41,6 +42,7 @@ export default function Admin() {
         });
       }
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Erro no login",
         description: "Ocorreu um erro ao tentar fazer login. Tente novamente.",
