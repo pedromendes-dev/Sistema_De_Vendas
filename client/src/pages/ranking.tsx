@@ -176,96 +176,9 @@ export default function Ranking() {
         <div className="space-y-4">
           {rankingData.map((attendant, index) => (
             <Card key={attendant.id} className={`${getCardStyle(index)} ranking-card mobile-shadow-lg`}>
-              <CardContent className="p-0">
-                {/* Mobile Layout */}
-                <div className="block lg:hidden p-4">
-                  <div className="space-y-4">
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {getRankIcon(index)}
-                        <div>
-                          {getRankBadge(index)}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-success">
-                          R$ {attendant.totalValue.toFixed(2)}
-                        </div>
-                        <div className="text-xs text-secondary-light">
-                          Total Faturado
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Profile */}
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <img 
-                          src={attendant.imageUrl}
-                          alt={attendant.name}
-                          className="w-16 h-16 rounded-full object-cover border-2 border-success/20"
-                        />
-                        {index < 3 && (
-                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-success to-info rounded-full flex items-center justify-center text-xs font-bold text-white">
-                            {index + 1}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-primary-light truncate">
-                          {attendant.name}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <TrendingUp size={14} className="text-success" />
-                          <span className="text-sm text-secondary-light">
-                            {attendant.completionRate.toFixed(0)}% da meta
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs text-secondary-light">
-                        <span>Progresso da Meta</span>
-                        <span>{attendant.completionRate.toFixed(0)}%</span>
-                      </div>
-                      <Progress value={attendant.completionRate} className="h-2" />
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-info/10 border border-info/20 rounded-lg p-3 text-center">
-                        <div className="text-lg font-bold text-info mb-1">
-                          {attendant.totalSales}
-                        </div>
-                        <div className="text-xs text-secondary-light">
-                          Vendas
-                        </div>
-                      </div>
-                      <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 text-center">
-                        <div className="text-lg font-bold text-warning mb-1">
-                          R$ {attendant.averageTicket.toFixed(0)}
-                        </div>
-                        <div className="text-xs text-secondary-light">
-                          Ticket Médio
-                        </div>
-                      </div>
-                      <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-center">
-                        <div className="text-lg font-bold text-purple-400 mb-1">
-                          {attendant.thisMonthSales}
-                        </div>
-                        <div className="text-xs text-secondary-light">
-                          Este Mês
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Desktop Layout */}
-                <div className="hidden lg:flex lg:items-center lg:gap-6 lg:p-6">
+              <CardContent className="p-6">
+                {/* Unified Layout for All Devices */}
+                <div className="flex items-center gap-6">
                   {/* Rank */}
                   <div className="flex flex-col items-center flex-shrink-0">
                     {getRankIcon(index)}
@@ -289,7 +202,7 @@ export default function Ranking() {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-xl font-bold text-primary-light truncate">{attendant.name}</h3>
+                      <h3 className="text-lg sm:text-xl font-bold text-primary-light truncate">{attendant.name}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         {getRankBadge(index)}
                       </div>
@@ -297,27 +210,37 @@ export default function Ranking() {
                   </div>
 
                   {/* Statistics */}
-                  <div className="grid grid-cols-4 gap-8 flex-1">
+                  <div className="hidden sm:grid sm:grid-cols-4 sm:gap-4 lg:gap-8 sm:flex-1">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-success">R$ {attendant.totalValue.toFixed(2)}</p>
-                      <p className="text-sm text-secondary-light">Faturamento</p>
+                      <p className="text-lg lg:text-2xl font-bold text-success">R$ {attendant.totalValue.toFixed(2)}</p>
+                      <p className="text-xs lg:text-sm text-secondary-light">Faturamento</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-info">{attendant.totalSales}</p>
-                      <p className="text-sm text-secondary-light">Vendas</p>
+                      <p className="text-lg lg:text-2xl font-bold text-info">{attendant.totalSales}</p>
+                      <p className="text-xs lg:text-sm text-secondary-light">Vendas</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-warning">R$ {attendant.averageTicket.toFixed(2)}</p>
-                      <p className="text-sm text-secondary-light">Ticket Médio</p>
+                      <p className="text-lg lg:text-2xl font-bold text-warning">R$ {attendant.averageTicket.toFixed(2)}</p>
+                      <p className="text-xs lg:text-sm text-secondary-light">Ticket Médio</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-purple-400">{attendant.completionRate.toFixed(0)}%</p>
-                      <p className="text-sm text-secondary-light">Meta</p>
+                      <p className="text-lg lg:text-2xl font-bold text-purple-400">{attendant.completionRate.toFixed(0)}%</p>
+                      <p className="text-xs lg:text-sm text-secondary-light">Meta</p>
+                    </div>
+                  </div>
+
+                  {/* Mobile Earnings Badge */}
+                  <div className="text-right sm:hidden">
+                    <div className="text-xl font-bold text-success">
+                      R$ {attendant.totalValue.toFixed(2)}
+                    </div>
+                    <div className="text-sm text-secondary-light">
+                      Total
                     </div>
                   </div>
 
                   {/* Progress */}
-                  <div className="w-32">
+                  <div className="hidden lg:block lg:w-32">
                     <Progress 
                       value={(attendant.totalValue / maxEarnings) * 100} 
                       className="h-3"

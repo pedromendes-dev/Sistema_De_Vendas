@@ -357,57 +357,29 @@ export default function Admin() {
           </Button>
         </div>
 
-        {/* Management Tabs */}
+        {/* Management Tabs - Unified Layout */}
         <Tabs defaultValue="attendants" className="space-y-6">
-          {/* Mobile Tabs - Scrollable */}
-          <div className="block lg:hidden">
-            <div className="overflow-x-auto scrollbar-hide admin-tabs-mobile">
-              <TabsList className="flex w-max space-x-2 bg-transparent p-0 px-1">
-                {[
-                  { value: 'attendants', icon: Users, label: 'Atendentes' },
-                  { value: 'sales', icon: DollarSign, label: 'Vendas' },
-                  { value: 'goals', icon: Target, label: 'Metas' },
-                  { value: 'achievements', icon: Trophy, label: 'Conquistas' },
-                  { value: 'admins', icon: Shield, label: 'Admins' },
-                  { value: 'dragdrop', icon: Grip, label: 'Organizar' },
-                  { value: 'layout', icon: Layout, label: 'Layout' }
-                ].map(({ value, icon: Icon, label }) => (
-                  <TabsTrigger
-                    key={value}
-                    value={value}
-                    className="flex-shrink-0 flex flex-col items-center gap-2 px-4 py-3 bg-card border border-border rounded-lg text-xs min-w-[80px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-success data-[state=active]:to-info data-[state=active]:text-white"
-                  >
-                    <Icon size={16} />
-                    <span className="leading-tight">{label}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-          </div>
-          
-          {/* Desktop Tabs */}
-          <div className="hidden lg:block">
-            <TabsList className="grid grid-cols-7 gap-2 bg-transparent p-0">
-              {[
-                { value: 'attendants', icon: Users, label: 'Atendentes' },
-                { value: 'sales', icon: DollarSign, label: 'Vendas' },
-                { value: 'goals', icon: Target, label: 'Metas' },
-                { value: 'achievements', icon: Trophy, label: 'Conquistas' },
-                { value: 'admins', icon: Shield, label: 'Administradores' },
-                { value: 'dragdrop', icon: Grip, label: 'Organizar' },
-                { value: 'layout', icon: Layout, label: 'Layout' }
-              ].map(({ value, icon: Icon, label }) => (
-                <TabsTrigger
-                  key={value}
-                  value={value}
-                  className="flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-success data-[state=active]:to-info data-[state=active]:text-white"
-                >
-                  <Icon size={18} />
-                  <span>{label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
+          <TabsList className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2 bg-transparent p-0">
+            {[
+              { value: 'attendants', icon: Users, label: 'Atendentes' },
+              { value: 'sales', icon: DollarSign, label: 'Vendas' },
+              { value: 'goals', icon: Target, label: 'Metas' },
+              { value: 'achievements', icon: Trophy, label: 'Conquistas' },
+              { value: 'admins', icon: Shield, label: 'Administradores' },
+              { value: 'dragdrop', icon: Grip, label: 'Organizar' },
+              { value: 'layout', icon: Layout, label: 'Layout' }
+            ].map(({ value, icon: Icon, label }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-card border border-border rounded-lg text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-success data-[state=active]:to-info data-[state=active]:text-white"
+              >
+                <Icon size={16} className="sm:hidden" />
+                <Icon size={18} className="hidden sm:block" />
+                <span className="leading-tight text-center sm:text-left">{label}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
 
 
