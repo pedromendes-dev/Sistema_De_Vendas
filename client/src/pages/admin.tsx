@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck, Search, Filter, Grid, List, BarChart3, Calendar, TrendingUp, Award, Star, Download, Upload } from "lucide-react";
+import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck, Search, Filter, Grid, List, BarChart3, Calendar, TrendingUp, Award, Star, Download, Upload, Copy, Share2, MessageCircle, Phone, Mail, FileText, Activity, Settings, Zap, Clock, Award as AwardIcon, Crown, RefreshCw, ArrowUp, ArrowDown, MoreVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -87,7 +87,7 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Function to download images
+  // Advanced admin functions
   const downloadImage = async (imageUrl: string, fileName: string) => {
     try {
       const response = await fetch(imageUrl);
@@ -108,6 +108,114 @@ export default function Admin() {
       toast({
         title: "Erro no download",
         description: "Não foi possível baixar a imagem.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const copyAttendantInfo = (attendant: Attendant) => {
+    const info = `Nome: ${attendant.name}\nVendas: R$ ${attendant.earnings}\nCadastrado: ${new Date(attendant.createdAt).toLocaleDateString('pt-BR')}`;
+    navigator.clipboard.writeText(info);
+    toast({
+      title: "Informações copiadas!",
+      description: "Dados do atendente copiados para a área de transferência.",
+    });
+  };
+
+  const shareAttendantReport = (attendant: Attendant) => {
+    const stats = getAttendantStats(attendant);
+    const report = `📊 RELATÓRIO - ${attendant.name}
+💰 Total em Vendas: R$ ${attendant.earnings}
+🎯 Número de Vendas: ${stats.totalSales}
+🏆 Conquistas: ${stats.totalAchievements}
+📅 Cadastrado em: ${new Date(attendant.createdAt).toLocaleDateString('pt-BR')}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: `Relatório - ${attendant.name}`,
+        text: report,
+      });
+    } else {
+      navigator.clipboard.writeText(report);
+      toast({
+        title: "Relatório copiado!",
+        description: "Relatório copiado para compartilhamento.",
+      });
+    }
+  };
+
+  const generateAttendantQR = (attendant: Attendant) => {
+    const qrData = `${window.location.origin}?attendant=${attendant.id}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
+    
+    const link = document.createElement('a');
+    link.href = qrUrl;
+    link.download = `${attendant.name}_QR.png`;
+    link.click();
+    
+    toast({
+      title: "QR Code gerado!",
+      description: "QR Code do atendente baixado com sucesso.",
+    });
+  };
+
+  const exportAttendantData = async (attendant: Attendant) => {
+    const stats = getAttendantStats(attendant);
+    const salesData = sales?.filter(sale => sale.attendantId === attendant.id) || [];
+    
+    const data = {
+      attendant: {
+        name: attendant.name,
+        earnings: attendant.earnings,
+        created: attendant.createdAt,
+      },
+      statistics: stats,
+      sales: salesData.map(sale => ({
+        value: sale.value,
+        date: sale.createdAt,
+      }))
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${attendant.name}_dados.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Dados exportados!",
+      description: "Arquivo JSON com dados completos baixado.",
+    });
+  };
+
+  const sendQuickMessage = (attendant: Attendant) => {
+    const message = `Olá ${attendant.name}! Como estão as vendas hoje?`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const toggleAttendantStatus = async (attendantId: number) => {
+    try {
+      const attendant = attendants.find(a => a.id === attendantId);
+      if (!attendant) return;
+
+      await apiRequest("PUT", `/api/attendants/${attendantId}`, {
+        status: attendant.status === 'active' ? 'inactive' : 'active'
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+      toast({
+        title: "Status atualizado!",
+        description: `${attendant.name} está agora ${attendant.status === 'active' ? 'inativo' : 'ativo'}.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao atualizar status",
+        description: "Não foi possível alterar o status do atendente.",
         variant: "destructive",
       });
     }
@@ -818,6 +926,51 @@ export default function Admin() {
 
           {/* Attendants Management */}
           <TabsContent value="attendants" className="space-y-6">
+            {/* Quick Stats Dashboard */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-r from-success to-success/80 border-success/30">
+                <CardContent className="p-4 text-center">
+                  <Users className="mx-auto mb-2 text-white" size={24} />
+                  <div className="text-2xl font-bold text-white">
+                    {attendants?.length || 0}
+                  </div>
+                  <div className="text-xs text-white/80">Total Atendentes</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-info to-info/80 border-info/30">
+                <CardContent className="p-4 text-center">
+                  <UserCheck className="mx-auto mb-2 text-white" size={24} />
+                  <div className="text-2xl font-bold text-white">
+                    {attendants?.filter(a => a.status === 'active').length || 0}
+                  </div>
+                  <div className="text-xs text-white/80">Ativos</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-warning to-warning/80 border-warning/30">
+                <CardContent className="p-4 text-center">
+                  <DollarSign className="mx-auto mb-2 text-white" size={24} />
+                  <div className="text-2xl font-bold text-white">
+                    R$ {attendants?.reduce((sum, a) => sum + parseFloat(a.earnings), 0).toFixed(2) || '0.00'}
+                  </div>
+                  <div className="text-xs text-white/80">Vendas Totais</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-r from-purple-500 to-purple-400 border-purple-500/30">
+                <CardContent className="p-4 text-center">
+                  <TrendingUp className="mx-auto mb-2 text-white" size={24} />
+                  <div className="text-2xl font-bold text-white">
+                    {attendants?.length > 0 ? 
+                      (attendants.reduce((sum, a) => sum + parseFloat(a.earnings), 0) / attendants.length).toFixed(2) : 
+                      '0.00'
+                    }
+                  </div>
+                  <div className="text-xs text-white/80">Média por Atendente</div>
+                </CardContent>
+              </Card>
+            </div>
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-primary-light flex items-center gap-2">
@@ -1061,6 +1214,105 @@ export default function Admin() {
               </CardContent>
             </Card>
 
+            {/* Advanced Admin Tools */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light flex items-center gap-2">
+                  <Settings size={20} />
+                  Ferramentas Avançadas de Gestão
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Bulk Actions */}
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={async () => {
+                      const allData = filteredAndSortedAttendants.map(attendant => ({
+                        name: attendant.name,
+                        earnings: attendant.earnings,
+                        sales: sales?.filter(sale => sale.attendantId === attendant.id).length || 0,
+                        created: new Date(attendant.createdAt).toLocaleDateString('pt-BR')
+                      }));
+                      
+                      const csv = [
+                        'Nome,Vendas Totais,Número de Vendas,Data Cadastro',
+                        ...allData.map(d => `${d.name},${d.earnings},${d.sales},${d.created}`)
+                      ].join('\n');
+                      
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = window.URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = 'relatorio_atendentes.csv';
+                      link.click();
+                      window.URL.revokeObjectURL(url);
+                      
+                      toast({ title: "Relatório exportado!", description: "CSV com todos os atendentes baixado." });
+                    }}
+                    variant="outline"
+                    className="border-success text-success hover:bg-success hover:text-white"
+                  >
+                    <FileText size={16} className="mr-2" />
+                    Exportar Relatório CSV
+                  </Button>
+                  
+                  <Button
+                    onClick={() => {
+                      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+                      queryClient.invalidateQueries({ queryKey: ["/api/sales"] });
+                      toast({ title: "Dados atualizados!", description: "Informações sincronizadas com o servidor." });
+                    }}
+                    variant="outline"
+                    className="border-info text-info hover:bg-info hover:text-white"
+                  >
+                    <RefreshCw size={16} className="mr-2" />
+                    Sincronizar Dados
+                  </Button>
+                  
+                  <Button
+                    onClick={() => {
+                      const total = filteredAndSortedAttendants.length;
+                      const active = filteredAndSortedAttendants.filter(a => a.status === 'active').length;
+                      const totalSales = filteredAndSortedAttendants.reduce((sum, a) => sum + parseFloat(a.earnings), 0);
+                      
+                      const summary = `📊 RESUMO GERAL
+📈 Total de Atendentes: ${total}
+✅ Ativos: ${active}
+❌ Inativos: ${total - active}
+💰 Vendas Totais: R$ ${totalSales.toFixed(2)}
+📅 Gerado em: ${new Date().toLocaleString('pt-BR')}`;
+
+                      navigator.clipboard.writeText(summary);
+                      toast({ title: "Resumo copiado!", description: "Estatísticas gerais copiadas." });
+                    }}
+                    variant="outline"
+                    className="border-warning text-warning hover:bg-warning hover:text-white"
+                  >
+                    <BarChart3 size={16} className="mr-2" />
+                    Copiar Resumo Geral
+                  </Button>
+
+                  <Button
+                    onClick={() => {
+                      const message = `🎯 DESAFIO DO DIA!\n\nVamos bater nossa meta de vendas! 💪\n\n${filteredAndSortedAttendants.map(a => `• ${a.name}`).join('\n')}\n\nBom trabalho equipe! 🚀`;
+                      
+                      if (navigator.share) {
+                        navigator.share({ title: 'Motivação da Equipe', text: message });
+                      } else {
+                        navigator.clipboard.writeText(message);
+                        toast({ title: "Mensagem motivacional copiada!", description: "Pronta para compartilhar com a equipe." });
+                      }
+                    }}
+                    variant="outline"
+                    className="border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white"
+                  >
+                    <Zap size={16} className="mr-2" />
+                    Motivar Equipe
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Search and View Controls */}
             <Card className="bg-card border-border">
               <CardContent className="pt-6">
@@ -1071,8 +1323,8 @@ export default function Admin() {
                       <Input
                         value={attendantSearchQuery}
                         onChange={(e) => setAttendantSearchQuery(e.target.value)}
-                        placeholder="Buscar atendentes..."
-                        className="pl-10 bg-input border-border text-primary-light min-w-[200px]"
+                        placeholder="Buscar atendentes por nome, vendas..."
+                        className="pl-10 bg-input border-border text-primary-light min-w-[250px]"
                       />
                     </div>
                     <div className="flex gap-2">
@@ -1081,17 +1333,18 @@ export default function Admin() {
                         onChange={(e) => setAttendantSortBy(e.target.value as any)}
                         className="bg-input border-border text-primary-light px-3 py-2 rounded text-sm"
                       >
-                        <option value="name">Nome</option>
-                        <option value="earnings">Vendas</option>
-                        <option value="createdAt">Data</option>
+                        <option value="name">📝 Nome</option>
+                        <option value="earnings">💰 Vendas</option>
+                        <option value="createdAt">📅 Data Cadastro</option>
                       </select>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setAttendantSortOrder(attendantSortOrder === 'asc' ? 'desc' : 'asc')}
                         className="border-border"
+                        title={`Ordenar ${attendantSortOrder === 'asc' ? 'decrescente' : 'crescente'}`}
                       >
-                        <TrendingUp size={16} className={`transform ${attendantSortOrder === 'desc' ? 'rotate-180' : ''}`} />
+                        {attendantSortOrder === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
                       </Button>
                     </div>
                   </div>
@@ -1101,6 +1354,7 @@ export default function Admin() {
                       size="sm"
                       onClick={() => setAttendantViewMode('cards')}
                       className="border-border"
+                      title="Visualização em Cards"
                     >
                       <Grid size={16} />
                     </Button>
@@ -1109,6 +1363,7 @@ export default function Admin() {
                       size="sm"
                       onClick={() => setAttendantViewMode('table')}
                       className="border-border"
+                      title="Visualização em Tabela"
                     >
                       <List size={16} />
                     </Button>
@@ -1117,6 +1372,7 @@ export default function Admin() {
                       size="sm"
                       onClick={() => setAttendantViewMode('detailed')}
                       className="border-border"
+                      title="Visualização Detalhada"
                     >
                       <BarChart3 size={16} />
                     </Button>
@@ -1182,40 +1438,100 @@ export default function Admin() {
                                   <div className="text-secondary-light">Conquistas</div>
                                 </div>
                               </div>
-                              <div className="flex gap-1">
-                                <Button
-                                  onClick={() => handleViewAttendantDetails(attendant)}
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex-1 border-info text-info hover:bg-info hover:text-white"
-                                >
-                                  <Eye size={14} />
-                                </Button>
-                                <Button
-                                  onClick={() => handleEditAttendant(attendant)}
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex-1 border-warning text-warning hover:bg-warning hover:text-white"
-                                >
-                                  <Edit size={14} />
-                                </Button>
-                                <Button
-                                  onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
-                                  variant="outline"
-                                  size="sm"
-                                  className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
-                                  title="Baixar imagem do perfil"
-                                >
-                                  <Download size={14} />
-                                </Button>
-                                <Button
-                                  onClick={() => deleteAttendantMutation.mutate(attendant.id)}
-                                  disabled={deleteAttendantMutation.isPending}
-                                  variant="destructive"
-                                  size="sm"
-                                >
-                                  <Trash2 size={14} />
-                                </Button>
+                              <div className="space-y-2">
+                                {/* Primary Actions Row */}
+                                <div className="flex gap-1">
+                                  <Button
+                                    onClick={() => handleViewAttendantDetails(attendant)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 border-info text-info hover:bg-info hover:text-white"
+                                    title="Ver detalhes completos"
+                                  >
+                                    <Eye size={14} />
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleEditAttendant(attendant)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 border-warning text-warning hover:bg-warning hover:text-white"
+                                    title="Editar atendente"
+                                  >
+                                    <Edit size={14} />
+                                  </Button>
+                                  <Button
+                                    onClick={() => sendQuickMessage(attendant)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-success text-success hover:bg-success hover:text-white"
+                                    title="Enviar mensagem WhatsApp"
+                                  >
+                                    <MessageCircle size={14} />
+                                  </Button>
+                                </div>
+                                
+                                {/* Secondary Actions Row */}
+                                <div className="flex gap-1">
+                                  <Button
+                                    onClick={() => copyAttendantInfo(attendant)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 border-secondary text-secondary-light hover:bg-secondary hover:text-white"
+                                    title="Copiar informações"
+                                  >
+                                    <Copy size={12} />
+                                  </Button>
+                                  <Button
+                                    onClick={() => shareAttendantReport(attendant)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 border-info text-info hover:bg-info hover:text-white"
+                                    title="Compartilhar relatório"
+                                  >
+                                    <Share2 size={12} />
+                                  </Button>
+                                  <Button
+                                    onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 border-secondary text-secondary-light hover:bg-secondary hover:text-white"
+                                    title="Baixar imagem"
+                                  >
+                                    <Download size={12} />
+                                  </Button>
+                                  <Button
+                                    onClick={() => exportAttendantData(attendant)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 border-warning text-warning hover:bg-warning hover:text-white"
+                                    title="Exportar dados"
+                                  >
+                                    <FileText size={12} />
+                                  </Button>
+                                </div>
+
+                                {/* Danger Zone */}
+                                <div className="flex gap-1 pt-1 border-t border-border/30">
+                                  <Button
+                                    onClick={() => toggleAttendantStatus(attendant.id)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                                    title={`${attendant.status === 'active' ? 'Desativar' : 'Ativar'} atendente`}
+                                  >
+                                    {attendant.status === 'active' ? <UserX size={12} /> : <UserCheck size={12} />}
+                                  </Button>
+                                  <Button
+                                    onClick={() => deleteAttendantMutation.mutate(attendant.id)}
+                                    disabled={deleteAttendantMutation.isPending}
+                                    variant="destructive"
+                                    size="sm"
+                                    className="flex-1"
+                                    title="Excluir atendente permanentemente"
+                                  >
+                                    <Trash2 size={12} />
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           );
@@ -1255,39 +1571,87 @@ export default function Admin() {
                                   <td className="py-3 px-2 text-primary-light">{stats.totalSales}</td>
                                   <td className="py-3 px-2 text-primary-light">{stats.totalAchievements}</td>
                                   <td className="py-3 px-2">
-                                    <div className="flex gap-1">
+                                    <div className="flex flex-wrap gap-1">
                                       <Button
                                         onClick={() => handleViewAttendantDetails(attendant)}
                                         variant="outline"
                                         size="sm"
                                         className="border-info text-info hover:bg-info hover:text-white"
+                                        title="Ver detalhes"
                                       >
-                                        <Eye size={14} />
+                                        <Eye size={12} />
                                       </Button>
                                       <Button
                                         onClick={() => handleEditAttendant(attendant)}
                                         variant="outline"
                                         size="sm"
                                         className="border-warning text-warning hover:bg-warning hover:text-white"
+                                        title="Editar"
                                       >
-                                        <Edit size={14} />
+                                        <Edit size={12} />
+                                      </Button>
+                                      <Button
+                                        onClick={() => sendQuickMessage(attendant)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-success text-success hover:bg-success hover:text-white"
+                                        title="WhatsApp"
+                                      >
+                                        <MessageCircle size={12} />
+                                      </Button>
+                                      <Button
+                                        onClick={() => copyAttendantInfo(attendant)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
+                                        title="Copiar dados"
+                                      >
+                                        <Copy size={12} />
+                                      </Button>
+                                      <Button
+                                        onClick={() => shareAttendantReport(attendant)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-info text-info hover:bg-info hover:text-white"
+                                        title="Compartilhar"
+                                      >
+                                        <Share2 size={12} />
                                       </Button>
                                       <Button
                                         onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
                                         variant="outline"
                                         size="sm"
                                         className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
-                                        title="Baixar imagem do perfil"
+                                        title="Baixar imagem"
                                       >
-                                        <Download size={14} />
+                                        <Download size={12} />
+                                      </Button>
+                                      <Button
+                                        onClick={() => exportAttendantData(attendant)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-warning text-warning hover:bg-warning hover:text-white"
+                                        title="Exportar"
+                                      >
+                                        <FileText size={12} />
+                                      </Button>
+                                      <Button
+                                        onClick={() => toggleAttendantStatus(attendant.id)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                                        title={attendant.status === 'active' ? 'Desativar' : 'Ativar'}
+                                      >
+                                        {attendant.status === 'active' ? <UserX size={12} /> : <UserCheck size={12} />}
                                       </Button>
                                       <Button
                                         onClick={() => deleteAttendantMutation.mutate(attendant.id)}
                                         disabled={deleteAttendantMutation.isPending}
                                         variant="destructive"
                                         size="sm"
+                                        title="Excluir"
                                       >
-                                        <Trash2 size={14} />
+                                        <Trash2 size={12} />
                                       </Button>
                                     </div>
                                   </td>
@@ -1344,30 +1708,106 @@ export default function Admin() {
                                   </div>
                                 </div>
                                 <div className="flex lg:flex-col gap-2">
-                                  <Button
-                                    onClick={() => handleViewAttendantDetails(attendant)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="border-info text-info hover:bg-info hover:text-white"
-                                  >
-                                    <Eye size={16} />
-                                  </Button>
-                                  <Button
-                                    onClick={() => handleEditAttendant(attendant)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="border-warning text-warning hover:bg-warning hover:text-white"
-                                  >
-                                    <Edit size={16} />
-                                  </Button>
-                                  <Button
-                                    onClick={() => deleteAttendantMutation.mutate(attendant.id)}
-                                    disabled={deleteAttendantMutation.isPending}
-                                    variant="destructive"
-                                    size="sm"
-                                  >
-                                    <Trash2 size={16} />
-                                  </Button>
+                                  <div className="flex gap-1">
+                                    <Button
+                                      onClick={() => handleViewAttendantDetails(attendant)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-info text-info hover:bg-info hover:text-white"
+                                      title="Ver detalhes completos"
+                                    >
+                                      <Eye size={14} />
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleEditAttendant(attendant)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-warning text-warning hover:bg-warning hover:text-white"
+                                      title="Editar atendente"
+                                    >
+                                      <Edit size={14} />
+                                    </Button>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <Button
+                                      onClick={() => sendQuickMessage(attendant)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-success text-success hover:bg-success hover:text-white"
+                                      title="Enviar mensagem"
+                                    >
+                                      <MessageCircle size={14} />
+                                    </Button>
+                                    <Button
+                                      onClick={() => copyAttendantInfo(attendant)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
+                                      title="Copiar informações"
+                                    >
+                                      <Copy size={14} />
+                                    </Button>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <Button
+                                      onClick={() => shareAttendantReport(attendant)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-info text-info hover:bg-info hover:text-white"
+                                      title="Compartilhar relatório"
+                                    >
+                                      <Share2 size={14} />
+                                    </Button>
+                                    <Button
+                                      onClick={() => exportAttendantData(attendant)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-warning text-warning hover:bg-warning hover:text-white"
+                                      title="Exportar dados"
+                                    >
+                                      <FileText size={14} />
+                                    </Button>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <Button
+                                      onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
+                                      title="Baixar imagem"
+                                    >
+                                      <Download size={14} />
+                                    </Button>
+                                    <Button
+                                      onClick={() => generateAttendantQR(attendant)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white"
+                                      title="Gerar QR Code"
+                                    >
+                                      <Activity size={14} />
+                                    </Button>
+                                  </div>
+                                  <div className="flex gap-1 pt-1 border-t border-border/20">
+                                    <Button
+                                      onClick={() => toggleAttendantStatus(attendant.id)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
+                                      title={`${attendant.status === 'active' ? 'Desativar' : 'Ativar'} atendente`}
+                                    >
+                                      {attendant.status === 'active' ? <UserX size={14} /> : <UserCheck size={14} />}
+                                    </Button>
+                                    <Button
+                                      onClick={() => deleteAttendantMutation.mutate(attendant.id)}
+                                      disabled={deleteAttendantMutation.isPending}
+                                      variant="destructive"
+                                      size="sm"
+                                      title="Excluir permanentemente"
+                                    >
+                                      <Trash2 size={14} />
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
