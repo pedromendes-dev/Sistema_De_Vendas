@@ -116,13 +116,16 @@ export default function Admin() {
     setIsLoading(true);
     
     try {
-      console.log("Attempting login with:", credentials);
-      const response = await apiRequest("POST", "/api/admin/login", credentials);
-      console.log("Login response status:", response.status);
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
+      });
       
       if (response.ok) {
         const result = await response.json();
-        console.log("Login successful:", result);
         setIsAuthenticated(true);
         toast({
           title: "Login realizado com sucesso!",
@@ -132,7 +135,6 @@ export default function Admin() {
         setCredentials({ username: "", password: "" });
       } else {
         const result = await response.json();
-        console.log("Login failed:", result);
         toast({
           title: "Credenciais inválidas",
           description: result.message || "Usuário ou senha incorretos.",
