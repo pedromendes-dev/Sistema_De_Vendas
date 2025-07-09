@@ -34,6 +34,28 @@ export default function Admin() {
   const [attendantSortOrder, setAttendantSortOrder] = useState<'asc' | 'desc'>('asc');
   const [selectedAttendant, setSelectedAttendant] = useState<Attendant | null>(null);
   const [showAttendantDetails, setShowAttendantDetails] = useState(false);
+  
+  // Goal management states
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [newGoal, setNewGoal] = useState({
+    attendantId: "",
+    title: "",
+    description: "",
+    targetValue: "",
+    type: "sales"
+  });
+  
+  // Achievement management states
+  const [showAchievementModal, setShowAchievementModal] = useState(false);
+  const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
+  const [newAchievement, setNewAchievement] = useState({
+    attendantId: "",
+    title: "",
+    description: "",
+    pointsAwarded: "",
+    badgeColor: "#10B981"
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -135,6 +157,56 @@ export default function Admin() {
   const handleViewAttendantDetails = (attendant: Attendant) => {
     setSelectedAttendant(attendant);
     setShowAttendantDetails(true);
+  };
+
+  // Goal management handlers
+  const handleCreateGoal = () => {
+    setEditingGoal(null);
+    setNewGoal({
+      attendantId: "",
+      title: "",
+      description: "",
+      targetValue: "",
+      type: "sales"
+    });
+    setShowGoalModal(true);
+  };
+
+  const handleEditGoal = (goal: Goal) => {
+    setEditingGoal(goal);
+    setNewGoal({
+      attendantId: goal.attendantId.toString(),
+      title: goal.title,
+      description: goal.description || "",
+      targetValue: goal.targetValue,
+      type: goal.type
+    });
+    setShowGoalModal(true);
+  };
+
+  // Achievement management handlers
+  const handleCreateAchievement = () => {
+    setEditingAchievement(null);
+    setNewAchievement({
+      attendantId: "",
+      title: "",
+      description: "",
+      pointsAwarded: "",
+      badgeColor: "#10B981"
+    });
+    setShowAchievementModal(true);
+  };
+
+  const handleEditAchievement = (achievement: Achievement) => {
+    setEditingAchievement(achievement);
+    setNewAchievement({
+      attendantId: achievement.attendantId.toString(),
+      title: achievement.title,
+      description: achievement.description || "",
+      pointsAwarded: achievement.pointsAwarded.toString(),
+      badgeColor: achievement.badgeColor
+    });
+    setShowAchievementModal(true);
   };
 
   const handleUpdateAttendant = () => {
@@ -275,6 +347,107 @@ export default function Admin() {
     },
     onError: () => {
       toast({ title: "Erro ao remover meta", variant: "destructive" });
+    }
+  });
+
+  // Goal mutations
+  const createGoalMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/goals", {
+        ...data,
+        attendantId: parseInt(data.attendantId),
+        currentValue: "0.00"
+      });
+      if (!response.ok) throw new Error("Failed to create goal");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/goals"] });
+      setShowGoalModal(false);
+      setNewGoal({ attendantId: "", title: "", description: "", targetValue: "", type: "sales" });
+      toast({ title: "Meta criada com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao criar meta", variant: "destructive" });
+    }
+  });
+
+  const updateGoalMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await apiRequest("PUT", `/api/goals/${id}`, {
+        ...data,
+        attendantId: parseInt(data.attendantId)
+      });
+      if (!response.ok) throw new Error("Failed to update goal");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/goals"] });
+      setShowGoalModal(false);
+      setEditingGoal(null);
+      toast({ title: "Meta atualizada com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar meta", variant: "destructive" });
+    }
+  });
+
+  // Achievement mutations
+  const createAchievementMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/achievements", {
+        ...data,
+        attendantId: parseInt(data.attendantId),
+        pointsAwarded: parseInt(data.pointsAwarded),
+        achievedAt: new Date().toISOString()
+      });
+      if (!response.ok) throw new Error("Failed to create achievement");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/achievements"] });
+      setShowAchievementModal(false);
+      setNewAchievement({ attendantId: "", title: "", description: "", pointsAwarded: "", badgeColor: "#10B981" });
+      toast({ title: "Conquista criada com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao criar conquista", variant: "destructive" });
+    }
+  });
+
+  const updateAchievementMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await apiRequest("PUT", `/api/achievements/${id}`, {
+        ...data,
+        attendantId: parseInt(data.attendantId),
+        pointsAwarded: parseInt(data.pointsAwarded)
+      });
+      if (!response.ok) throw new Error("Failed to update achievement");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/achievements"] });
+      setShowAchievementModal(false);
+      setEditingAchievement(null);
+      toast({ title: "Conquista atualizada com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar conquista", variant: "destructive" });
+    }
+  });
+
+  const deleteAchievementMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/achievements/${id}`);
+      if (!response.ok) throw new Error("Failed to delete achievement");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/achievements"] });
+      toast({ title: "Conquista removida com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao remover conquista", variant: "destructive" });
     }
   });
 
@@ -861,7 +1034,19 @@ export default function Admin() {
           <TabsContent value="goals" className="space-y-6">
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-primary-light">Metas Ativas</CardTitle>
+                <CardTitle className="text-primary-light flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Target size={20} />
+                    Metas Ativas
+                  </div>
+                  <Button
+                    onClick={handleCreateGoal}
+                    className="bg-success text-white hover:bg-success-dark"
+                  >
+                    <Plus size={16} className="mr-2" />
+                    Nova Meta
+                  </Button>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {goalsLoading ? (
@@ -877,6 +1062,11 @@ export default function Admin() {
                             <h4 className="text-primary-light font-medium">{goal.title}</h4>
                             <p className="text-secondary-light text-sm">
                               {attendant?.name} - R$ {goal.currentValue} / R$ {goal.targetValue}
+                              <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                                goal.isActive ? 'bg-success text-white' : 'bg-secondary-dark text-secondary-light'
+                              }`}>
+                                {goal.isActive ? 'Ativa' : 'Inativa'}
+                              </span>
                             </p>
                             <div className="w-full bg-secondary-dark rounded-full h-2 mt-2">
                               <div 
@@ -884,15 +1074,28 @@ export default function Admin() {
                                 style={{ width: `${Math.min(progress, 100)}%` }}
                               />
                             </div>
+                            <p className="text-xs text-secondary-light mt-1">
+                              {progress.toFixed(1)}% concluído • {goal.description}
+                            </p>
                           </div>
-                          <Button
-                            onClick={() => deleteGoalMutation.mutate(goal.id)}
-                            disabled={deleteGoalMutation.isPending}
-                            variant="destructive"
-                            size="sm"
-                          >
-                            <Trash2 size={16} />
-                          </Button>
+                          <div className="flex gap-2 ml-4">
+                            <Button
+                              onClick={() => handleEditGoal(goal)}
+                              variant="outline"
+                              size="sm"
+                              className="border-info text-info hover:bg-info hover:text-white"
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button
+                              onClick={() => deleteGoalMutation.mutate(goal.id)}
+                              disabled={deleteGoalMutation.isPending}
+                              variant="destructive"
+                              size="sm"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
                         </div>
                       );
                     })}
@@ -906,7 +1109,19 @@ export default function Admin() {
           <TabsContent value="achievements" className="space-y-6">
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-primary-light">Conquistas Recentes</CardTitle>
+                <CardTitle className="text-primary-light flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Trophy size={20} />
+                    Conquistas Recentes
+                  </div>
+                  <Button
+                    onClick={handleCreateAchievement}
+                    className="bg-success text-white hover:bg-success-dark"
+                  >
+                    <Plus size={16} className="mr-2" />
+                    Nova Conquista
+                  </Button>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {achievementsLoading ? (
@@ -927,13 +1142,30 @@ export default function Admin() {
                             <div>
                               <h4 className="text-primary-light font-medium">{achievement.title}</h4>
                               <p className="text-secondary-light text-sm">
-                                {attendant?.name} - {achievement.pointsAwarded} pontos
+                                {attendant?.name} • {achievement.pointsAwarded} pontos • 
+                                {new Date(achievement.achievedAt).toLocaleDateString('pt-BR')}
                               </p>
+                              <p className="text-xs text-secondary-light">{achievement.description}</p>
                             </div>
                           </div>
-                          <span className="text-secondary-light text-sm">
-                            {new Date(achievement.achievedAt).toLocaleDateString('pt-BR')}
-                          </span>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => handleEditAchievement(achievement)}
+                              variant="outline"
+                              size="sm"
+                              className="border-info text-info hover:bg-info hover:text-white"
+                            >
+                              <Edit size={16} />
+                            </Button>
+                            <Button
+                              onClick={() => deleteAchievementMutation.mutate(achievement.id)}
+                              disabled={deleteAchievementMutation.isPending}
+                              variant="destructive"
+                              size="sm"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
                         </div>
                       );
                     })}
@@ -1122,6 +1354,192 @@ export default function Admin() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Goal Modal */}
+      <Dialog open={showGoalModal} onOpenChange={setShowGoalModal}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-primary-light">
+              {editingGoal ? 'Editar Meta' : 'Nova Meta'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-secondary-light">Atendente</Label>
+              <select
+                value={newGoal.attendantId}
+                onChange={(e) => setNewGoal({...newGoal, attendantId: e.target.value})}
+                className="bg-input border-border text-primary-light w-full p-2 rounded"
+              >
+                <option value="">Selecione um atendente</option>
+                {attendants.map((attendant: Attendant) => (
+                  <option key={attendant.id} value={attendant.id}>{attendant.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label className="text-secondary-light">Título da Meta</Label>
+              <Input
+                value={newGoal.title}
+                onChange={(e) => setNewGoal({...newGoal, title: e.target.value})}
+                placeholder="Ex: Meta Semanal de Vendas"
+                className="bg-input border-border text-primary-light"
+              />
+            </div>
+            <div>
+              <Label className="text-secondary-light">Descrição</Label>
+              <Input
+                value={newGoal.description}
+                onChange={(e) => setNewGoal({...newGoal, description: e.target.value})}
+                placeholder="Descrição da meta"
+                className="bg-input border-border text-primary-light"
+              />
+            </div>
+            <div>
+              <Label className="text-secondary-light">Valor Alvo (R$)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={newGoal.targetValue}
+                onChange={(e) => setNewGoal({...newGoal, targetValue: e.target.value})}
+                placeholder="1000.00"
+                className="bg-input border-border text-primary-light"
+              />
+            </div>
+            <div>
+              <Label className="text-secondary-light">Tipo</Label>
+              <select
+                value={newGoal.type}
+                onChange={(e) => setNewGoal({...newGoal, type: e.target.value})}
+                className="bg-input border-border text-primary-light w-full p-2 rounded"
+              >
+                <option value="sales">Vendas</option>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensal</option>
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  if (editingGoal) {
+                    updateGoalMutation.mutate({ id: editingGoal.id, data: newGoal });
+                  } else {
+                    createGoalMutation.mutate(newGoal);
+                  }
+                }}
+                disabled={!newGoal.attendantId || !newGoal.title || !newGoal.targetValue || 
+                         createGoalMutation.isPending || updateGoalMutation.isPending}
+                className="bg-success text-white hover:bg-success-dark flex-1"
+              >
+                {(createGoalMutation.isPending || updateGoalMutation.isPending) ? 
+                  "Salvando..." : (editingGoal ? "Atualizar" : "Criar Meta")}
+              </Button>
+              <Button
+                onClick={() => setShowGoalModal(false)}
+                variant="outline"
+                className="border-border text-secondary-light hover:bg-accent"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Achievement Modal */}
+      <Dialog open={showAchievementModal} onOpenChange={setShowAchievementModal}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-primary-light">
+              {editingAchievement ? 'Editar Conquista' : 'Nova Conquista'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-secondary-light">Atendente</Label>
+              <select
+                value={newAchievement.attendantId}
+                onChange={(e) => setNewAchievement({...newAchievement, attendantId: e.target.value})}
+                className="bg-input border-border text-primary-light w-full p-2 rounded"
+              >
+                <option value="">Selecione um atendente</option>
+                {attendants.map((attendant: Attendant) => (
+                  <option key={attendant.id} value={attendant.id}>{attendant.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label className="text-secondary-light">Título da Conquista</Label>
+              <Input
+                value={newAchievement.title}
+                onChange={(e) => setNewAchievement({...newAchievement, title: e.target.value})}
+                placeholder="Ex: Primeira Venda"
+                className="bg-input border-border text-primary-light"
+              />
+            </div>
+            <div>
+              <Label className="text-secondary-light">Descrição</Label>
+              <Input
+                value={newAchievement.description}
+                onChange={(e) => setNewAchievement({...newAchievement, description: e.target.value})}
+                placeholder="Descrição da conquista"
+                className="bg-input border-border text-primary-light"
+              />
+            </div>
+            <div>
+              <Label className="text-secondary-light">Pontos</Label>
+              <Input
+                type="number"
+                value={newAchievement.pointsAwarded}
+                onChange={(e) => setNewAchievement({...newAchievement, pointsAwarded: e.target.value})}
+                placeholder="25"
+                className="bg-input border-border text-primary-light"
+              />
+            </div>
+            <div>
+              <Label className="text-secondary-light">Cor da Medalha</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  type="color"
+                  value={newAchievement.badgeColor}
+                  onChange={(e) => setNewAchievement({...newAchievement, badgeColor: e.target.value})}
+                  className="w-12 h-8 p-1 bg-input border-border"
+                />
+                <Input
+                  value={newAchievement.badgeColor}
+                  onChange={(e) => setNewAchievement({...newAchievement, badgeColor: e.target.value})}
+                  placeholder="#10B981"
+                  className="bg-input border-border text-primary-light flex-1"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  if (editingAchievement) {
+                    updateAchievementMutation.mutate({ id: editingAchievement.id, data: newAchievement });
+                  } else {
+                    createAchievementMutation.mutate(newAchievement);
+                  }
+                }}
+                disabled={!newAchievement.attendantId || !newAchievement.title || !newAchievement.pointsAwarded || 
+                         createAchievementMutation.isPending || updateAchievementMutation.isPending}
+                className="bg-success text-white hover:bg-success-dark flex-1"
+              >
+                {(createAchievementMutation.isPending || updateAchievementMutation.isPending) ? 
+                  "Salvando..." : (editingAchievement ? "Atualizar" : "Criar Conquista")}
+              </Button>
+              <Button
+                onClick={() => setShowAchievementModal(false)}
+                variant="outline"
+                className="border-border text-secondary-light hover:bg-accent"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Attendant Details Modal */}
       <Dialog open={showAttendantDetails} onOpenChange={setShowAttendantDetails}>
