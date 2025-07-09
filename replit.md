@@ -36,12 +36,15 @@ Preferred communication style: Simple, everyday language.
 #### API Endpoints
 - `GET /api/attendants` - Retrieve all attendants
 - `GET /api/attendants/:id` - Retrieve specific attendant
+- `POST /api/attendants` - Create new attendant
+- `GET /api/sales` - Retrieve all sales
+- `GET /api/sales/attendant/:id` - Retrieve sales by attendant
 - `POST /api/sales` - Create new sale record
 
 #### Storage Layer
 - **Interface**: IStorage defining data access methods
-- **Implementation**: MemStorage for in-memory development data
-- **Future**: Can be extended to use actual database connections
+- **Implementation**: DatabaseStorage using PostgreSQL with Drizzle ORM
+- **Database**: PostgreSQL with Neon Database (serverless)
 
 #### UI Components
 - **Card-based Layout**: Clean, modern interface using shadcn/ui cards
