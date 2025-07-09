@@ -1,13 +1,16 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Lock, Eye, EyeOff } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
+import type { Attendant, Sale, Goal, Achievement } from "@shared/schema";
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -17,7 +20,94 @@ export default function Admin() {
     username: "",
     password: ""
   });
+  const [editingAttendant, setEditingAttendant] = useState<Attendant | null>(null);
+  const [newAttendant, setNewAttendant] = useState({ name: "", imageUrl: "" });
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Data queries
+  const { data: attendants = [], isLoading: attendantsLoading } = useQuery({
+    queryKey: ["/api/attendants"],
+    enabled: isAuthenticated
+  });
+
+  const { data: sales = [], isLoading: salesLoading } = useQuery({
+    queryKey: ["/api/sales"],
+    enabled: isAuthenticated
+  });
+
+  const { data: goals = [], isLoading: goalsLoading } = useQuery({
+    queryKey: ["/api/goals"],
+    enabled: isAuthenticated
+  });
+
+  const { data: achievements = [], isLoading: achievementsLoading } = useQuery({
+    queryKey: ["/api/achievements"],
+    enabled: isAuthenticated
+  });
+
+  // Mutations
+  const deleteAttendantMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/attendants/${id}`);
+      if (!response.ok) throw new Error("Failed to delete attendant");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+      toast({ title: "Atendente removido com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao remover atendente", variant: "destructive" });
+    }
+  });
+
+  const createAttendantMutation = useMutation({
+    mutationFn: async (data: { name: string; imageUrl: string }) => {
+      const response = await apiRequest("POST", "/api/attendants", { ...data, earnings: "0.00" });
+      if (!response.ok) throw new Error("Failed to create attendant");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+      setNewAttendant({ name: "", imageUrl: "" });
+      toast({ title: "Atendente criado com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao criar atendente", variant: "destructive" });
+    }
+  });
+
+  const deleteSaleMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/sales/${id}`);
+      if (!response.ok) throw new Error("Failed to delete sale");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/sales"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+      toast({ title: "Venda removida com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao remover venda", variant: "destructive" });
+    }
+  });
+
+  const deleteGoalMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/goals/${id}`);
+      if (!response.ok) throw new Error("Failed to delete goal");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/goals"] });
+      toast({ title: "Meta removida com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao remover meta", variant: "destructive" });
+    }
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,14 +217,14 @@ export default function Admin() {
       <Header />
       <Navigation />
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Admin Dashboard Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-3">
             <Shield className="text-danger" size={32} />
             <div>
-              <h2 className="text-2xl font-bold text-primary-light">Área do Gestor</h2>
-              <p className="text-secondary-light">Painel administrativo do sistema</p>
+              <h2 className="text-2xl font-bold text-primary-light">Painel do Gestor</h2>
+              <p className="text-secondary-light">Gerencie todos os aspectos do sistema</p>
             </div>
           </div>
           <Button 
@@ -146,86 +236,229 @@ export default function Admin() {
           </Button>
         </div>
 
-        {/* Admin Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="bg-card border-border hover:border-success/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-success/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Shield className="text-success" size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-primary-light mb-2">Controle de Acesso</h3>
-              <p className="text-secondary-light text-sm">Gerencie usuários e permissões do sistema</p>
-            </CardContent>
-          </Card>
+        {/* Management Tabs */}
+        <Tabs defaultValue="attendants" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 bg-card border-border">
+            <TabsTrigger value="attendants" className="flex items-center gap-2">
+              <Users size={16} />
+              Atendentes
+            </TabsTrigger>
+            <TabsTrigger value="sales" className="flex items-center gap-2">
+              <DollarSign size={16} />
+              Vendas
+            </TabsTrigger>
+            <TabsTrigger value="goals" className="flex items-center gap-2">
+              <Target size={16} />
+              Metas
+            </TabsTrigger>
+            <TabsTrigger value="achievements" className="flex items-center gap-2">
+              <Trophy size={16} />
+              Conquistas
+            </TabsTrigger>
+          </TabsList>
 
-          <Card className="bg-card border-border hover:border-info/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-info/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Shield className="text-info" size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-primary-light mb-2">Relatórios Avançados</h3>
-              <p className="text-secondary-light text-sm">Visualize relatórios detalhados de vendas</p>
-            </CardContent>
-          </Card>
+          {/* Attendants Management */}
+          <TabsContent value="attendants" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light flex items-center gap-2">
+                  <Plus size={20} />
+                  Adicionar Novo Atendente
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-secondary-light">Nome</Label>
+                    <Input
+                      value={newAttendant.name}
+                      onChange={(e) => setNewAttendant({...newAttendant, name: e.target.value})}
+                      placeholder="Nome do atendente"
+                      className="bg-input border-border text-primary-light"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-secondary-light">URL da Imagem</Label>
+                    <Input
+                      value={newAttendant.imageUrl}
+                      onChange={(e) => setNewAttendant({...newAttendant, imageUrl: e.target.value})}
+                      placeholder="https://exemplo.com/imagem.jpg"
+                      className="bg-input border-border text-primary-light"
+                    />
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => createAttendantMutation.mutate(newAttendant)}
+                  disabled={!newAttendant.name || createAttendantMutation.isPending}
+                  className="bg-success text-primary-light hover:bg-success-dark"
+                >
+                  {createAttendantMutation.isPending ? "Criando..." : "Criar Atendente"}
+                </Button>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-card border-border hover:border-warning/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-warning/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Shield className="text-warning" size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-primary-light mb-2">Configurações</h3>
-              <p className="text-secondary-light text-sm">Configure metas e parâmetros do sistema</p>
-            </CardContent>
-          </Card>
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light">Atendentes Cadastrados</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {attendantsLoading ? (
+                  <p className="text-secondary-light">Carregando...</p>
+                ) : (
+                  <div className="space-y-2">
+                    {attendants.map((attendant: Attendant) => (
+                      <div key={attendant.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={attendant.imageUrl} 
+                            alt={attendant.name}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                          <div>
+                            <h4 className="text-primary-light font-medium">{attendant.name}</h4>
+                            <p className="text-secondary-light text-sm">R$ {attendant.earnings}</p>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => deleteAttendantMutation.mutate(attendant.id)}
+                          disabled={deleteAttendantMutation.isPending}
+                          variant="destructive"
+                          size="sm"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          <Card className="bg-card border-border hover:border-danger/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-danger/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Shield className="text-danger" size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-primary-light mb-2">Backup de Dados</h3>
-              <p className="text-secondary-light text-sm">Realize backup e restore dos dados</p>
-            </CardContent>
-          </Card>
+          {/* Sales Management */}
+          <TabsContent value="sales" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light">Histórico de Vendas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {salesLoading ? (
+                  <p className="text-secondary-light">Carregando...</p>
+                ) : (
+                  <div className="space-y-2">
+                    {sales.map((sale: Sale) => {
+                      const attendant = attendants.find((a: Attendant) => a.id === sale.attendantId);
+                      return (
+                        <div key={sale.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                          <div>
+                            <h4 className="text-primary-light font-medium">R$ {sale.value}</h4>
+                            <p className="text-secondary-light text-sm">
+                              {attendant?.name} - {new Date(sale.createdAt).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => deleteSaleMutation.mutate(sale.id)}
+                            disabled={deleteSaleMutation.isPending}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          <Card className="bg-card border-border hover:border-success/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-success/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Shield className="text-success" size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-primary-light mb-2">Integrações</h3>
-              <p className="text-secondary-light text-sm">Configure integrações com outros sistemas</p>
-            </CardContent>
-          </Card>
+          {/* Goals Management */}
+          <TabsContent value="goals" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light">Metas Ativas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {goalsLoading ? (
+                  <p className="text-secondary-light">Carregando...</p>
+                ) : (
+                  <div className="space-y-2">
+                    {goals.map((goal: Goal) => {
+                      const attendant = attendants.find((a: Attendant) => a.id === goal.attendantId);
+                      const progress = (parseFloat(goal.currentValue) / parseFloat(goal.targetValue)) * 100;
+                      return (
+                        <div key={goal.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                          <div className="flex-1">
+                            <h4 className="text-primary-light font-medium">{goal.title}</h4>
+                            <p className="text-secondary-light text-sm">
+                              {attendant?.name} - R$ {goal.currentValue} / R$ {goal.targetValue}
+                            </p>
+                            <div className="w-full bg-secondary-dark rounded-full h-2 mt-2">
+                              <div 
+                                className="bg-success h-2 rounded-full transition-all"
+                                style={{ width: `${Math.min(progress, 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => deleteGoalMutation.mutate(goal.id)}
+                            disabled={deleteGoalMutation.isPending}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          <Card className="bg-card border-border hover:border-info/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-info/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Shield className="text-info" size={24} />
-              </div>
-              <h3 className="text-lg font-bold text-primary-light mb-2">Auditoria</h3>
-              <p className="text-secondary-light text-sm">Visualize logs e atividades do sistema</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <Card className="mt-6 bg-card border-border">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-bold text-primary-light mb-4">Ações Rápidas</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button className="bg-success text-primary-light hover:bg-success-dark">
-                Exportar Relatório Mensal
-              </Button>
-              <Button className="bg-info text-primary-light hover:bg-blue-600">
-                Resetar Dados Demo
-              </Button>
-              <Button className="bg-warning text-primary-light hover:bg-yellow-600">
-                Configurar Metas
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Achievements Management */}
+          <TabsContent value="achievements" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light">Conquistas Recentes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {achievementsLoading ? (
+                  <p className="text-secondary-light">Carregando...</p>
+                ) : (
+                  <div className="space-y-2">
+                    {achievements.map((achievement: Achievement) => {
+                      const attendant = attendants.find((a: Attendant) => a.id === achievement.attendantId);
+                      return (
+                        <div key={achievement.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-12 h-12 rounded-full flex items-center justify-center"
+                              style={{ backgroundColor: achievement.badgeColor }}
+                            >
+                              <Trophy className="text-white" size={20} />
+                            </div>
+                            <div>
+                              <h4 className="text-primary-light font-medium">{achievement.title}</h4>
+                              <p className="text-secondary-light text-sm">
+                                {attendant?.name} - {achievement.pointsAwarded} pontos
+                              </p>
+                            </div>
+                          </div>
+                          <span className="text-secondary-light text-sm">
+                            {new Date(achievement.achievedAt).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

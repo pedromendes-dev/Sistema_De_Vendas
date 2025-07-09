@@ -8,11 +8,13 @@ export interface IStorage {
   getAttendant(id: number): Promise<Attendant | undefined>;
   createAttendant(attendant: InsertAttendant): Promise<Attendant>;
   updateAttendantEarnings(id: number, earnings: string): Promise<Attendant | undefined>;
+  deleteAttendant(id: number): Promise<boolean>;
   
   // Sales
   getAllSales(): Promise<Sale[]>;
   getSalesByAttendant(attendantId: number): Promise<Sale[]>;
   createSale(sale: InsertSale): Promise<Sale>;
+  deleteSale(id: number): Promise<boolean>;
   
   // Admins
   getAdminByUsername(username: string): Promise<Admin | undefined>;
@@ -24,6 +26,7 @@ export interface IStorage {
   createGoal(goal: InsertGoal): Promise<Goal>;
   updateGoalProgress(id: number, currentValue: string): Promise<Goal | undefined>;
   deactivateGoal(id: number): Promise<Goal | undefined>;
+  deleteGoal(id: number): Promise<boolean>;
   
   // Achievements
   getAllAchievements(): Promise<Achievement[]>;
@@ -65,6 +68,24 @@ export class DatabaseStorage implements IStorage {
     return attendant || undefined;
   }
 
+  async deleteAttendant(id: number): Promise<boolean> {
+    try {
+      // Delete related sales first
+      await db.delete(sales).where(eq(sales.attendantId, id));
+      // Delete related goals
+      await db.delete(goals).where(eq(goals.attendantId, id));
+      // Delete related achievements
+      await db.delete(achievements).where(eq(achievements.attendantId, id));
+      // Delete related leaderboard entries
+      await db.delete(leaderboard).where(eq(leaderboard.attendantId, id));
+      // Finally delete the attendant
+      const result = await db.delete(attendants).where(eq(attendants.id, id));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   async getAllSales(): Promise<Sale[]> {
     const result = await db.select().from(sales);
     return result;
@@ -91,6 +112,27 @@ export class DatabaseStorage implements IStorage {
     }
     
     return sale;
+  }
+
+  async deleteSale(id: number): Promise<boolean> {
+    try {
+      // Get the sale first to update attendant earnings
+      const [sale] = await db.select().from(sales).where(eq(sales.id, id));
+      if (sale) {
+        const attendant = await this.getAttendant(sale.attendantId);
+        if (attendant) {
+          const currentEarnings = parseFloat(attendant.earnings);
+          const saleValue = parseFloat(sale.value);
+          const newEarnings = Math.max(0, currentEarnings - saleValue).toFixed(2);
+          await this.updateAttendantEarnings(sale.attendantId, newEarnings);
+        }
+      }
+      
+      await db.delete(sales).where(eq(sales.id, id));
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   async getAdminByUsername(username: string): Promise<Admin | undefined> {
@@ -132,6 +174,15 @@ export class DatabaseStorage implements IStorage {
       .where(eq(goals.id, id))
       .returning();
     return goal || undefined;
+  }
+
+  async deleteGoal(id: number): Promise<boolean> {
+    try {
+      await db.delete(goals).where(eq(goals.id, id));
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   // Achievements methods

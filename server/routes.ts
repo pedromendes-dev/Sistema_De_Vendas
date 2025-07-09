@@ -121,22 +121,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete attendant
+  app.delete("/api/attendants/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteAttendant(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Attendant not found" });
+      }
+      res.json({ message: "Attendant deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete attendant" });
+    }
+  });
+
+  // Delete sale
+  app.delete("/api/sales/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteSale(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Sale not found" });
+      }
+      res.json({ message: "Sale deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete sale" });
+    }
+  });
+
+  // Delete goal
+  app.delete("/api/goals/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteGoal(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Goal not found" });
+      }
+      res.json({ message: "Goal deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete goal" });
+    }
+  });
+
   // Admin authentication
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      
-      console.log("Login attempt:", { username, password });
       
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
       }
       
       const admin = await storage.getAdminByUsername(username);
-      console.log("Found admin:", admin);
       
       if (!admin || admin.password !== password) {
-        console.log("Password comparison:", { provided: password, stored: admin?.password });
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
@@ -146,7 +184,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         admin: { id: admin.id, username: admin.username }
       });
     } catch (error) {
-      console.error("Login error:", error);
       res.status(500).json({ message: "Login failed" });
     }
   });
