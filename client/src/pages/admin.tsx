@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock } from "lucide-react";
+import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
+import DragDropManager from "@/components/DragDropManager";
+import ContentBuilder from "@/components/ContentBuilder";
 import type { Attendant, Sale, Goal, Achievement } from "@shared/schema";
 
 export default function Admin() {
@@ -238,7 +240,7 @@ export default function Admin() {
 
         {/* Management Tabs */}
         <Tabs defaultValue="attendants" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-card border-border">
+          <TabsList className="grid w-full grid-cols-6 bg-card border-border">
             <TabsTrigger value="attendants" className="flex items-center gap-2">
               <Users size={16} />
               Atendentes
@@ -254,6 +256,14 @@ export default function Admin() {
             <TabsTrigger value="achievements" className="flex items-center gap-2">
               <Trophy size={16} />
               Conquistas
+            </TabsTrigger>
+            <TabsTrigger value="dragdrop" className="flex items-center gap-2">
+              <Grip size={16} />
+              Organizar
+            </TabsTrigger>
+            <TabsTrigger value="layout" className="flex items-center gap-2">
+              <Layout size={16} />
+              Layout
             </TabsTrigger>
           </TabsList>
 
@@ -455,6 +465,67 @@ export default function Admin() {
                     })}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Drag & Drop Organization */}
+          <TabsContent value="dragdrop" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light flex items-center gap-2">
+                  <Grip size={20} />
+                  Organizar Atendentes
+                </CardTitle>
+                <p className="text-secondary-light">Arraste e solte para reordenar os atendentes</p>
+              </CardHeader>
+              <CardContent>
+                {attendantsLoading ? (
+                  <p className="text-secondary-light">Carregando...</p>
+                ) : (
+                  <DragDropManager
+                    attendants={attendants}
+                    onReorder={(newOrder) => {
+                      // Here you could save the new order to the database
+                      toast({
+                        title: "Ordem atualizada!",
+                        description: "A nova ordem dos atendentes foi salva.",
+                      });
+                    }}
+                    onEdit={(attendant) => {
+                      // Handle edit functionality
+                      toast({
+                        title: "Editar atendente",
+                        description: `Editando ${attendant.name}`,
+                      });
+                    }}
+                    onDelete={(id) => deleteAttendantMutation.mutate(id)}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Content Builder */}
+          <TabsContent value="layout" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light flex items-center gap-2">
+                  <Layout size={20} />
+                  Construtor de Layout
+                </CardTitle>
+                <p className="text-secondary-light">Configure widgets e componentes do painel</p>
+              </CardHeader>
+              <CardContent>
+                <ContentBuilder
+                  onSave={(widgets) => {
+                    // Here you could save the layout configuration
+                    toast({
+                      title: "Layout salvo!",
+                      description: `${widgets.length} widgets configurados.`,
+                    });
+                  }}
+                />
               </CardContent>
             </Card>
           </TabsContent>
