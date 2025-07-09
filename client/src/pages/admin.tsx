@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,27 @@ export default function Admin() {
   const [newAttendant, setNewAttendant] = useState({ name: "", imageUrl: "" });
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Check for saved authentication state on component mount
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('admin_authenticated');
+    const authTimestamp = localStorage.getItem('admin_auth_timestamp');
+    
+    if (savedAuth === 'true' && authTimestamp) {
+      const authTime = parseInt(authTimestamp);
+      const currentTime = Date.now();
+      const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+      
+      // Check if authentication is still valid (within 1 hour)
+      if (currentTime - authTime < oneHour) {
+        setIsAuthenticated(true);
+      } else {
+        // Clear expired authentication
+        localStorage.removeItem('admin_authenticated');
+        localStorage.removeItem('admin_auth_timestamp');
+      }
+    }
+  }, []);
 
   // Data queries
   const { data: attendants = [], isLoading: attendantsLoading } = useQuery({
@@ -127,6 +148,11 @@ export default function Admin() {
       if (response.ok) {
         const result = await response.json();
         setIsAuthenticated(true);
+        
+        // Save authentication state to localStorage
+        localStorage.setItem('admin_authenticated', 'true');
+        localStorage.setItem('admin_auth_timestamp', Date.now().toString());
+        
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo à área do gestor.",
@@ -151,6 +177,16 @@ export default function Admin() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('admin_authenticated');
+    localStorage.removeItem('admin_auth_timestamp');
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado do painel administrativo",
+    });
   };
 
   if (!isAuthenticated) {
@@ -238,10 +274,11 @@ export default function Admin() {
             </div>
           </div>
           <Button 
-            onClick={() => setIsAuthenticated(false)}
+            onClick={handleLogout}
             variant="outline" 
             className="border-border text-secondary-light hover:text-primary-light"
           >
+            <Lock size={16} className="mr-2" />
             Sair
           </Button>
         </div>
