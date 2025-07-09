@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -25,6 +26,8 @@ export default function Admin() {
   const [editingAttendant, setEditingAttendant] = useState<Attendant | null>(null);
   const [newAttendant, setNewAttendant] = useState({ name: "", imageUrl: "" });
   const [newAdmin, setNewAdmin] = useState({ username: "", password: "", email: "", role: "admin" });
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editAttendantData, setEditAttendantData] = useState({ name: "", imageUrl: "" });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -75,6 +78,22 @@ export default function Admin() {
     enabled: isAuthenticated
   });
 
+  // Handle edit attendant
+  const handleEditAttendant = (attendant: Attendant) => {
+    setEditingAttendant(attendant);
+    setEditAttendantData({ name: attendant.name, imageUrl: attendant.imageUrl });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateAttendant = () => {
+    if (editingAttendant) {
+      updateAttendantMutation.mutate({ 
+        id: editingAttendant.id, 
+        data: editAttendantData 
+      });
+    }
+  };
+
   // Mutations
   const deleteAttendantMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -104,6 +123,24 @@ export default function Admin() {
     },
     onError: () => {
       toast({ title: "Erro ao criar atendente", variant: "destructive" });
+    }
+  });
+
+  const updateAttendantMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: { name: string; imageUrl: string } }) => {
+      const response = await apiRequest("PUT", `/api/attendants/${id}`, data);
+      if (!response.ok) throw new Error("Failed to update attendant");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+      setShowEditModal(false);
+      setEditingAttendant(null);
+      setEditAttendantData({ name: "", imageUrl: "" });
+      toast({ title: "Atendente atualizado com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar atendente", variant: "destructive" });
     }
   });
 
@@ -440,14 +477,24 @@ export default function Admin() {
                             <p className="text-secondary-light text-sm">R$ {attendant.earnings}</p>
                           </div>
                         </div>
-                        <Button
-                          onClick={() => deleteAttendantMutation.mutate(attendant.id)}
-                          disabled={deleteAttendantMutation.isPending}
-                          variant="destructive"
-                          size="sm"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => handleEditAttendant(attendant)}
+                            variant="outline"
+                            size="sm"
+                            className="border-info text-info hover:bg-info hover:text-white"
+                          >
+                            <Edit size={16} />
+                          </Button>
+                          <Button
+                            onClick={() => deleteAttendantMutation.mutate(attendant.id)}
+                            disabled={deleteAttendantMutation.isPending}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -759,6 +806,61 @@ export default function Admin() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Edit Attendant Modal */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-primary-light">Editar Atendente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-secondary-light">Nome</Label>
+              <Input
+                value={editAttendantData.name}
+                onChange={(e) => setEditAttendantData({...editAttendantData, name: e.target.value})}
+                placeholder="Nome do atendente"
+                className="bg-input border-border text-primary-light"
+              />
+            </div>
+            <div>
+              <Label className="text-secondary-light">URL da Imagem</Label>
+              <Input
+                value={editAttendantData.imageUrl}
+                onChange={(e) => setEditAttendantData({...editAttendantData, imageUrl: e.target.value})}
+                placeholder="https://exemplo.com/imagem.jpg"
+                className="bg-input border-border text-primary-light"
+              />
+            </div>
+            {editAttendantData.imageUrl && (
+              <div>
+                <Label className="text-secondary-light">Prévia da Imagem</Label>
+                <img 
+                  src={editAttendantData.imageUrl} 
+                  alt="Prévia"
+                  className="w-20 h-20 rounded-full object-cover border-2 border-border"
+                />
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button
+                onClick={handleUpdateAttendant}
+                disabled={!editAttendantData.name || updateAttendantMutation.isPending}
+                className="bg-success text-white hover:bg-success-dark"
+              >
+                {updateAttendantMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+              <Button
+                onClick={() => setShowEditModal(false)}
+                variant="outline"
+                className="border-border text-secondary-light hover:bg-accent"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -29,6 +29,7 @@ export interface IStorage {
   getAllAttendants(): Promise<Attendant[]>;
   getAttendant(id: number): Promise<Attendant | undefined>;
   createAttendant(attendant: InsertAttendant): Promise<Attendant>;
+  updateAttendant(id: number, updates: Partial<Attendant>): Promise<Attendant | undefined>;
   updateAttendantEarnings(id: number, earnings: string): Promise<Attendant | undefined>;
   deleteAttendant(id: number): Promise<boolean>;
   
@@ -94,6 +95,15 @@ export class DatabaseStorage implements IStorage {
       .values(insertAttendant)
       .returning();
     return attendant;
+  }
+
+  async updateAttendant(id: number, updates: Partial<Attendant>): Promise<Attendant | undefined> {
+    const [attendant] = await db
+      .update(attendants)
+      .set(updates)
+      .where(eq(attendants.id, id))
+      .returning();
+    return attendant || undefined;
   }
 
   async updateAttendantEarnings(id: number, earnings: string): Promise<Attendant | undefined> {

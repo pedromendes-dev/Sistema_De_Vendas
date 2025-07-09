@@ -75,6 +75,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update attendant
+  app.put("/api/attendants/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { name, imageUrl } = req.body;
+      
+      const attendant = await storage.getAttendant(id);
+      if (!attendant) {
+        return res.status(404).json({ message: "Attendant not found" });
+      }
+      
+      const updatedAttendant = await storage.updateAttendant(id, { name, imageUrl });
+      if (!updatedAttendant) {
+        return res.status(500).json({ message: "Failed to update attendant" });
+      }
+      
+      res.json(updatedAttendant);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update attendant" });
+    }
+  });
+
+  // Delete attendant
+  app.delete("/api/attendants/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteAttendant(id);
+      if (!success) {
+        return res.status(404).json({ message: "Attendant not found" });
+      }
+      res.json({ message: "Attendant deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete attendant" });
+    }
+  });
+
   // Create new sale
   app.post("/api/sales", async (req, res) => {
     try {
@@ -184,6 +220,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(sales);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch sales" });
+    }
+  });
+
+  // Delete sale
+  app.delete("/api/sales/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteSale(id);
+      if (!success) {
+        return res.status(404).json({ message: "Sale not found" });
+      }
+      res.json({ message: "Sale deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete sale" });
     }
   });
 
@@ -487,6 +537,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(goal);
     } catch (error) {
       res.status(500).json({ message: "Failed to deactivate goal" });
+    }
+  });
+
+  app.delete("/api/goals/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteGoal(id);
+      if (!success) {
+        return res.status(404).json({ message: "Goal not found" });
+      }
+      res.json({ message: "Goal deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete goal" });
     }
   });
 
