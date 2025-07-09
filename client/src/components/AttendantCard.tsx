@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DollarSign, User, TrendingUp } from "lucide-react";
+import { DollarSign, User, TrendingUp, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Attendant } from "@shared/schema";
 
@@ -34,46 +34,50 @@ export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: At
   };
 
   return (
-    <Card className="mobile-native-card hover:border-success/50 transition-all duration-200 h-full w-full mobile-flutter-scale mobile-lazy-load">
-      <CardHeader className="text-center p-responsive mobile-touch-optimized mobile-native-text">
-        <div className="relative mx-auto mb-3 sm:mb-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full overflow-hidden bg-secondary-dark border-2 border-success/20 mx-auto mobile-gpu-accelerated">
+    <Card className="bg-gradient-to-br from-card to-card/80 border-border hover:border-success/50 transition-all duration-500 shadow-lg hover:shadow-2xl group backdrop-blur-sm h-full">
+      <CardContent className="p-6 text-center space-y-6 h-full flex flex-col">
+        
+        {/* Avatar Section */}
+        <div className="relative mx-auto w-24 h-24">
+          <div className="absolute inset-0 bg-gradient-to-r from-success to-info rounded-full opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
+          <div className="relative w-full h-full rounded-full overflow-hidden shadow-xl ring-4 ring-success/20 group-hover:ring-success/60 transition-all duration-500 group-hover:scale-110">
             {attendant.imageUrl ? (
               <img 
                 src={attendant.imageUrl} 
                 alt={attendant.name}
-                className="w-full h-full object-cover mobile-gpu-accelerated"
+                className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <User className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-secondary-light" />
+              <div className="w-full h-full bg-accent flex items-center justify-center">
+                <User className="w-10 h-10 text-secondary-light" />
               </div>
             )}
           </div>
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-success rounded-full border-2 border-card animate-pulse"></div>
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-success to-info rounded-full border-3 border-card shadow-lg animate-pulse"></div>
         </div>
-        <CardTitle className="text-responsive-xl font-bold text-primary-light truncate mobile-text-optimized">
-          {attendant.name}
-        </CardTitle>
-        <div className="flex items-center justify-center gap-1 sm:gap-2 text-success">
-          <DollarSign size={14} className="sm:w-4 sm:h-4" />
-          <span className="text-responsive-xl font-bold mobile-text-optimized">
-            R$ {parseFloat(attendant.earnings).toFixed(2)}
-          </span>
+        
+        {/* Info Section */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-bold text-primary-light group-hover:text-success transition-colors duration-300">
+            {attendant.name}
+          </h3>
+          <div className="bg-accent/30 rounded-lg p-3 border border-border/50">
+            <p className="text-sm text-secondary-light mb-1">Faturamento Total</p>
+            <p className="text-xl font-bold text-success flex items-center justify-center gap-1">
+              <DollarSign size={20} />
+              R$ {Number(attendant.earnings || 0).toFixed(2)}
+            </p>
+          </div>
         </div>
-        <div className="flex items-center justify-center gap-2 mt-2 text-xs text-secondary-light">
-          <div className="w-2 h-2 bg-success rounded-full"></div>
-          <span>Online</span>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="p-responsive mobile-touch-optimized">
-        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+
+        {/* Sale Form */}
+        <form onSubmit={handleSubmit} className="space-y-4 flex-1 flex flex-col justify-end">
           <div className="space-y-2">
-            <Label htmlFor={`sale-${attendant.id}`} className="text-primary-light text-xs sm:text-sm mobile-text-optimized">
-              Valor da Venda
+            <Label htmlFor={`sale-${attendant.id}`} className="text-secondary-light text-sm">
+              Nova Venda
             </Label>
             <div className="relative">
+              <DollarSign size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-light" />
               <Input
                 id={`sale-${attendant.id}`}
                 type="number"
@@ -81,64 +85,26 @@ export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: At
                 min="0"
                 value={saleValue}
                 onChange={(e) => setSaleValue(e.target.value)}
-                placeholder="0.00"
-                className="
-                  bg-secondary-dark 
-                  border-gray-600 
-                  text-primary-light 
-                  text-center 
-                  text-responsive-xl 
-                  input-responsive
-                  mobile-native-input
-                  mobile-native-text
-                  pl-8
-                  focus:ring-2 
-                  focus:ring-success/50 
-                  focus:border-success
-                  transition-all
-                  duration-200
-                "
-                disabled={isLoading}
-                autoComplete="off"
-                inputMode="decimal"
+                placeholder="0,00"
+                className="pl-10 bg-input border-border text-primary-light text-center text-lg focus:ring-2 focus:ring-success/50 focus:border-success transition-all duration-200"
               />
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-success font-semibold">
-                R$
-              </div>
             </div>
           </div>
           
           <Button 
             type="submit" 
-            className="
-              w-full 
-              bg-success 
-              hover:bg-success-dark 
-              text-white 
-              font-semibold 
-              button-responsive
-              mobile-native-button
-              mobile-haptic-feedback
-              mobile-native-text
-              shadow-lg
-              hover:shadow-xl
-              active:shadow-md
-              transition-all
-              duration-200
-              disabled:opacity-50
-              disabled:cursor-not-allowed
-            "
-            disabled={isLoading}
+            disabled={!saleValue || isLoading}
+            className="w-full bg-gradient-to-r from-success to-info hover:from-success/90 hover:to-info/90 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span className="text-xs sm:text-sm">Registrando...</span>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Registrando...
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <TrendingUp size={14} className="sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">Registrar Venda</span>
+                <Plus size={18} />
+                Registrar Venda
               </div>
             )}
           </Button>

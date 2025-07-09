@@ -1,4 +1,4 @@
-import NotificationSystem from './NotificationSystem';
+import NotificationCenter from './NotificationCenter';
 
 export default function Header() {
 
@@ -33,7 +33,7 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 mobile-fade-in" style={{ animationDelay: '0.1s' }}>
-            <NotificationSystem />
+            <NotificationCenter />
           </div>
         </div>
       </div>
