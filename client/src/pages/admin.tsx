@@ -5,35 +5,49 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Shield, Lock, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
-import DemoWarning from "@/components/DemoWarning";
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [credentials, setCredentials] = useState({
     username: "",
     password: ""
   });
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    // Demo credentials
-    if (credentials.username === "admin" && credentials.password === "senha123") {
-      setIsAuthenticated(true);
+    try {
+      const response = await apiRequest("POST", "/api/admin/login", credentials);
+      const result = await response.json();
+      
+      if (response.ok) {
+        setIsAuthenticated(true);
+        toast({
+          title: "Login realizado com sucesso!",
+          description: "Bem-vindo à área do gestor.",
+        });
+      } else {
+        toast({
+          title: "Credenciais inválidas",
+          description: result.message || "Usuário ou senha incorretos.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Login realizado com sucesso!",
-        description: "Bem-vindo à área do gestor.",
-      });
-    } else {
-      toast({
-        title: "Credenciais inválidas",
-        description: "Usuário ou senha incorretos.",
+        title: "Erro no login",
+        description: "Ocorreu um erro ao tentar fazer login. Tente novamente.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,8 +58,6 @@ export default function Admin() {
         <Navigation />
 
         <main className="max-w-md mx-auto px-4 py-16">
-          <DemoWarning />
-
           <Card className="bg-card border-border">
             <CardContent className="p-8">
               <div className="text-center mb-8">
@@ -94,18 +106,13 @@ export default function Admin() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-success text-primary-light hover:bg-success-dark"
+                  disabled={isLoading}
+                  className="w-full bg-success text-primary-light hover:bg-success-dark disabled:opacity-50"
                 >
                   <Lock size={18} className="mr-2" />
-                  Acessar Painel
+                  {isLoading ? "Verificando..." : "Acessar Painel"}
                 </Button>
               </form>
-
-              <div className="mt-6 p-4 bg-warning/10 border border-warning/30 rounded-lg">
-                <p className="text-sm text-warning font-medium mb-1">Dados para demonstração:</p>
-                <p className="text-sm text-secondary-light">Usuário: <code className="text-warning">admin</code></p>
-                <p className="text-sm text-secondary-light">Senha: <code className="text-warning">senha123</code></p>
-              </div>
             </CardContent>
           </Card>
         </main>
@@ -119,8 +126,6 @@ export default function Admin() {
       <Navigation />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <DemoWarning />
-
         {/* Admin Dashboard Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-3">

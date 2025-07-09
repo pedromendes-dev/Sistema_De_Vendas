@@ -1,4 +1,4 @@
-import { attendants, sales, type Attendant, type InsertAttendant, type Sale, type InsertSale } from "@shared/schema";
+import { attendants, sales, admins, type Attendant, type InsertAttendant, type Sale, type InsertSale, type Admin } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -13,6 +13,9 @@ export interface IStorage {
   getAllSales(): Promise<Sale[]>;
   getSalesByAttendant(attendantId: number): Promise<Sale[]>;
   createSale(sale: InsertSale): Promise<Sale>;
+  
+  // Admins
+  getAdminByUsername(username: string): Promise<Admin | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -69,6 +72,11 @@ export class DatabaseStorage implements IStorage {
     }
     
     return sale;
+  }
+
+  async getAdminByUsername(username: string): Promise<Admin | undefined> {
+    const [admin] = await db.select().from(admins).where(eq(admins.username, username));
+    return admin || undefined;
   }
 }
 

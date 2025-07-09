@@ -9,7 +9,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { DollarSign } from "lucide-react";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
-import DemoWarning from "@/components/DemoWarning";
 import type { Attendant } from "@shared/schema";
 
 export default function Home() {
@@ -87,8 +86,6 @@ export default function Home() {
       <Navigation />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <DemoWarning />
-
         {/* Sales Registration */}
         <Card className="mb-8 bg-card border-border">
           <CardContent className="p-6">

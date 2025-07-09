@@ -4,7 +4,6 @@ import { Progress } from "@/components/ui/progress";
 import { Trophy, Crown, Medal, Award } from "lucide-react";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
-import DemoWarning from "@/components/DemoWarning";
 import type { Attendant, Sale } from "@shared/schema";
 
 export default function Ranking() {
@@ -83,8 +82,6 @@ export default function Ranking() {
       <Navigation />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <DemoWarning />
-
         {/* Ranking Header */}
         <div className="flex items-center gap-3 mb-6">
           <Trophy className="text-gold" size={32} />

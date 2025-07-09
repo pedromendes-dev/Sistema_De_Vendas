@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
-import DemoWarning from "@/components/DemoWarning";
 import type { Attendant, Sale } from "@shared/schema";
 
 export default function Attendants() {
@@ -114,8 +113,6 @@ export default function Attendants() {
       <Navigation />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <DemoWarning />
-
         {/* Attendants Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-3">

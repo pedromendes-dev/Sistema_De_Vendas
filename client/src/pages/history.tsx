@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { History, TrendingUp, BarChart3, DollarSign, Calendar, Filter, Plus } from "lucide-react";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
-import DemoWarning from "@/components/DemoWarning";
 import type { Attendant, Sale } from "@shared/schema";
 
 export default function HistoryPage() {
@@ -70,8 +69,6 @@ export default function HistoryPage() {
       <Navigation />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        <DemoWarning />
-
         {/* History Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-3">
