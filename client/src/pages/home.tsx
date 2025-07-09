@@ -43,27 +43,31 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-primary-dark mobile-container">
+    <div className="min-h-screen bg-primary-dark mobile-container mobile-native-scroll mobile-ios-safe">
       <Header />
       <Navigation />
 
-      <main className="mobile-safe max-w-6xl py-4 sm:py-6 lg:py-8">
-        <div className="grid-mobile-center w-full">
+      <main className="mobile-safe max-w-6xl py-4 sm:py-6 lg:py-8 mobile-native-scroll">
+        <div className="mobile-grid-enhanced mobile-flutter-slide">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-card border-border w-full max-w-sm">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="space-y-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gray-700 rounded-full mx-auto animate-pulse" />
-                    <div className="h-4 bg-gray-700 rounded animate-pulse" />
-                    <div className="h-3 bg-gray-700 rounded animate-pulse w-3/4 mx-auto" />
+              <Card key={i} className="mobile-native-card w-full max-w-sm mobile-lazy-load">
+                <CardContent className="p-responsive mobile-touch-optimized">
+                  <div className="space-y-4 mobile-flutter-scale" style={{ animationDelay: `${i * 0.1}s` }}>
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gray-700 rounded-full mx-auto animate-pulse mobile-gpu-accelerated" />
+                    <div className="h-4 bg-gray-700 rounded animate-pulse mobile-gpu-accelerated" />
+                    <div className="h-3 bg-gray-700 rounded animate-pulse w-3/4 mx-auto mobile-gpu-accelerated" />
                   </div>
                 </CardContent>
               </Card>
             ))
           ) : (
-            attendants?.map((attendant: Attendant) => (
-              <div key={attendant.id} className="w-full max-w-sm">
+            attendants?.map((attendant: Attendant, index) => (
+              <div 
+                key={attendant.id} 
+                className="w-full max-w-sm mobile-flutter-scale mobile-will-change mobile-gesture-handler"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <AttendantCard 
                   attendant={attendant} 
                   onSaleSubmit={handleSaleSubmit}

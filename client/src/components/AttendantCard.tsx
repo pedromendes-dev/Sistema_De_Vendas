@@ -34,15 +34,15 @@ export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: At
   };
 
   return (
-    <Card className="bg-card border-border hover:border-success/50 transition-all duration-200 h-full w-full">
-      <CardHeader className="text-center p-3 sm:p-4 lg:p-6">
+    <Card className="mobile-native-card hover:border-success/50 transition-all duration-200 h-full w-full mobile-flutter-scale mobile-lazy-load">
+      <CardHeader className="text-center p-responsive mobile-touch-optimized mobile-native-text">
         <div className="relative mx-auto mb-3 sm:mb-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full overflow-hidden bg-secondary-dark border-2 border-success/20 mx-auto">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full overflow-hidden bg-secondary-dark border-2 border-success/20 mx-auto mobile-gpu-accelerated">
             {attendant.imageUrl ? (
               <img 
                 src={attendant.imageUrl} 
                 alt={attendant.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover mobile-gpu-accelerated"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
@@ -50,40 +50,84 @@ export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: At
               </div>
             )}
           </div>
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-success rounded-full border-2 border-card animate-pulse"></div>
         </div>
-        <CardTitle className="text-base sm:text-lg lg:text-xl font-bold text-primary-light truncate">
+        <CardTitle className="text-responsive-xl font-bold text-primary-light truncate mobile-text-optimized">
           {attendant.name}
         </CardTitle>
         <div className="flex items-center justify-center gap-1 sm:gap-2 text-success">
           <DollarSign size={14} className="sm:w-4 sm:h-4" />
-          <span className="text-base sm:text-lg lg:text-xl font-bold">
+          <span className="text-responsive-xl font-bold mobile-text-optimized">
             R$ {parseFloat(attendant.earnings).toFixed(2)}
           </span>
         </div>
+        <div className="flex items-center justify-center gap-2 mt-2 text-xs text-secondary-light">
+          <div className="w-2 h-2 bg-success rounded-full"></div>
+          <span>Online</span>
+        </div>
       </CardHeader>
       
-      <CardContent className="p-3 sm:p-4 lg:p-6">
+      <CardContent className="p-responsive mobile-touch-optimized">
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div className="space-y-2">
-            <Label htmlFor={`sale-${attendant.id}`} className="text-primary-light text-xs sm:text-sm">
+            <Label htmlFor={`sale-${attendant.id}`} className="text-primary-light text-xs sm:text-sm mobile-text-optimized">
               Valor da Venda
             </Label>
-            <Input
-              id={`sale-${attendant.id}`}
-              type="number"
-              step="0.01"
-              min="0"
-              value={saleValue}
-              onChange={(e) => setSaleValue(e.target.value)}
-              placeholder="0.00"
-              className="bg-secondary-dark border-gray-600 text-primary-light text-center text-base sm:text-lg lg:text-xl h-10 sm:h-11 lg:h-12"
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <Input
+                id={`sale-${attendant.id}`}
+                type="number"
+                step="0.01"
+                min="0"
+                value={saleValue}
+                onChange={(e) => setSaleValue(e.target.value)}
+                placeholder="0.00"
+                className="
+                  bg-secondary-dark 
+                  border-gray-600 
+                  text-primary-light 
+                  text-center 
+                  text-responsive-xl 
+                  input-responsive
+                  mobile-native-input
+                  mobile-native-text
+                  pl-8
+                  focus:ring-2 
+                  focus:ring-success/50 
+                  focus:border-success
+                  transition-all
+                  duration-200
+                "
+                disabled={isLoading}
+                autoComplete="off"
+                inputMode="decimal"
+              />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-success font-semibold">
+                R$
+              </div>
+            </div>
           </div>
           
           <Button 
             type="submit" 
-            className="w-full bg-success hover:bg-success-dark text-white font-medium py-2 sm:py-3 text-xs sm:text-sm lg:text-base"
+            className="
+              w-full 
+              bg-success 
+              hover:bg-success-dark 
+              text-white 
+              font-semibold 
+              button-responsive
+              mobile-native-button
+              mobile-haptic-feedback
+              mobile-native-text
+              shadow-lg
+              hover:shadow-xl
+              active:shadow-md
+              transition-all
+              duration-200
+              disabled:opacity-50
+              disabled:cursor-not-allowed
+            "
             disabled={isLoading}
           >
             {isLoading ? (
