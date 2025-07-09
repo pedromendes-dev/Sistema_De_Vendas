@@ -1,8 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-
 export default function Header() {
-  const { toast } = useToast();
 
   const getCurrentDate = () => {
     const now = new Date();
@@ -28,15 +24,7 @@ export default function Header() {
             <p className="text-lg text-secondary-light font-medium">Painel Gamificado de Controle de Vendas</p>
             <p className="text-sm text-muted-light mt-1">{getCurrentDate()}</p>
           </div>
-          <Button 
-            className="bg-success text-primary-light hover:bg-success-dark font-medium"
-            onClick={() => toast({
-              title: "Funcionalidade em desenvolvimento",
-              description: "A conexão com Supabase será implementada em breve.",
-            })}
-          >
-            Connect to Supabase
-          </Button>
+
         </div>
       </div>
     </header>

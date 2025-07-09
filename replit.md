@@ -102,3 +102,10 @@ Preferred communication style: Simple, everyday language.
 - **Static Files**: Frontend assets served by Express in production
 - **Database**: Requires PostgreSQL connection string
 - **Environment**: Node.js runtime with ESM support required
+
+## Recent Changes
+- 2025-07-09: Removed Supabase connection button from Header component
+- 2025-07-09: Implemented admin authentication with PostgreSQL database
+- 2025-07-09: Created admin user with credentials (username: administrador, password: root123)
+- 2025-07-09: Removed DemoWarning component from all pages
+- 2025-07-09: Full transition to PostgreSQL database with persistent data storage
