@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck } from "lucide-react";
+import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck, Search, Filter, Grid, List, BarChart3, Calendar, TrendingUp, Award, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,6 +28,12 @@ export default function Admin() {
   const [newAdmin, setNewAdmin] = useState({ username: "", password: "", email: "", role: "admin" });
   const [showEditModal, setShowEditModal] = useState(false);
   const [editAttendantData, setEditAttendantData] = useState({ name: "", imageUrl: "" });
+  const [attendantViewMode, setAttendantViewMode] = useState<'cards' | 'table' | 'detailed'>('cards');
+  const [attendantSearchQuery, setAttendantSearchQuery] = useState('');
+  const [attendantSortBy, setAttendantSortBy] = useState<'name' | 'earnings' | 'createdAt'>('name');
+  const [attendantSortOrder, setAttendantSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [selectedAttendant, setSelectedAttendant] = useState<Attendant | null>(null);
+  const [showAttendantDetails, setShowAttendantDetails] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -83,6 +89,52 @@ export default function Admin() {
     setEditingAttendant(attendant);
     setEditAttendantData({ name: attendant.name, imageUrl: attendant.imageUrl });
     setShowEditModal(true);
+  };
+
+  // Filter and sort attendants
+  const filteredAndSortedAttendants = attendants
+    .filter((attendant: Attendant) => 
+      attendant.name.toLowerCase().includes(attendantSearchQuery.toLowerCase())
+    )
+    .sort((a: Attendant, b: Attendant) => {
+      let comparison = 0;
+      switch (attendantSortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'earnings':
+          comparison = parseFloat(a.earnings) - parseFloat(b.earnings);
+          break;
+        case 'createdAt':
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+      }
+      return attendantSortOrder === 'asc' ? comparison : -comparison;
+    });
+
+  // Get attendant statistics
+  const getAttendantStats = (attendant: Attendant) => {
+    const attendantSales = sales.filter((sale: Sale) => sale.attendantId === attendant.id);
+    const attendantGoals = goals.filter((goal: Goal) => goal.attendantId === attendant.id);
+    const attendantAchievements = achievements.filter((achievement: Achievement) => achievement.attendantId === attendant.id);
+    
+    return {
+      totalSales: attendantSales.length,
+      averageSale: attendantSales.length > 0 ? 
+        attendantSales.reduce((sum, sale) => sum + parseFloat(sale.value), 0) / attendantSales.length : 0,
+      activeGoals: attendantGoals.filter(goal => goal.isActive).length,
+      completedGoals: attendantGoals.filter(goal => !goal.isActive).length,
+      totalAchievements: attendantAchievements.length,
+      totalPoints: attendantAchievements.reduce((sum, achievement) => sum + achievement.pointsAwarded, 0),
+      lastSaleDate: attendantSales.length > 0 ? 
+        Math.max(...attendantSales.map(sale => new Date(sale.createdAt).getTime())) : null
+    };
+  };
+
+  // Handle attendant detail view
+  const handleViewAttendantDetails = (attendant: Attendant) => {
+    setSelectedAttendant(attendant);
+    setShowAttendantDetails(true);
   };
 
   const handleUpdateAttendant = () => {
@@ -445,9 +497,19 @@ export default function Admin() {
                     />
                   </div>
                 </div>
+                {newAttendant.imageUrl && (
+                  <div className="flex items-center gap-4">
+                    <img 
+                      src={newAttendant.imageUrl} 
+                      alt="Prévia" 
+                      className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                    />
+                    <span className="text-sm text-secondary-light">Prévia da imagem</span>
+                  </div>
+                )}
                 <Button 
                   onClick={() => createAttendantMutation.mutate(newAttendant)}
-                  disabled={!newAttendant.name || createAttendantMutation.isPending}
+                  disabled={!newAttendant.name || !newAttendant.imageUrl || createAttendantMutation.isPending}
                   className="bg-success text-primary-light hover:bg-success-dark"
                 >
                   {createAttendantMutation.isPending ? "Criando..." : "Criar Atendente"}
@@ -455,49 +517,303 @@ export default function Admin() {
               </CardContent>
             </Card>
 
+            {/* Search and View Controls */}
+            <Card className="bg-card border-border">
+              <CardContent className="pt-6">
+                <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                  <div className="flex flex-col sm:flex-row gap-3 flex-1">
+                    <div className="relative">
+                      <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-light" />
+                      <Input
+                        value={attendantSearchQuery}
+                        onChange={(e) => setAttendantSearchQuery(e.target.value)}
+                        placeholder="Buscar atendentes..."
+                        className="pl-10 bg-input border-border text-primary-light min-w-[200px]"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <select
+                        value={attendantSortBy}
+                        onChange={(e) => setAttendantSortBy(e.target.value as any)}
+                        className="bg-input border-border text-primary-light px-3 py-2 rounded text-sm"
+                      >
+                        <option value="name">Nome</option>
+                        <option value="earnings">Vendas</option>
+                        <option value="createdAt">Data</option>
+                      </select>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setAttendantSortOrder(attendantSortOrder === 'asc' ? 'desc' : 'asc')}
+                        className="border-border"
+                      >
+                        <TrendingUp size={16} className={`transform ${attendantSortOrder === 'desc' ? 'rotate-180' : ''}`} />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={attendantViewMode === 'cards' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setAttendantViewMode('cards')}
+                      className="border-border"
+                    >
+                      <Grid size={16} />
+                    </Button>
+                    <Button
+                      variant={attendantViewMode === 'table' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setAttendantViewMode('table')}
+                      className="border-border"
+                    >
+                      <List size={16} />
+                    </Button>
+                    <Button
+                      variant={attendantViewMode === 'detailed' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setAttendantViewMode('detailed')}
+                      className="border-border"
+                    >
+                      <BarChart3 size={16} />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Attendants Display */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-primary-light">Atendentes Cadastrados</CardTitle>
+                <CardTitle className="text-primary-light flex items-center justify-between">
+                  <span>Atendentes Cadastrados ({filteredAndSortedAttendants.length})</span>
+                  {attendantSearchQuery && (
+                    <span className="text-sm font-normal text-secondary-light">
+                      Resultados para "{attendantSearchQuery}"
+                    </span>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {attendantsLoading ? (
-                  <p className="text-secondary-light">Carregando...</p>
-                ) : (
-                  <div className="space-y-2">
-                    {attendants.map((attendant: Attendant) => (
-                      <div key={attendant.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={attendant.imageUrl} 
-                            alt={attendant.name}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                          <div>
-                            <h4 className="text-primary-light font-medium">{attendant.name}</h4>
-                            <p className="text-secondary-light text-sm">R$ {attendant.earnings}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            onClick={() => handleEditAttendant(attendant)}
-                            variant="outline"
-                            size="sm"
-                            className="border-info text-info hover:bg-info hover:text-white"
-                          >
-                            <Edit size={16} />
-                          </Button>
-                          <Button
-                            onClick={() => deleteAttendantMutation.mutate(attendant.id)}
-                            disabled={deleteAttendantMutation.isPending}
-                            variant="destructive"
-                            size="sm"
-                          >
-                            <Trash2 size={16} />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-success mx-auto mb-4"></div>
+                      <p className="text-secondary-light">Carregando atendentes...</p>
+                    </div>
                   </div>
+                ) : filteredAndSortedAttendants.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users size={48} className="mx-auto mb-4 text-muted-light opacity-50" />
+                    <p className="text-secondary-light">
+                      {attendantSearchQuery ? 'Nenhum atendente encontrado' : 'Nenhum atendente cadastrado'}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Cards View */}
+                    {attendantViewMode === 'cards' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredAndSortedAttendants.map((attendant: Attendant) => {
+                          const stats = getAttendantStats(attendant);
+                          return (
+                            <div key={attendant.id} className="bg-input/30 border border-border rounded-lg p-4 hover:bg-input/50 transition-colors">
+                              <div className="flex items-center gap-3 mb-3">
+                                <img 
+                                  src={attendant.imageUrl} 
+                                  alt={attendant.name}
+                                  className="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div className="flex-1">
+                                  <h4 className="text-primary-light font-medium">{attendant.name}</h4>
+                                  <p className="text-success font-semibold">R$ {attendant.earnings}</p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                                <div className="bg-secondary-dark/30 rounded p-2 text-center">
+                                  <div className="text-primary-light font-medium">{stats.totalSales}</div>
+                                  <div className="text-secondary-light">Vendas</div>
+                                </div>
+                                <div className="bg-secondary-dark/30 rounded p-2 text-center">
+                                  <div className="text-primary-light font-medium">{stats.totalAchievements}</div>
+                                  <div className="text-secondary-light">Conquistas</div>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={() => handleViewAttendantDetails(attendant)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1 border-info text-info hover:bg-info hover:text-white"
+                                >
+                                  <Eye size={14} />
+                                </Button>
+                                <Button
+                                  onClick={() => handleEditAttendant(attendant)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1 border-warning text-warning hover:bg-warning hover:text-white"
+                                >
+                                  <Edit size={14} />
+                                </Button>
+                                <Button
+                                  onClick={() => deleteAttendantMutation.mutate(attendant.id)}
+                                  disabled={deleteAttendantMutation.isPending}
+                                  variant="destructive"
+                                  size="sm"
+                                >
+                                  <Trash2 size={14} />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Table View */}
+                    {attendantViewMode === 'table' && (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b border-border">
+                              <th className="text-left py-3 px-2 text-secondary-light font-medium">Atendente</th>
+                              <th className="text-left py-3 px-2 text-secondary-light font-medium">Vendas Totais</th>
+                              <th className="text-left py-3 px-2 text-secondary-light font-medium">Nº Vendas</th>
+                              <th className="text-left py-3 px-2 text-secondary-light font-medium">Conquistas</th>
+                              <th className="text-left py-3 px-2 text-secondary-light font-medium">Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredAndSortedAttendants.map((attendant: Attendant) => {
+                              const stats = getAttendantStats(attendant);
+                              return (
+                                <tr key={attendant.id} className="border-b border-border/50 hover:bg-input/20">
+                                  <td className="py-3 px-2">
+                                    <div className="flex items-center gap-3">
+                                      <img 
+                                        src={attendant.imageUrl} 
+                                        alt={attendant.name}
+                                        className="w-8 h-8 rounded-full object-cover"
+                                      />
+                                      <span className="text-primary-light font-medium">{attendant.name}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-2 text-success font-semibold">R$ {attendant.earnings}</td>
+                                  <td className="py-3 px-2 text-primary-light">{stats.totalSales}</td>
+                                  <td className="py-3 px-2 text-primary-light">{stats.totalAchievements}</td>
+                                  <td className="py-3 px-2">
+                                    <div className="flex gap-1">
+                                      <Button
+                                        onClick={() => handleViewAttendantDetails(attendant)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-info text-info hover:bg-info hover:text-white"
+                                      >
+                                        <Eye size={14} />
+                                      </Button>
+                                      <Button
+                                        onClick={() => handleEditAttendant(attendant)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="border-warning text-warning hover:bg-warning hover:text-white"
+                                      >
+                                        <Edit size={14} />
+                                      </Button>
+                                      <Button
+                                        onClick={() => deleteAttendantMutation.mutate(attendant.id)}
+                                        disabled={deleteAttendantMutation.isPending}
+                                        variant="destructive"
+                                        size="sm"
+                                      >
+                                        <Trash2 size={14} />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* Detailed View */}
+                    {attendantViewMode === 'detailed' && (
+                      <div className="space-y-4">
+                        {filteredAndSortedAttendants.map((attendant: Attendant) => {
+                          const stats = getAttendantStats(attendant);
+                          return (
+                            <div key={attendant.id} className="bg-input/30 border border-border rounded-lg p-6">
+                              <div className="flex flex-col lg:flex-row gap-6">
+                                <div className="flex items-center gap-4">
+                                  <img 
+                                    src={attendant.imageUrl} 
+                                    alt={attendant.name}
+                                    className="w-16 h-16 rounded-full object-cover"
+                                  />
+                                  <div>
+                                    <h3 className="text-xl font-bold text-primary-light">{attendant.name}</h3>
+                                    <p className="text-success text-lg font-semibold">R$ {attendant.earnings}</p>
+                                    <p className="text-secondary-light text-sm">
+                                      Cadastrado em {new Date(attendant.createdAt).toLocaleDateString('pt-BR')}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                  <div className="bg-secondary-dark/30 rounded p-3 text-center">
+                                    <DollarSign size={20} className="mx-auto mb-1 text-success" />
+                                    <div className="text-lg font-bold text-primary-light">{stats.totalSales}</div>
+                                    <div className="text-xs text-secondary-light">Total Vendas</div>
+                                  </div>
+                                  <div className="bg-secondary-dark/30 rounded p-3 text-center">
+                                    <TrendingUp size={20} className="mx-auto mb-1 text-info" />
+                                    <div className="text-lg font-bold text-primary-light">R$ {stats.averageSale.toFixed(2)}</div>
+                                    <div className="text-xs text-secondary-light">Média/Venda</div>
+                                  </div>
+                                  <div className="bg-secondary-dark/30 rounded p-3 text-center">
+                                    <Target size={20} className="mx-auto mb-1 text-warning" />
+                                    <div className="text-lg font-bold text-primary-light">{stats.activeGoals}</div>
+                                    <div className="text-xs text-secondary-light">Metas Ativas</div>
+                                  </div>
+                                  <div className="bg-secondary-dark/30 rounded p-3 text-center">
+                                    <Trophy size={20} className="mx-auto mb-1 text-danger" />
+                                    <div className="text-lg font-bold text-primary-light">{stats.totalAchievements}</div>
+                                    <div className="text-xs text-secondary-light">Conquistas</div>
+                                  </div>
+                                </div>
+                                <div className="flex lg:flex-col gap-2">
+                                  <Button
+                                    onClick={() => handleViewAttendantDetails(attendant)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-info text-info hover:bg-info hover:text-white"
+                                  >
+                                    <Eye size={16} />
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleEditAttendant(attendant)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-warning text-warning hover:bg-warning hover:text-white"
+                                  >
+                                    <Edit size={16} />
+                                  </Button>
+                                  <Button
+                                    onClick={() => deleteAttendantMutation.mutate(attendant.id)}
+                                    disabled={deleteAttendantMutation.isPending}
+                                    variant="destructive"
+                                    size="sm"
+                                  >
+                                    <Trash2 size={16} />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -806,6 +1122,184 @@ export default function Admin() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Attendant Details Modal */}
+      <Dialog open={showAttendantDetails} onOpenChange={setShowAttendantDetails}>
+        <DialogContent className="bg-card border-border max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-primary-light flex items-center gap-3">
+              {selectedAttendant && (
+                <>
+                  <img 
+                    src={selectedAttendant.imageUrl} 
+                    alt={selectedAttendant.name}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  Detalhes de {selectedAttendant.name}
+                </>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedAttendant && (
+            <div className="space-y-6">
+              {/* Basic Info */}
+              <div className="flex flex-col sm:flex-row gap-6">
+                <div className="flex items-center gap-4">
+                  <img 
+                    src={selectedAttendant.imageUrl} 
+                    alt={selectedAttendant.name}
+                    className="w-20 h-20 rounded-full object-cover border-4 border-success"
+                  />
+                  <div>
+                    <h3 className="text-2xl font-bold text-primary-light">{selectedAttendant.name}</h3>
+                    <p className="text-success text-xl font-semibold">R$ {selectedAttendant.earnings}</p>
+                    <p className="text-secondary-light">
+                      Membro desde {new Date(selectedAttendant.createdAt).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Statistics */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {(() => {
+                  const stats = getAttendantStats(selectedAttendant);
+                  return (
+                    <>
+                      <div className="bg-success/10 border border-success/20 rounded-lg p-4 text-center">
+                        <DollarSign size={24} className="mx-auto mb-2 text-success" />
+                        <div className="text-xl font-bold text-primary-light">{stats.totalSales}</div>
+                        <div className="text-xs text-secondary-light">Total de Vendas</div>
+                      </div>
+                      <div className="bg-info/10 border border-info/20 rounded-lg p-4 text-center">
+                        <TrendingUp size={24} className="mx-auto mb-2 text-info" />
+                        <div className="text-xl font-bold text-primary-light">R$ {stats.averageSale.toFixed(2)}</div>
+                        <div className="text-xs text-secondary-light">Média por Venda</div>
+                      </div>
+                      <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 text-center">
+                        <Target size={24} className="mx-auto mb-2 text-warning" />
+                        <div className="text-xl font-bold text-primary-light">{stats.activeGoals}</div>
+                        <div className="text-xs text-secondary-light">Metas Ativas</div>
+                      </div>
+                      <div className="bg-danger/10 border border-danger/20 rounded-lg p-4 text-center">
+                        <Trophy size={24} className="mx-auto mb-2 text-danger" />
+                        <div className="text-xl font-bold text-primary-light">{stats.totalAchievements}</div>
+                        <div className="text-xs text-secondary-light">Conquistas</div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Recent Sales */}
+              <div>
+                <h4 className="text-lg font-semibold text-primary-light mb-3 flex items-center gap-2">
+                  <DollarSign size={20} />
+                  Vendas Recentes
+                </h4>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {sales
+                    .filter((sale: Sale) => sale.attendantId === selectedAttendant.id)
+                    .slice(0, 5)
+                    .map((sale: Sale) => (
+                      <div key={sale.id} className="flex justify-between items-center p-3 bg-input/20 rounded border border-border">
+                        <span className="text-primary-light font-medium">R$ {sale.value}</span>
+                        <span className="text-secondary-light text-sm">
+                          {new Date(sale.createdAt).toLocaleDateString('pt-BR')} às {' '}
+                          {new Date(sale.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {/* Active Goals */}
+              <div>
+                <h4 className="text-lg font-semibold text-primary-light mb-3 flex items-center gap-2">
+                  <Target size={20} />
+                  Metas Ativas
+                </h4>
+                <div className="space-y-3">
+                  {goals
+                    .filter((goal: Goal) => goal.attendantId === selectedAttendant.id && goal.isActive)
+                    .map((goal: Goal) => {
+                      const progress = (parseFloat(goal.currentValue) / parseFloat(goal.targetValue)) * 100;
+                      return (
+                        <div key={goal.id} className="p-4 bg-input/20 rounded border border-border">
+                          <div className="flex justify-between items-center mb-2">
+                            <h5 className="font-medium text-primary-light">{goal.title}</h5>
+                            <span className="text-sm text-secondary-light">
+                              R$ {goal.currentValue} / R$ {goal.targetValue}
+                            </span>
+                          </div>
+                          <div className="w-full bg-secondary-dark rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-success to-info h-2 rounded-full transition-all"
+                              style={{ width: `${Math.min(progress, 100)}%` }}
+                            />
+                          </div>
+                          <div className="text-xs text-secondary-light mt-1">
+                            {progress.toFixed(1)}% concluído
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Recent Achievements */}
+              <div>
+                <h4 className="text-lg font-semibold text-primary-light mb-3 flex items-center gap-2">
+                  <Trophy size={20} />
+                  Conquistas Recentes
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {achievements
+                    .filter((achievement: Achievement) => achievement.attendantId === selectedAttendant.id)
+                    .slice(0, 4)
+                    .map((achievement: Achievement) => (
+                      <div key={achievement.id} className="flex items-center gap-3 p-3 bg-input/20 rounded border border-border">
+                        <div 
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                          style={{ backgroundColor: achievement.badgeColor }}
+                        >
+                          <Trophy size={16} />
+                        </div>
+                        <div className="flex-1">
+                          <h6 className="font-medium text-primary-light text-sm">{achievement.title}</h6>
+                          <p className="text-xs text-secondary-light">
+                            {achievement.pointsAwarded} pontos • {new Date(achievement.achievedAt).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <Button
+                  onClick={() => {
+                    setShowAttendantDetails(false);
+                    handleEditAttendant(selectedAttendant);
+                  }}
+                  className="bg-info text-white hover:bg-info/80"
+                >
+                  <Edit size={16} className="mr-2" />
+                  Editar Atendente
+                </Button>
+                <Button
+                  onClick={() => setShowAttendantDetails(false)}
+                  variant="outline"
+                  className="border-border text-secondary-light hover:bg-accent"
+                >
+                  Fechar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Attendant Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
