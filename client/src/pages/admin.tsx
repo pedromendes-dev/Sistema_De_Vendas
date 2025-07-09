@@ -1721,46 +1721,118 @@ export default function Admin() {
 
       {/* Edit Attendant Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="bg-card border-border">
+        <DialogContent className="bg-card border-border max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-primary-light">Editar Atendente</DialogTitle>
+            <DialogTitle className="text-primary-light flex items-center gap-2">
+              <Edit size={20} />
+              Editar Atendente
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label className="text-secondary-light">Nome</Label>
-              <Input
-                value={editAttendantData.name}
-                onChange={(e) => setEditAttendantData({...editAttendantData, name: e.target.value})}
-                placeholder="Nome do atendente"
-                className="bg-input border-border text-primary-light"
-              />
-            </div>
-            <div>
-              <Label className="text-secondary-light">URL da Imagem</Label>
-              <Input
-                value={editAttendantData.imageUrl}
-                onChange={(e) => setEditAttendantData({...editAttendantData, imageUrl: e.target.value})}
-                placeholder="https://exemplo.com/imagem.jpg"
-                className="bg-input border-border text-primary-light"
-              />
-            </div>
-            {editAttendantData.imageUrl && (
-              <div>
-                <Label className="text-secondary-light">Prévia da Imagem</Label>
-                <img 
-                  src={editAttendantData.imageUrl} 
-                  alt="Prévia"
-                  className="w-20 h-20 rounded-full object-cover border-2 border-border"
-                />
+          <div className="space-y-6">
+            {/* Current Stats Display */}
+            {editingAttendant && (
+              <div className="bg-input/20 rounded-lg p-4 border border-border">
+                <h3 className="text-sm font-medium text-secondary-light mb-3">Informações Atuais</h3>
+                <div className="flex items-center gap-4 mb-3">
+                  <img 
+                    src={editingAttendant.imageUrl} 
+                    alt={editingAttendant.name}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                  />
+                  <div className="flex-1">
+                    <h4 className="text-lg font-semibold text-primary-light">{editingAttendant.name}</h4>
+                    <p className="text-success font-bold text-xl">R$ {editingAttendant.earnings}</p>
+                    <p className="text-secondary-light text-sm">
+                      Cadastrado em {new Date(editingAttendant.createdAt).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Quick Stats */}
+                <div className="grid grid-cols-3 gap-3 mt-4">
+                  <div className="text-center bg-secondary-dark/30 rounded p-2">
+                    <div className="text-primary-light font-bold">
+                      {sales.filter((sale: Sale) => sale.attendantId === editingAttendant.id).length}
+                    </div>
+                    <div className="text-xs text-secondary-light">Vendas</div>
+                  </div>
+                  <div className="text-center bg-secondary-dark/30 rounded p-2">
+                    <div className="text-primary-light font-bold">
+                      {goals.filter((goal: Goal) => goal.attendantId === editingAttendant.id && goal.isActive).length}
+                    </div>
+                    <div className="text-xs text-secondary-light">Metas Ativas</div>
+                  </div>
+                  <div className="text-center bg-secondary-dark/30 rounded p-2">
+                    <div className="text-primary-light font-bold">
+                      {achievements.filter((achievement: Achievement) => achievement.attendantId === editingAttendant.id).length}
+                    </div>
+                    <div className="text-xs text-secondary-light">Conquistas</div>
+                  </div>
+                </div>
               </div>
             )}
-            <div className="flex gap-2">
+
+            {/* Edit Form */}
+            <div className="space-y-4">
+              <div>
+                <Label className="text-secondary-light">Nome</Label>
+                <Input
+                  value={editAttendantData.name}
+                  onChange={(e) => setEditAttendantData({...editAttendantData, name: e.target.value})}
+                  placeholder="Nome do atendente"
+                  className="bg-input border-border text-primary-light"
+                />
+              </div>
+              <div>
+                <Label className="text-secondary-light">URL da Imagem</Label>
+                <Input
+                  value={editAttendantData.imageUrl}
+                  onChange={(e) => setEditAttendantData({...editAttendantData, imageUrl: e.target.value})}
+                  placeholder="https://exemplo.com/imagem.jpg"
+                  className="bg-input border-border text-primary-light"
+                />
+                <p className="text-xs text-secondary-light mt-1">
+                  Cole aqui a URL de uma imagem para o perfil do atendente
+                </p>
+              </div>
+              {editAttendantData.imageUrl && (
+                <div>
+                  <Label className="text-secondary-light">Prévia da Nova Imagem</Label>
+                  <div className="flex items-center gap-4 mt-2">
+                    <img 
+                      src={editAttendantData.imageUrl} 
+                      alt="Prévia"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                    <div className="text-xs text-secondary-light">
+                      ✓ Imagem carregada com sucesso
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4 border-t border-border">
               <Button
                 onClick={handleUpdateAttendant}
                 disabled={!editAttendantData.name || updateAttendantMutation.isPending}
-                className="bg-success text-white hover:bg-success-dark"
+                className="bg-success text-white hover:bg-success-dark flex-1"
               >
-                {updateAttendantMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+                {updateAttendantMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Edit size={16} className="mr-2" />
+                    Salvar Alterações
+                  </>
+                )}
               </Button>
               <Button
                 onClick={() => setShowEditModal(false)}
