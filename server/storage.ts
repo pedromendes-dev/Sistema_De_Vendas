@@ -1,4 +1,25 @@
-import { attendants, sales, admins, goals, achievements, leaderboard, type Attendant, type InsertAttendant, type Sale, type InsertSale, type Admin, type Goal, type InsertGoal, type Achievement, type InsertAchievement, type Leaderboard, type InsertLeaderboard } from "@shared/schema";
+import { 
+  attendants, 
+  sales, 
+  admins, 
+  goals, 
+  achievements, 
+  leaderboard, 
+  notifications,
+  type Attendant, 
+  type InsertAttendant, 
+  type Sale, 
+  type InsertSale, 
+  type Admin, 
+  type Goal, 
+  type InsertGoal, 
+  type Achievement, 
+  type InsertAchievement, 
+  type Leaderboard, 
+  type InsertLeaderboard,
+  type Notification,
+  type InsertNotification,
+} from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
 
@@ -38,6 +59,15 @@ export interface IStorage {
   getLeaderboardByAttendant(attendantId: number): Promise<Leaderboard | undefined>;
   updateLeaderboard(attendantId: number, totalPoints: number, currentStreak: number, bestStreak: number): Promise<Leaderboard>;
   updateLeaderboardRanks(): Promise<void>;
+  
+  // Notifications
+  getAllNotifications(): Promise<Notification[]>;
+  getUnreadNotifications(): Promise<Notification[]>;
+  getNotificationsByAttendant(attendantId: number): Promise<Notification[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  markNotificationAsRead(id: number): Promise<boolean>;
+  markAllNotificationsAsRead(): Promise<boolean>;
+  deleteNotification(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -244,6 +274,71 @@ export class DatabaseStorage implements IStorage {
       await db.update(leaderboard)
         .set({ rank: i + 1 })
         .where(eq(leaderboard.id, entries[i].id));
+    }
+  }
+
+  // Notification methods
+  async getAllNotifications(): Promise<Notification[]> {
+    const result = await db.select().from(notifications).orderBy(desc(notifications.createdAt));
+    return result;
+  }
+
+  async getUnreadNotifications(): Promise<Notification[]> {
+    const result = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.isRead, 0))
+      .orderBy(desc(notifications.createdAt));
+    return result;
+  }
+
+  async getNotificationsByAttendant(attendantId: number): Promise<Notification[]> {
+    const result = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.attendantId, attendantId))
+      .orderBy(desc(notifications.createdAt));
+    return result;
+  }
+
+  async createNotification(insertNotification: InsertNotification): Promise<Notification> {
+    const [notification] = await db
+      .insert(notifications)
+      .values(insertNotification)
+      .returning();
+    return notification;
+  }
+
+  async markNotificationAsRead(id: number): Promise<boolean> {
+    try {
+      await db
+        .update(notifications)
+        .set({ isRead: 1 })
+        .where(eq(notifications.id, id));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async markAllNotificationsAsRead(): Promise<boolean> {
+    try {
+      await db
+        .update(notifications)
+        .set({ isRead: 1 })
+        .where(eq(notifications.isRead, 0));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async deleteNotification(id: number): Promise<boolean> {
+    try {
+      await db.delete(notifications).where(eq(notifications.id, id));
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 }

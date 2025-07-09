@@ -58,6 +58,18 @@ export const leaderboard = pgTable("leaderboard", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(), // 'sale', 'achievement', 'goal_progress', 'team_milestone'
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  attendantId: integer("attendant_id"), // nullable for team-wide notifications
+  metadata: text("metadata"), // JSON string for additional data
+  isRead: integer("is_read").default(0).notNull(), // 0 = unread, 1 = read
+  priority: text("priority").default("normal").notNull(), // 'low', 'normal', 'high', 'urgent'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertAttendantSchema = createInsertSchema(attendants).omit({
   id: true,
   earnings: true,
@@ -89,6 +101,11 @@ export const insertLeaderboardSchema = createInsertSchema(leaderboard).omit({
   updatedAt: true,
 });
 
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertAttendant = z.infer<typeof insertAttendantSchema>;
 export type Attendant = typeof attendants.$inferSelect;
 export type InsertSale = z.infer<typeof insertSaleSchema>;
@@ -101,3 +118,5 @@ export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
 export type Achievement = typeof achievements.$inferSelect;
 export type InsertLeaderboard = z.infer<typeof insertLeaderboardSchema>;
 export type Leaderboard = typeof leaderboard.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;

@@ -21,8 +21,8 @@ export default function Navigation() {
 
   return (
     <nav className="bg-secondary-dark border-b border-gray-700">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex space-x-8">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4">
+        <div className="flex space-x-1 sm:space-x-8 overflow-x-auto scrollbar-hide">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.path;
@@ -31,8 +31,8 @@ export default function Navigation() {
               <Link key={item.path} href={item.path}>
                 <div
                   className={`
-                    flex items-center gap-2 px-4 py-4 text-sm font-medium transition-colors cursor-pointer
-                    border-b-2 border-transparent
+                    flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors cursor-pointer
+                    border-b-2 border-transparent whitespace-nowrap flex-shrink-0
                     ${
                       isActive
                         ? "text-success border-success bg-success/5"
@@ -40,8 +40,8 @@ export default function Navigation() {
                     }
                   `}
                 >
-                  <Icon size={18} />
-                  {item.label}
+                  <Icon size={16} className="sm:w-[18px] sm:h-[18px]" />
+                  <span className="hidden xs:inline sm:inline">{item.label}</span>
                 </div>
               </Link>
             );
