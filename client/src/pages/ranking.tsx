@@ -83,22 +83,63 @@ export default function Ranking() {
 
       <main className="mobile-safe max-w-6xl py-4 sm:py-6 lg:py-8">
         {/* Ranking Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <Trophy className="text-gold" size={32} />
-          <div>
-            <h2 className="text-2xl font-bold text-primary-light">Ranking de Vendas</h2>
-            <p className="text-secondary-light">Classificação dos melhores vendedores do mês</p>
+        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <Trophy className="text-gold" size={24} />
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg sm:text-2xl font-bold text-primary-light">Ranking de Vendas</h2>
+            <p className="text-xs sm:text-sm text-secondary-light">Classificação dos melhores vendedores do mês</p>
           </div>
         </div>
 
         {/* Ranking Cards */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {rankingData.map((attendant, index) => (
             <Card key={attendant.id} className={`${getRankBgColor(index)} border-2`}>
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
+              <CardContent className="p-3 sm:p-4 lg:p-6">
+                {/* Mobile Layout */}
+                <div className="block sm:hidden">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      {getRankIcon(index)}
+                      <span className="text-base font-bold text-primary-light">
+                        {index + 1}º
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-success">
+                        R$ {attendant.totalValue.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 mb-3">
+                    <img 
+                      src={attendant.imageUrl}
+                      alt={attendant.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-border flex-shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base font-bold text-primary-light truncate">{attendant.name}</h3>
+                      <p className="text-xs text-secondary-light">Total de Vendas</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-center">
+                    <div>
+                      <p className="text-sm font-bold text-info">{attendant.totalSales}</p>
+                      <p className="text-xs text-secondary-light">Vendas</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-warning">R$ {attendant.averageTicket.toFixed(2)}</p>
+                      <p className="text-xs text-secondary-light">Ticket Médio</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop Layout */}
+                <div className="hidden sm:flex sm:items-center sm:gap-4">
                   {/* Rank Icon */}
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center flex-shrink-0">
                     {getRankIcon(index)}
                     <span className="text-lg font-bold text-primary-light mt-1">
                       {index + 1}º
@@ -106,20 +147,20 @@ export default function Ranking() {
                   </div>
 
                   {/* Attendant Info */}
-                  <div className="flex items-center gap-4 flex-1">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
                     <img 
                       src={attendant.imageUrl}
                       alt={attendant.name}
-                      className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-border flex-shrink-0"
                     />
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-primary-light">{attendant.name}</h3>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-xl font-bold text-primary-light truncate">{attendant.name}</h3>
                       <p className="text-secondary-light">Total de Vendas</p>
                     </div>
                   </div>
 
                   {/* Statistics */}
-                  <div className="grid grid-cols-4 gap-8 flex-1">
+                  <div className="hidden lg:grid lg:grid-cols-4 lg:gap-8 lg:flex-1">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-success">R$ {attendant.totalValue.toFixed(2)}</p>
                       <p className="text-sm text-secondary-light">Faturamento Total</p>
@@ -139,7 +180,7 @@ export default function Ranking() {
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="w-32">
+                  <div className="hidden lg:block lg:w-32">
                     <Progress 
                       value={(attendant.totalValue / maxEarnings) * 100} 
                       className="h-3"
@@ -150,9 +191,9 @@ export default function Ranking() {
                   </div>
 
                   {/* Earnings Badge */}
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-success">
-                      R$ {attendant.totalValue.toFixed(2).replace('.', ',')}
+                  <div className="text-right lg:hidden">
+                    <div className="text-2xl font-bold text-success">
+                      R$ {attendant.totalValue.toFixed(2)}
                     </div>
                     <div className="text-sm text-secondary-light">
                       Faturamento Total
