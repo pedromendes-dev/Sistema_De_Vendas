@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Settings, Maximize2, Minimize2, X, User, DollarSign, Target, Trophy } from 'lucide-react';
+import { Search, Settings, Maximize2, Minimize2, X, User, DollarSign, Target, Trophy, Bell, Volume2, VolumeX, Moon, Sun, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { useQuery } from '@tanstack/react-query';
 import NotificationCenter from './NotificationCenter';
 import type { Attendant, Sale, Goal, Achievement } from '@shared/schema';
@@ -13,6 +15,12 @@ export default function ModernHeader() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [compactView, setCompactView] = useState(false);
 
   // Fetch data for search
   const { data: attendants = [] } = useQuery<Attendant[]>({
@@ -31,10 +39,74 @@ export default function ModernHeader() {
     queryKey: ["/api/achievements"],
   });
 
+  const { data: unreadNotifications = [] } = useQuery({
+    queryKey: ["/api/notifications/unread"],
+    refetchInterval: autoRefresh ? 5000 : false,
+  });
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Load settings from localStorage
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('app_settings');
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      setSoundEnabled(settings.soundEnabled ?? true);
+      setDarkMode(settings.darkMode ?? false);
+      setAutoRefresh(settings.autoRefresh ?? true);
+      setCompactView(settings.compactView ?? false);
+    }
+  }, []);
+
+  // Save settings to localStorage
+  const saveSettings = () => {
+    const settings = {
+      soundEnabled,
+      darkMode,
+      autoRefresh,
+      compactView
+    };
+    localStorage.setItem('app_settings', JSON.stringify(settings));
+  };
+
+  // Handle settings changes
+  const handleSettingChange = (setting: string, value: boolean) => {
+    switch (setting) {
+      case 'soundEnabled':
+        setSoundEnabled(value);
+        break;
+      case 'darkMode':
+        setDarkMode(value);
+        document.documentElement.classList.toggle('dark', value);
+        break;
+      case 'autoRefresh':
+        setAutoRefresh(value);
+        break;
+      case 'compactView':
+        setCompactView(value);
+        break;
+    }
+  };
+
+  // Save settings whenever they change
+  useEffect(() => {
+    saveSettings();
+  }, [soundEnabled, darkMode, autoRefresh, compactView]);
+
+  // Close notifications when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showNotifications && !(event.target as Element).closest('.notification-dropdown')) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNotifications]);
 
   const getCurrentDate = () => {
     const now = new Date();
@@ -208,11 +280,31 @@ export default function ModernHeader() {
                   <Search size={16} />
                 </Button>
 
-                <NotificationCenter />
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="w-9 h-9 p-0 hover:bg-accent/50 relative"
+                  >
+                    <Bell size={16} />
+                    {unreadNotifications.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {unreadNotifications.length > 9 ? '9+' : unreadNotifications.length}
+                      </span>
+                    )}
+                  </Button>
+                  {showNotifications && (
+                    <div className="absolute top-full right-0 mt-2 z-50 notification-dropdown">
+                      <NotificationCenter />
+                    </div>
+                  )}
+                </div>
 
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => setShowSettings(true)}
                   className="w-9 h-9 p-0 hover:bg-accent/50"
                 >
                   <Settings size={16} />
@@ -356,6 +448,88 @@ export default function ModernHeader() {
           </Card>
         </div>
       )}
+
+      {/* Settings Modal */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings size={20} />
+              Configurações do Sistema
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* Sound Settings */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                <div>
+                  <p className="text-sm font-medium">Notificações Sonoras</p>
+                  <p className="text-xs text-muted-foreground">Sons para novas vendas e conquistas</p>
+                </div>
+              </div>
+              <Switch
+                checked={soundEnabled}
+                onCheckedChange={(checked) => handleSettingChange('soundEnabled', checked)}
+              />
+            </div>
+
+            {/* Dark Mode Settings */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {darkMode ? <Moon size={16} /> : <Sun size={16} />}
+                <div>
+                  <p className="text-sm font-medium">Modo Escuro</p>
+                  <p className="text-xs text-muted-foreground">Tema escuro para o sistema</p>
+                </div>
+              </div>
+              <Switch
+                checked={darkMode}
+                onCheckedChange={(checked) => handleSettingChange('darkMode', checked)}
+              />
+            </div>
+
+            {/* Auto Refresh Settings */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Monitor size={16} />
+                <div>
+                  <p className="text-sm font-medium">Atualização Automática</p>
+                  <p className="text-xs text-muted-foreground">Atualiza dados a cada 5 segundos</p>
+                </div>
+              </div>
+              <Switch
+                checked={autoRefresh}
+                onCheckedChange={(checked) => handleSettingChange('autoRefresh', checked)}
+              />
+            </div>
+
+            {/* Compact View Settings */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Minimize2 size={16} />
+                <div>
+                  <p className="text-sm font-medium">Visualização Compacta</p>
+                  <p className="text-xs text-muted-foreground">Interface mais densa</p>
+                </div>
+              </div>
+              <Switch
+                checked={compactView}
+                onCheckedChange={(checked) => handleSettingChange('compactView', checked)}
+              />
+            </div>
+
+            {/* System Info */}
+            <div className="pt-4 border-t">
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>SalesControl Pro v2.0</p>
+                <p>Sistema Gamificado de Vendas</p>
+                <p>Última atualização: {new Date().toLocaleDateString('pt-BR')}</p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
