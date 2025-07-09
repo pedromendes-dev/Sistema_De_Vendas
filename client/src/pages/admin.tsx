@@ -56,6 +56,16 @@ export default function Admin() {
     pointsAwarded: "",
     badgeColor: "#10B981"
   });
+  
+  // Sale management states
+  const [showSaleModal, setShowSaleModal] = useState(false);
+  const [editingSale, setEditingSale] = useState<Sale | null>(null);
+  const [newSale, setNewSale] = useState({
+    attendantId: "",
+    value: ""
+  });
+  const [showSaleDetails, setShowSaleDetails] = useState(false);
+  const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -111,6 +121,47 @@ export default function Admin() {
     setEditingAttendant(attendant);
     setEditAttendantData({ name: attendant.name, imageUrl: attendant.imageUrl });
     setShowEditModal(true);
+  };
+
+  // Sale management handlers
+  const handleCreateSale = () => {
+    setEditingSale(null);
+    setNewSale({
+      attendantId: "",
+      value: ""
+    });
+    setShowSaleModal(true);
+  };
+
+  const handleEditSale = (sale: Sale) => {
+    setEditingSale(sale);
+    setNewSale({
+      attendantId: sale.attendantId.toString(),
+      value: sale.value
+    });
+    setShowSaleModal(true);
+  };
+
+  const handleViewSaleDetails = (sale: Sale) => {
+    setSelectedSale(sale);
+    setShowSaleDetails(true);
+  };
+
+  const handleUpdateSale = () => {
+    if (editingSale) {
+      updateSaleMutation.mutate({ 
+        id: editingSale.id, 
+        data: {
+          attendantId: parseInt(newSale.attendantId),
+          value: newSale.value
+        }
+      });
+    } else {
+      createSaleMutation.mutate({
+        attendantId: parseInt(newSale.attendantId),
+        value: newSale.value
+      });
+    }
   };
 
   // Filter and sort attendants
@@ -332,6 +383,43 @@ export default function Admin() {
     },
     onError: () => {
       toast({ title: "Erro ao remover venda", variant: "destructive" });
+    }
+  });
+
+  const createSaleMutation = useMutation({
+    mutationFn: async (data: { attendantId: number; value: string }) => {
+      const response = await apiRequest("POST", "/api/sales", data);
+      if (!response.ok) throw new Error("Failed to create sale");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/sales"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+      setShowSaleModal(false);
+      setNewSale({ attendantId: "", value: "" });
+      toast({ title: "Venda criada com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao criar venda", variant: "destructive" });
+    }
+  });
+
+  const updateSaleMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: { attendantId: number; value: string } }) => {
+      const response = await apiRequest("PUT", `/api/sales/${id}`, data);
+      if (!response.ok) throw new Error("Failed to update sale");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/sales"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+      setShowSaleModal(false);
+      setEditingSale(null);
+      setNewSale({ attendantId: "", value: "" });
+      toast({ title: "Venda atualizada com sucesso!" });
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar venda", variant: "destructive" });
     }
   });
 
@@ -996,31 +1084,84 @@ export default function Admin() {
           <TabsContent value="sales" className="space-y-6">
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-primary-light">Histórico de Vendas</CardTitle>
+                <CardTitle className="text-primary-light flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <DollarSign size={20} />
+                    Histórico de Vendas
+                  </div>
+                  <Button
+                    onClick={handleCreateSale}
+                    className="bg-success text-white hover:bg-success-dark"
+                  >
+                    <Plus size={16} className="mr-2" />
+                    Nova Venda
+                  </Button>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 {salesLoading ? (
-                  <p className="text-secondary-light">Carregando...</p>
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-success mx-auto mb-4"></div>
+                      <p className="text-secondary-light">Carregando vendas...</p>
+                    </div>
+                  </div>
+                ) : sales.length === 0 ? (
+                  <div className="text-center py-12">
+                    <DollarSign size={48} className="mx-auto mb-4 text-muted-light opacity-50" />
+                    <p className="text-secondary-light mb-4">Nenhuma venda registrada</p>
+                    <Button
+                      onClick={handleCreateSale}
+                      className="bg-success text-white hover:bg-success-dark"
+                    >
+                      <Plus size={16} className="mr-2" />
+                      Registrar Primeira Venda
+                    </Button>
+                  </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {sales.map((sale: Sale) => {
                       const attendant = attendants.find((a: Attendant) => a.id === sale.attendantId);
                       return (
-                        <div key={sale.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                          <div>
-                            <h4 className="text-primary-light font-medium">R$ {sale.value}</h4>
-                            <p className="text-secondary-light text-sm">
-                              {attendant?.name} - {new Date(sale.createdAt).toLocaleDateString('pt-BR')}
-                            </p>
+                        <div key={sale.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-input/20 transition-colors">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-success/20 rounded-full flex items-center justify-center">
+                              <DollarSign className="text-success" size={20} />
+                            </div>
+                            <div>
+                              <h4 className="text-primary-light font-semibold text-lg">R$ {sale.value}</h4>
+                              <p className="text-secondary-light text-sm">
+                                {attendant?.name} • {new Date(sale.createdAt).toLocaleDateString('pt-BR')} às {' '}
+                                {new Date(sale.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
                           </div>
-                          <Button
-                            onClick={() => deleteSaleMutation.mutate(sale.id)}
-                            disabled={deleteSaleMutation.isPending}
-                            variant="destructive"
-                            size="sm"
-                          >
-                            <Trash2 size={16} />
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={() => handleViewSaleDetails(sale)}
+                              variant="outline"
+                              size="sm"
+                              className="border-info text-info hover:bg-info hover:text-white"
+                            >
+                              <Eye size={14} />
+                            </Button>
+                            <Button
+                              onClick={() => handleEditSale(sale)}
+                              variant="outline"
+                              size="sm"
+                              className="border-warning text-warning hover:bg-warning hover:text-white"
+                            >
+                              <Edit size={14} />
+                            </Button>
+                            <Button
+                              onClick={() => deleteSaleMutation.mutate(sale.id)}
+                              disabled={deleteSaleMutation.isPending}
+                              variant="destructive"
+                              size="sm"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          </div>
                         </div>
                       );
                     })}
@@ -1836,6 +1977,151 @@ export default function Admin() {
               </Button>
               <Button
                 onClick={() => setShowEditModal(false)}
+                variant="outline"
+                className="border-border text-secondary-light hover:bg-accent"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Sale Details Modal */}
+      <Dialog open={showSaleDetails} onOpenChange={setShowSaleDetails}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-primary-light flex items-center gap-2">
+              <DollarSign size={20} />
+              Detalhes da Venda
+            </DialogTitle>
+          </DialogHeader>
+          {selectedSale && (
+            <div className="space-y-4">
+              <div className="bg-input/20 rounded-lg p-4 border border-border text-center">
+                <div className="text-3xl font-bold text-success mb-2">R$ {selectedSale.value}</div>
+                <div className="text-secondary-light text-sm">Valor da Venda</div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-secondary-light">Atendente:</span>
+                  <span className="text-primary-light font-medium">
+                    {attendants.find((a: Attendant) => a.id === selectedSale.attendantId)?.name || 'Desconhecido'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-secondary-light">Data:</span>
+                  <span className="text-primary-light">
+                    {new Date(selectedSale.createdAt).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-secondary-light">Horário:</span>
+                  <span className="text-primary-light">
+                    {new Date(selectedSale.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-secondary-light">ID da Venda:</span>
+                  <span className="text-primary-light font-mono">#{selectedSale.id}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <Button
+                  onClick={() => {
+                    setShowSaleDetails(false);
+                    handleEditSale(selectedSale);
+                  }}
+                  className="bg-warning text-white hover:bg-warning/80 flex-1"
+                >
+                  <Edit size={16} className="mr-2" />
+                  Editar
+                </Button>
+                <Button
+                  onClick={() => setShowSaleDetails(false)}
+                  variant="outline"
+                  className="border-border text-secondary-light hover:bg-accent"
+                >
+                  Fechar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create/Edit Sale Modal */}
+      <Dialog open={showSaleModal} onOpenChange={setShowSaleModal}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-primary-light flex items-center gap-2">
+              <DollarSign size={20} />
+              {editingSale ? 'Editar Venda' : 'Nova Venda'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-secondary-light">Atendente</Label>
+              <select
+                value={newSale.attendantId}
+                onChange={(e) => setNewSale({...newSale, attendantId: e.target.value})}
+                className="w-full bg-input border-border text-primary-light px-3 py-2 rounded"
+              >
+                <option value="">Selecione um atendente</option>
+                {attendants.map((attendant: Attendant) => (
+                  <option key={attendant.id} value={attendant.id}>
+                    {attendant.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <Label className="text-secondary-light">Valor da Venda</Label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={newSale.value}
+                onChange={(e) => setNewSale({...newSale, value: e.target.value})}
+                placeholder="0.00"
+                className="bg-input border-border text-primary-light"
+              />
+              <p className="text-xs text-secondary-light mt-1">
+                Digite o valor da venda (exemplo: 150.50)
+              </p>
+            </div>
+
+            {newSale.value && (
+              <div className="bg-success/10 rounded-lg p-3 border border-success/30">
+                <p className="text-success font-semibold">
+                  Valor: R$ {parseFloat(newSale.value || '0').toFixed(2).replace('.', ',')}
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-4 border-t border-border">
+              <Button
+                onClick={handleUpdateSale}
+                disabled={!newSale.attendantId || !newSale.value || createSaleMutation.isPending || updateSaleMutation.isPending}
+                className="bg-success text-white hover:bg-success-dark flex-1"
+              >
+                {(createSaleMutation.isPending || updateSaleMutation.isPending) ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <DollarSign size={16} className="mr-2" />
+                    {editingSale ? 'Atualizar Venda' : 'Criar Venda'}
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => setShowSaleModal(false)}
                 variant="outline"
                 className="border-border text-secondary-light hover:bg-accent"
               >
