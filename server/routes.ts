@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertSaleSchema } from "@shared/schema";
+import { insertSaleSchema, insertAttendantSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -26,6 +26,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(attendant);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch attendant" });
+    }
+  });
+
+  // Create new attendant
+  app.post("/api/attendants", async (req, res) => {
+    try {
+      const validatedData = insertAttendantSchema.parse(req.body);
+      const attendant = await storage.createAttendant(validatedData);
+      res.status(201).json(attendant);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create attendant" });
     }
   });
 

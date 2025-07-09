@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { AlertTriangle, DollarSign } from "lucide-react";
+import { DollarSign } from "lucide-react";
+import Header from "@/components/Header";
+import Navigation from "@/components/Navigation";
+import DemoWarning from "@/components/DemoWarning";
 import type { Attendant } from "@shared/schema";
 
 export default function Home() {
@@ -70,77 +73,34 @@ export default function Home() {
     });
   };
 
-  const getCurrentDate = () => {
-    const now = new Date();
-    const days = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
-    const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-    
-    const dayName = days[now.getDay()];
-    const day = now.getDate();
-    const month = months[now.getMonth()];
-    const year = now.getFullYear();
-    
-    return `${dayName}, ${day} de ${month} de ${year}`;
-  };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <div className="text-lg text-neutral-600">Carregando...</div>
+      <div className="min-h-screen bg-primary-dark flex items-center justify-center">
+        <div className="text-lg text-secondary-light">Carregando...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-neutral-200">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-neutral-800 mb-2">💰 Sistema de Vendas</h1>
-              <p className="text-lg text-neutral-600 font-medium">Painel Gamificado de Controle de Vendas</p>
-            </div>
-            <Button 
-              className="bg-primary text-white hover:bg-blue-600"
-              onClick={() => toast({
-                title: "Funcionalidade em desenvolvimento",
-                description: "A conexão com Supabase será implementada em breve.",
-              })}
-            >
-              Connect to Supabase
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-primary-dark">
+      <Header />
+      <Navigation />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
-        {/* Date Display */}
-        <div className="mb-6">
-          <p className="text-lg text-neutral-700 font-medium">{getCurrentDate()}</p>
-        </div>
-
-        {/* Demo Warning Banner */}
-        <div className="bg-warning/10 border border-warning/30 rounded-xl p-4 mb-8 flex items-start gap-3">
-          <AlertTriangle className="text-warning text-xl mt-0.5" size={20} />
-          <div>
-            <h3 className="font-semibold text-neutral-800 mb-1">Modo Demonstração</h3>
-            <p className="text-neutral-700">Para usar todas as funcionalidades, configure o Supabase clicando em "Connect to Supabase" no canto superior direito.</p>
-          </div>
-        </div>
+        <DemoWarning />
 
         {/* Sales Registration */}
-        <Card className="mb-8">
+        <Card className="mb-8 bg-card border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-2">
               <DollarSign className="text-success" size={24} />
-              <h2 className="text-2xl font-bold text-neutral-800">Registrar Nova Venda</h2>
+              <h2 className="text-2xl font-bold text-primary-light">Registrar Nova Venda</h2>
             </div>
-            <p className="text-neutral-600 mb-6">Selecione quem está vendendo e registre a venda</p>
+            <p className="text-secondary-light mb-6">Selecione quem está vendendo e registre a venda</p>
             
             <div className="grid gap-4">
               <div>
-                <Label htmlFor="saleValue" className="text-sm font-medium text-neutral-700 mb-2">
+                <Label htmlFor="saleValue" className="text-sm font-medium text-secondary-light mb-2">
                   Valor da Venda (R$)
                 </Label>
                 <Input
@@ -150,13 +110,13 @@ export default function Home() {
                   placeholder="0.00"
                   value={saleValue}
                   onChange={(e) => setSaleValue(e.target.value)}
-                  className="w-full"
+                  className="w-full bg-input border-border text-primary-light placeholder:text-muted-light"
                 />
               </div>
               <Button 
                 onClick={handleRegisterSale}
                 disabled={createSaleMutation.isPending}
-                className="bg-success text-white hover:bg-green-600 disabled:opacity-50"
+                className="bg-success text-primary-light hover:bg-success-dark disabled:opacity-50"
               >
                 {createSaleMutation.isPending ? "Registrando..." : "Registrar Venda"}
               </Button>
@@ -165,18 +125,18 @@ export default function Home() {
         </Card>
 
         {/* Attendant Selection */}
-        <Card>
+        <Card className="bg-card border-border">
           <CardContent className="p-6">
-            <h3 className="text-xl font-bold text-neutral-800 mb-6">Selecione o Atendente</h3>
+            <h3 className="text-xl font-bold text-primary-light mb-6">Selecione o Atendente</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {attendants?.map((attendant) => (
                 <div
                   key={attendant.id}
-                  className={`bg-neutral-50 rounded-xl p-6 border-2 cursor-pointer transition-all hover:shadow-md ${
+                  className={`bg-secondary-dark rounded-xl p-6 border-2 cursor-pointer transition-all hover:shadow-md ${
                     selectedAttendant === attendant.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-transparent hover:border-primary'
+                      ? 'border-success bg-success/10'
+                      : 'border-border hover:border-success/50'
                   }`}
                   onClick={() => setSelectedAttendant(attendant.id)}
                 >
@@ -184,13 +144,13 @@ export default function Home() {
                     <img 
                       src={attendant.imageUrl}
                       alt={attendant.name}
-                      className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-white shadow-md"
+                      className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-border shadow-md"
                     />
-                    <h4 className="text-lg font-semibold text-neutral-800 mb-2">{attendant.name}</h4>
+                    <h4 className="text-lg font-semibold text-primary-light mb-2">{attendant.name}</h4>
                     <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                       parseFloat(attendant.earnings) > 0
-                        ? 'bg-success/10 text-success'
-                        : 'bg-neutral-200 text-neutral-600'
+                        ? 'bg-success/20 text-success'
+                        : 'bg-border text-muted-light'
                     }`}>
                       R$ {parseFloat(attendant.earnings).toFixed(2).replace('.', ',')}
                     </div>
