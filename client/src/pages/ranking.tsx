@@ -97,41 +97,47 @@ export default function Ranking() {
             <Card key={attendant.id} className={`${getRankBgColor(index)} border-2`}>
               <CardContent className="p-3 sm:p-4 lg:p-6">
                 {/* Mobile Layout */}
-                <div className="block sm:hidden">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                <div className="block sm:hidden space-y-4">
+                  {/* Header com posição e valor total */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
                       {getRankIcon(index)}
-                      <span className="text-base font-bold text-primary-light">
+                      <span className="text-xl font-bold text-primary-light">
                         {index + 1}º
                       </span>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-success">
+                      <div className="text-xl font-bold text-success">
                         R$ {attendant.totalValue.toFixed(2)}
                       </div>
+                      <div className="text-xs text-secondary-light">Total Faturamento</div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3 mb-3">
+                  {/* Informações do atendente */}
+                  <div className="flex items-center gap-4">
                     <img 
                       src={attendant.imageUrl}
                       alt={attendant.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-border flex-shrink-0"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-border flex-shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-base font-bold text-primary-light truncate">{attendant.name}</h3>
-                      <p className="text-xs text-secondary-light">Total de Vendas</p>
+                      <h3 className="text-lg font-bold text-primary-light truncate mb-1">{attendant.name}</h3>
+                      <div className="text-sm text-secondary-light">
+                        {attendant.completionRate.toFixed(1)}% de performance
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-center">
-                    <div>
-                      <p className="text-sm font-bold text-info">{attendant.totalSales}</p>
-                      <p className="text-xs text-secondary-light">Vendas</p>
+                  {/* Estatísticas */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-secondary-dark/30 rounded-lg p-4 text-center min-h-[60px] flex flex-col justify-center">
+                      <div className="text-lg font-bold text-info leading-tight">{attendant.totalSales}</div>
+                      <div className="text-xs text-secondary-light mt-2 leading-tight">Vendas</div>
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-warning">R$ {attendant.averageTicket.toFixed(2)}</p>
-                      <p className="text-xs text-secondary-light">Ticket Médio</p>
+                    <div className="bg-secondary-dark/30 rounded-lg p-4 text-center min-h-[60px] flex flex-col justify-center">
+                      <div className="text-lg font-bold text-warning leading-tight">R$ {attendant.averageTicket.toFixed(2)}</div>
+                      <div className="text-xs text-secondary-light mt-2 leading-tight">Ticket Médio</div>
                     </div>
                   </div>
                 </div>

@@ -343,36 +343,73 @@ export default function Admin() {
 
         {/* Management Tabs */}
         <Tabs defaultValue="attendants" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 bg-card border-border">
-            <TabsTrigger value="attendants" className="flex items-center gap-2">
-              <Users size={16} />
-              Atendentes
-            </TabsTrigger>
-            <TabsTrigger value="sales" className="flex items-center gap-2">
-              <DollarSign size={16} />
-              Vendas
-            </TabsTrigger>
-            <TabsTrigger value="goals" className="flex items-center gap-2">
-              <Target size={16} />
-              Metas
-            </TabsTrigger>
-            <TabsTrigger value="achievements" className="flex items-center gap-2">
-              <Trophy size={16} />
-              Conquistas
-            </TabsTrigger>
-            <TabsTrigger value="admins" className="flex items-center gap-2">
-              <Shield size={16} />
-              Admins
-            </TabsTrigger>
-            <TabsTrigger value="dragdrop" className="flex items-center gap-2">
-              <Grip size={16} />
-              Organizar
-            </TabsTrigger>
-            <TabsTrigger value="layout" className="flex items-center gap-2">
-              <Layout size={16} />
-              Layout
-            </TabsTrigger>
-          </TabsList>
+          {/* Mobile Tabs - Scrollable */}
+          <div className="block sm:hidden overflow-x-auto scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+            <TabsList className="flex w-max min-w-full bg-card border-border p-1">
+              <TabsTrigger value="attendants" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
+                <Users size={16} />
+                <span className="whitespace-nowrap">Atendentes</span>
+              </TabsTrigger>
+              <TabsTrigger value="sales" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
+                <DollarSign size={16} />
+                <span className="whitespace-nowrap">Vendas</span>
+              </TabsTrigger>
+              <TabsTrigger value="goals" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
+                <Target size={16} />
+                <span className="whitespace-nowrap">Metas</span>
+              </TabsTrigger>
+              <TabsTrigger value="achievements" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
+                <Trophy size={16} />
+                <span className="whitespace-nowrap">Conquistas</span>
+              </TabsTrigger>
+              <TabsTrigger value="admins" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
+                <Shield size={16} />
+                <span className="whitespace-nowrap">Admins</span>
+              </TabsTrigger>
+              <TabsTrigger value="dragdrop" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
+                <Grip size={16} />
+                <span className="whitespace-nowrap">Organizar</span>
+              </TabsTrigger>
+              <TabsTrigger value="layout" className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-4 py-3 text-xs min-w-[85px] h-auto">
+                <Layout size={16} />
+                <span className="whitespace-nowrap">Layout</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* Desktop Tabs - Grid */}
+          <div className="hidden sm:block">
+            <TabsList className="grid w-full grid-cols-7 bg-card border-border">
+              <TabsTrigger value="attendants" className="flex items-center gap-2">
+                <Users size={16} />
+                Atendentes
+              </TabsTrigger>
+              <TabsTrigger value="sales" className="flex items-center gap-2">
+                <DollarSign size={16} />
+                Vendas
+              </TabsTrigger>
+              <TabsTrigger value="goals" className="flex items-center gap-2">
+                <Target size={16} />
+                Metas
+              </TabsTrigger>
+              <TabsTrigger value="achievements" className="flex items-center gap-2">
+                <Trophy size={16} />
+                Conquistas
+              </TabsTrigger>
+              <TabsTrigger value="admins" className="flex items-center gap-2">
+                <Shield size={16} />
+                Admins
+              </TabsTrigger>
+              <TabsTrigger value="dragdrop" className="flex items-center gap-2">
+                <Grip size={16} />
+                Organizar
+              </TabsTrigger>
+              <TabsTrigger value="layout" className="flex items-center gap-2">
+                <Layout size={16} />
+                Layout
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Attendants Management */}
           <TabsContent value="attendants" className="space-y-6">
