@@ -319,11 +319,6 @@ export default function Admin() {
                     </div>
                   )}
                 </Button>
-
-                <div className="bg-accent/20 border border-border/50 rounded-lg p-4 text-center">
-                  <p className="text-sm text-secondary-light mb-2">Credenciais de Demonstração:</p>
-                  <p className="text-sm font-mono text-info">administrador / root123</p>
-                </div>
               </form>
             </CardContent>
           </Card>
