@@ -23,6 +23,41 @@ export const admins = pgTable("admins", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const goals = pgTable("goals", {
+  id: serial("id").primaryKey(),
+  attendantId: integer("attendant_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  targetValue: decimal("target_value", { precision: 10, scale: 2 }).notNull(),
+  currentValue: decimal("current_value", { precision: 10, scale: 2 }).default("0.00").notNull(),
+  goalType: text("goal_type").notNull(), // 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  isActive: integer("is_active").default(1).notNull(), // 1 for active, 0 for inactive
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  attendantId: integer("attendant_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  icon: text("icon").notNull(),
+  badgeColor: text("badge_color").default("#10b981").notNull(),
+  pointsAwarded: integer("points_awarded").default(0).notNull(),
+  achievedAt: timestamp("achieved_at").defaultNow().notNull(),
+});
+
+export const leaderboard = pgTable("leaderboard", {
+  id: serial("id").primaryKey(),
+  attendantId: integer("attendant_id").notNull(),
+  totalPoints: integer("total_points").default(0).notNull(),
+  currentStreak: integer("current_streak").default(0).notNull(),
+  bestStreak: integer("best_streak").default(0).notNull(),
+  rank: integer("rank").default(0).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertAttendantSchema = createInsertSchema(attendants).omit({
   id: true,
   earnings: true,
@@ -38,9 +73,31 @@ export const insertAdminSchema = createInsertSchema(admins).omit({
   createdAt: true,
 });
 
+export const insertGoalSchema = createInsertSchema(goals).omit({
+  id: true,
+  currentValue: true,
+  createdAt: true,
+});
+
+export const insertAchievementSchema = createInsertSchema(achievements).omit({
+  id: true,
+  achievedAt: true,
+});
+
+export const insertLeaderboardSchema = createInsertSchema(leaderboard).omit({
+  id: true,
+  updatedAt: true,
+});
+
 export type InsertAttendant = z.infer<typeof insertAttendantSchema>;
 export type Attendant = typeof attendants.$inferSelect;
 export type InsertSale = z.infer<typeof insertSaleSchema>;
 export type Sale = typeof sales.$inferSelect;
 export type InsertAdmin = z.infer<typeof insertAdminSchema>;
 export type Admin = typeof admins.$inferSelect;
+export type InsertGoal = z.infer<typeof insertGoalSchema>;
+export type Goal = typeof goals.$inferSelect;
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertLeaderboard = z.infer<typeof insertLeaderboardSchema>;
+export type Leaderboard = typeof leaderboard.$inferSelect;

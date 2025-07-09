@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { DollarSign, Trophy, History, Users, Shield } from "lucide-react";
+import { DollarSign, Trophy, History, Users, Shield, Target } from "lucide-react";
 
 interface NavigationItem {
   path: string;
@@ -10,9 +10,10 @@ interface NavigationItem {
 const navigationItems: NavigationItem[] = [
   { path: "/", label: "Registrar Vendas", icon: DollarSign },
   { path: "/ranking", label: "Ranking", icon: Trophy },
-  { path: "/historico", label: "Histórico", icon: History },
-  { path: "/atendentes", label: "Atendentes", icon: Users },
-  { path: "/area-gestor", label: "Área do Gestor", icon: Shield },
+  { path: "/history", label: "Histórico", icon: History },
+  { path: "/attendants", label: "Atendentes", icon: Users },
+  { path: "/goals", label: "Metas", icon: Target },
+  { path: "/admin", label: "Área do Gestor", icon: Shield },
 ];
 
 export default function Navigation() {

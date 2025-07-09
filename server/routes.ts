@@ -55,6 +55,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const sale = await storage.createSale(validatedData);
+      
+      // Update goal progress for the attendant
+      const activeGoals = await storage.getActiveGoalsByAttendant(validatedData.attendantId);
+      const updatedAttendant = await storage.getAttendant(validatedData.attendantId);
+      
+      if (updatedAttendant) {
+        const currentEarnings = parseFloat(updatedAttendant.earnings);
+        
+        // Check for goal completion and create achievements
+        for (const goal of activeGoals) {
+          const progress = (currentEarnings / parseFloat(goal.targetValue)) * 100;
+          await storage.updateGoalProgress(goal.id, updatedAttendant.earnings);
+          
+          // Create achievement if goal is completed
+          if (progress >= 100 && goal.isActive) {
+            await storage.createAchievement({
+              attendantId: validatedData.attendantId,
+              title: `Meta Alcançada: ${goal.title}`,
+              description: `Parabéns! Você atingiu a meta de R$ ${goal.targetValue}`,
+              icon: "trophy",
+              badgeColor: "#10b981",
+              pointsAwarded: 100
+            });
+            
+            // Update leaderboard
+            const leaderboardEntry = await storage.getLeaderboardByAttendant(validatedData.attendantId);
+            const currentPoints = leaderboardEntry ? leaderboardEntry.totalPoints : 0;
+            const currentStreak = leaderboardEntry ? leaderboardEntry.currentStreak + 1 : 1;
+            const bestStreak = leaderboardEntry ? Math.max(leaderboardEntry.bestStreak || 0, currentStreak) : 1;
+            
+            await storage.updateLeaderboard(validatedData.attendantId, currentPoints + 100, currentStreak, bestStreak);
+            await storage.updateLeaderboardRanks();
+          }
+        }
+      }
+      
       res.status(201).json(sale);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -107,6 +143,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Goals routes
+  app.get("/api/goals", async (req, res) => {
+    try {
+      const goals = await storage.getAllGoals();
+      res.json(goals);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch goals" });
+    }
+  });
+
+  app.get("/api/goals/attendant/:attendantId", async (req, res) => {
+    try {
+      const attendantId = parseInt(req.params.attendantId);
+      const goals = await storage.getGoalsByAttendant(attendantId);
+      res.json(goals);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch goals" });
+    }
+  });
+
+  app.get("/api/goals/active/:attendantId", async (req, res) => {
+    try {
+      const attendantId = parseInt(req.params.attendantId);
+      const goals = await storage.getActiveGoalsByAttendant(attendantId);
+      res.json(goals);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch active goals" });
+    }
+  });
+
+  app.post("/api/goals", async (req, res) => {
+    try {
+      const goal = await storage.createGoal(req.body);
+      res.json(goal);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create goal" });
+    }
+  });
+
+  app.put("/api/goals/:id/progress", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { currentValue } = req.body;
+      const goal = await storage.updateGoalProgress(id, currentValue);
+      res.json(goal);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update goal progress" });
+    }
+  });
+
+  app.put("/api/goals/:id/deactivate", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const goal = await storage.deactivateGoal(id);
+      res.json(goal);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to deactivate goal" });
+    }
+  });
+
+  // Achievements routes
+  app.get("/api/achievements", async (req, res) => {
+    try {
+      const achievements = await storage.getAllAchievements();
+      res.json(achievements);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch achievements" });
+    }
+  });
+
+  app.get("/api/achievements/attendant/:attendantId", async (req, res) => {
+    try {
+      const attendantId = parseInt(req.params.attendantId);
+      const achievements = await storage.getAchievementsByAttendant(attendantId);
+      res.json(achievements);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch achievements" });
+    }
+  });
+
+  app.post("/api/achievements", async (req, res) => {
+    try {
+      const achievement = await storage.createAchievement(req.body);
+      res.json(achievement);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create achievement" });
+    }
+  });
+
+  // Leaderboard routes
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      const leaderboard = await storage.getAllLeaderboard();
+      res.json(leaderboard);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
+
+  app.get("/api/leaderboard/attendant/:attendantId", async (req, res) => {
+    try {
+      const attendantId = parseInt(req.params.attendantId);
+      const entry = await storage.getLeaderboardByAttendant(attendantId);
+      res.json(entry);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch leaderboard entry" });
+    }
+  });
+
+  app.post("/api/leaderboard/update", async (req, res) => {
+    try {
+      const { attendantId, totalPoints, currentStreak, bestStreak } = req.body;
+      const entry = await storage.updateLeaderboard(attendantId, totalPoints, currentStreak, bestStreak);
+      await storage.updateLeaderboardRanks();
+      res.json(entry);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update leaderboard" });
     }
   });
 

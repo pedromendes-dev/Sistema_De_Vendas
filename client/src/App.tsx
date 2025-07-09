@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import Ranking from "@/pages/ranking";
 import History from "@/pages/history";
 import Attendants from "@/pages/attendants";
+import Goals from "@/pages/goals";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
@@ -15,9 +16,10 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/ranking" component={Ranking} />
-      <Route path="/historico" component={History} />
-      <Route path="/atendentes" component={Attendants} />
-      <Route path="/area-gestor" component={Admin} />
+      <Route path="/history" component={History} />
+      <Route path="/attendants" component={Attendants} />
+      <Route path="/goals" component={Goals} />
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );
