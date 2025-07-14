@@ -3,8 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DollarSign, User, TrendingUp, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { DollarSign, Trophy, Target, TrendingUp, Star } from "lucide-react";
+import { useSaleSound } from "@/hooks/useSaleSound";
 import type { Attendant } from "@shared/schema";
 
 interface AttendantCardProps {
@@ -13,13 +14,17 @@ interface AttendantCardProps {
   isLoading: boolean;
 }
 
-export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: AttendantCardProps) {
+export default function AttendantCard({ 
+  attendant, 
+  onSaleSubmit, 
+  isLoading = false 
+}: AttendantCardProps) {
   const [saleValue, setSaleValue] = useState("");
-  const { toast } = useToast();
+  const { playSaleSound } = useSaleSound();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!saleValue || parseFloat(saleValue) <= 0) {
       toast({
         title: "Erro",
@@ -30,13 +35,14 @@ export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: At
     }
 
     onSaleSubmit(attendant.id, saleValue);
+    playSaleSound(); // Tocar som de venda
     setSaleValue("");
   };
 
   return (
     <Card className="bg-gradient-to-br from-card to-card/80 border-border hover:border-success/50 transition-all duration-500 shadow-lg hover:shadow-2xl group backdrop-blur-sm h-full">
       <CardContent className="p-6 text-center space-y-6 h-full flex flex-col">
-        
+
         {/* Avatar Section */}
         <div className="relative mx-auto w-24 h-24">
           <div className="absolute inset-0 bg-gradient-to-r from-success to-info rounded-full opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
@@ -55,7 +61,7 @@ export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: At
           </div>
           <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-success to-info rounded-full border-3 border-card shadow-lg animate-pulse"></div>
         </div>
-        
+
         {/* Info Section */}
         <div className="space-y-3">
           <h3 className="text-lg font-bold text-primary-light group-hover:text-success transition-colors duration-300">
@@ -90,7 +96,7 @@ export default function AttendantCard({ attendant, onSaleSubmit, isLoading }: At
               />
             </div>
           </div>
-          
+
           <Button 
             type="submit" 
             disabled={!saleValue || isLoading}

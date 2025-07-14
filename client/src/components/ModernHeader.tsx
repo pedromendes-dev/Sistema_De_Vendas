@@ -22,6 +22,7 @@ export default function ModernHeader() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [compactView, setCompactView] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Fetch data for search
   const { data: attendants = [] } = useQuery<Attendant[]>({
