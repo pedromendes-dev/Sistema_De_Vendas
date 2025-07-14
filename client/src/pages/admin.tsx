@@ -14,7 +14,10 @@ import Navigation from "@/components/Navigation";
 import DragDropManager from "@/components/DragDropManager";
 import ContentBuilder from "@/components/ContentBuilder";
 import SystemConfiguration from "@/components/SystemConfiguration";
-import DashboardStats from "@/components/DashboardStats";
+import { AdaptivePage, AdaptiveSection, AdaptiveCard } from "@/components/AdaptiveContainer";
+import { AdaptiveGrid } from "@/components/AdaptiveGrid";
+import { useScreenAdapter } from "@/hooks/useScreenAdapter";
+import AdminAdaptationDemo from "@/components/AdminAdaptationDemo";
 import type { Attendant, Sale, Goal, Achievement } from "@shared/schema";
 
 export default function Admin() {
@@ -25,6 +28,8 @@ export default function Admin() {
     username: "",
     password: ""
   });
+  const { metrics, classes, breakpoint } = useScreenAdapter();
+  const [activeTab, setActiveTab] = useState('attendants');
   const [editingAttendant, setEditingAttendant] = useState<Attendant | null>(null);
   const [newAttendant, setNewAttendant] = useState({ 
     name: "", 
@@ -54,7 +59,7 @@ export default function Admin() {
   const [attendantSortOrder, setAttendantSortOrder] = useState<'asc' | 'desc'>('asc');
   const [selectedAttendant, setSelectedAttendant] = useState<Attendant | null>(null);
   const [showAttendantDetails, setShowAttendantDetails] = useState(false);
-  
+
   // Goal management states
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
@@ -65,7 +70,7 @@ export default function Admin() {
     targetValue: "",
     type: "sales"
   });
-  
+
   // Achievement management states
   const [showAchievementModal, setShowAchievementModal] = useState(false);
   const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
@@ -76,7 +81,7 @@ export default function Admin() {
     pointsAwarded: "",
     badgeColor: "#10B981"
   });
-  
+
   // Sale management states
   const [showSaleModal, setShowSaleModal] = useState(false);
   const [editingSale, setEditingSale] = useState<Sale | null>(null);
@@ -97,14 +102,14 @@ export default function Admin() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${fileName}.jpg`;
+      link.download = fileName + '.jpg';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       toast({
         title: "Download concluído!",
-        description: `Imagem de ${fileName} baixada com sucesso.`,
+        description: 'Imagem de ' + fileName + ' baixada com sucesso.',
       });
     } catch (error) {
       toast({
@@ -116,7 +121,7 @@ export default function Admin() {
   };
 
   const copyAttendantInfo = (attendant: Attendant) => {
-    const info = `Nome: ${attendant.name}\nVendas: R$ ${attendant.earnings}\nCadastrado: ${new Date(attendant.createdAt).toLocaleDateString('pt-BR')}`;
+    const info = 'Nome: ' + attendant.name + '\nVendas: R$ ' + attendant.earnings + '\nCadastrado: ' + new Date(attendant.createdAt).toLocaleDateString('pt-BR');
     navigator.clipboard.writeText(info);
     toast({
       title: "Informações copiadas!",
@@ -126,15 +131,11 @@ export default function Admin() {
 
   const shareAttendantReport = (attendant: Attendant) => {
     const stats = getAttendantStats(attendant);
-    const report = `📊 RELATÓRIO - ${attendant.name}
-💰 Total em Vendas: R$ ${attendant.earnings}
-🎯 Número de Vendas: ${stats.totalSales}
-🏆 Conquistas: ${stats.totalAchievements}
-📅 Cadastrado em: ${new Date(attendant.createdAt).toLocaleDateString('pt-BR')}`;
-    
+    const report = '📊 RELATÓRIO - ' + attendant.name + '\n💰 Total em Vendas: R$ ' + attendant.earnings + '\n🎯 Número de Vendas: ' + stats.totalSales + '\n🏆 Conquistas: ' + stats.totalAchievements + '\n📅 Cadastrado em: ' + new Date(attendant.createdAt).toLocaleDateString('pt-BR');
+
     if (navigator.share) {
       navigator.share({
-        title: `Relatório - ${attendant.name}`,
+        title: 'Relatório - ' + attendant.name,
         text: report,
       });
     } else {
@@ -147,14 +148,14 @@ export default function Admin() {
   };
 
   const generateAttendantQR = (attendant: Attendant) => {
-    const qrData = `${window.location.origin}?attendant=${attendant.id}`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
-    
+    const qrData = window.location.origin + '?attendant=' + attendant.id;
+    const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(qrData);
+
     const link = document.createElement('a');
     link.href = qrUrl;
-    link.download = `${attendant.name}_QR.png`;
+    link.download = attendant.name + '_QR.png';
     link.click();
-    
+
     toast({
       title: "QR Code gerado!",
       description: "QR Code do atendente baixado com sucesso.",
@@ -164,7 +165,7 @@ export default function Admin() {
   const exportAttendantData = async (attendant: Attendant) => {
     const stats = getAttendantStats(attendant);
     const salesData = sales?.filter(sale => sale.attendantId === attendant.id) || [];
-    
+
     const data = {
       attendant: {
         name: attendant.name,
@@ -182,7 +183,7 @@ export default function Admin() {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${attendant.name}_dados.json`;
+    link.download = attendant.name + '_dados.json';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -195,8 +196,8 @@ export default function Admin() {
   };
 
   const sendQuickMessage = (attendant: Attendant) => {
-    const message = `Olá ${attendant.name}! Como estão as vendas hoje?`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    const message = 'Olá ' + attendant.name + '! Como estão as vendas hoje?';
+    const whatsappUrl = 'https://wa.me/?text=' + encodeURIComponent(message);
     window.open(whatsappUrl, '_blank');
   };
 
@@ -205,14 +206,14 @@ export default function Admin() {
       const attendant = attendants.find(a => a.id === attendantId);
       if (!attendant) return;
 
-      await apiRequest("PUT", `/api/attendants/${attendantId}`, {
+      await apiRequest("PUT", "/api/attendants/" + attendantId, {
         status: attendant.status === 'active' ? 'inactive' : 'active'
       });
 
       queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
       toast({
         title: "Status atualizado!",
-        description: `${attendant.name} está agora ${attendant.status === 'active' ? 'inativo' : 'ativo'}.`,
+        description: attendant.name + ' está agora ' + (attendant.status === 'active' ? 'inativo' : 'ativo') + '.',
       });
     } catch (error) {
       toast({
@@ -227,12 +228,12 @@ export default function Admin() {
   useEffect(() => {
     const savedAuth = localStorage.getItem('admin_authenticated');
     const authTimestamp = localStorage.getItem('admin_auth_timestamp');
-    
+
     if (savedAuth === 'true' && authTimestamp) {
       const authTime = parseInt(authTimestamp);
       const currentTime = Date.now();
       const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
-      
+
       // Check if authentication is still valid (within 1 hour)
       if (currentTime - authTime < oneHour) {
         setIsAuthenticated(true);
@@ -293,7 +294,7 @@ export default function Admin() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${attendantName.replace(/\s+/g, '_')}_photo.jpg`;
+      link.download = attendantName.replace(/\s+/g, '_') + '_photo.jpg';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -327,7 +328,7 @@ export default function Admin() {
         });
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
@@ -415,7 +416,7 @@ export default function Admin() {
     const attendantSales = sales.filter((sale: Sale) => sale.attendantId === attendant.id);
     const attendantGoals = goals.filter((goal: Goal) => goal.attendantId === attendant.id);
     const attendantAchievements = achievements.filter((achievement: Achievement) => achievement.attendantId === attendant.id);
-    
+
     return {
       totalSales: attendantSales.length,
       averageSale: attendantSales.length > 0 ? 
@@ -497,7 +498,7 @@ export default function Admin() {
   // Mutations
   const deleteAttendantMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/attendants/${id}`);
+      const response = await apiRequest("DELETE", "/api/attendants/" + id);
       if (!response.ok) throw new Error("Failed to delete attendant");
       return response.json();
     },
@@ -528,7 +529,7 @@ export default function Admin() {
 
   const updateAttendantMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: { name: string; imageUrl: string; email?: string; phone?: string; department?: string; commission?: string; startDate?: string; status?: string } }) => {
-      const response = await apiRequest("PUT", `/api/attendants/${id}`, data);
+      const response = await apiRequest("PUT", "/api/attendants/" + id, data);
       if (!response.ok) throw new Error("Failed to update attendant");
       return response.json();
     },
@@ -575,7 +576,7 @@ export default function Admin() {
 
   const deleteAdminMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/users/${id}`);
+      const response = await apiRequest("DELETE", "/api/admin/users/" + id);
       if (!response.ok) throw new Error("Failed to delete admin");
       return response.json();
     },
@@ -591,7 +592,7 @@ export default function Admin() {
   const toggleAdminStatusMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
       const endpoint = isActive ? "activate" : "deactivate";
-      const response = await apiRequest("PUT", `/api/admin/users/${id}/${endpoint}`);
+      const response = await apiRequest("PUT", "/api/admin/users/" + id + "/" + endpoint);
       if (!response.ok) throw new Error("Failed to update admin status");
       return response.json();
     },
@@ -606,7 +607,7 @@ export default function Admin() {
 
   const deleteSaleMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/sales/${id}`);
+      const response = await apiRequest("DELETE", "/api/sales/" + id);
       if (!response.ok) throw new Error("Failed to delete sale");
       return response.json();
     },
@@ -640,7 +641,7 @@ export default function Admin() {
 
   const updateSaleMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: { attendantId: number; value: string } }) => {
-      const response = await apiRequest("PUT", `/api/sales/${id}`, data);
+      const response = await apiRequest("PUT", "/api/sales/" + id, data);
       if (!response.ok) throw new Error("Failed to update sale");
       return response.json();
     },
@@ -659,7 +660,7 @@ export default function Admin() {
 
   const deleteGoalMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/goals/${id}`);
+      const response = await apiRequest("DELETE", "/api/goals/" + id);
       if (!response.ok) throw new Error("Failed to delete goal");
       return response.json();
     },
@@ -696,7 +697,7 @@ export default function Admin() {
 
   const updateGoalMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await apiRequest("PUT", `/api/goals/${id}`, {
+      const response = await apiRequest("PUT", "/api/goals/" + id, {
         ...data,
         attendantId: parseInt(data.attendantId)
       });
@@ -739,7 +740,7 @@ export default function Admin() {
 
   const updateAchievementMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await apiRequest("PUT", `/api/achievements/${id}`, {
+      const response = await apiRequest("PUT", "/api/achievements/" + id, {
         ...data,
         attendantId: parseInt(data.attendantId),
         pointsAwarded: parseInt(data.pointsAwarded)
@@ -760,7 +761,7 @@ export default function Admin() {
 
   const deleteAchievementMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/achievements/${id}`);
+      const response = await apiRequest("DELETE", "/api/achievements/" + id);
       if (!response.ok) throw new Error("Failed to delete achievement");
       return response.json();
     },
@@ -776,7 +777,7 @@ export default function Admin() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const response = await fetch("/api/admin/login", {
         method: "POST",
@@ -785,16 +786,16 @@ export default function Admin() {
         },
         body: JSON.stringify(credentials),
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         setIsAuthenticated(true);
-        
+
         // Save authentication state to localStorage
         localStorage.setItem('admin_authenticated', 'true');
         localStorage.setItem('admin_auth_timestamp', Date.now().toString());
         localStorage.setItem('admin_user', JSON.stringify(result.user));
-        
+
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo à área do gestor.",
@@ -912,36 +913,48 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-dark via-primary-dark to-secondary-dark/50">
+    <AdaptivePage className="min-h-screen bg-gradient-to-br from-primary-dark via-primary-dark to-secondary-dark/50">
       <ModernHeader />
       <Navigation />
 
-      <main className="container-universal pb-20 sm:pb-8 pt-4 sm:pt-6 constrain-width">
-        {/* Admin Dashboard Header - Mobile Optimized */}
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 constrain-width">
+      <AdaptiveSection className="pb-20 sm:pb-8 pt-4 sm:pt-6">
+        {/* Intelligent Admin Dashboard Header */}
+        <div className={'flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 ' + classes.spacing}>
           <div className="flex items-center gap-3">
-            <Shield className="text-danger icon-universal-xl" />
+            <Shield 
+              className="text-danger" 
+              size={metrics.deviceType === 'mobile' ? 24 : 32} 
+            />
             <div>
-              <h2 className="text-universal-2xl font-bold text-primary-light">Painel do Gestor</h2>
-              <p className="text-universal-sm text-secondary-light">Gerencie todos os aspectos do sistema</p>
+              <h2 className={classes.text.replace('-sm', '-2xl') + ' font-bold text-primary-light'}>
+                Painel do Gestor
+              </h2>
+              <p className={classes.text + ' text-secondary-light'}>
+                Gerencie todos os aspectos do sistema
+              </p>
             </div>
           </div>
           <Button 
             onClick={handleLogout}
             variant="outline" 
-            className="btn-universal-md border-border text-secondary-light hover:text-primary-light w-full sm:w-auto"
+            className={classes.button + ' border-border text-secondary-light hover:text-primary-light ' + (metrics.deviceType === 'mobile' ? 'w-full' : 'w-auto')}
           >
-            <Lock className="icon-universal-sm mr-2" />
+            <Lock size={metrics.deviceType === 'mobile' ? 14 : 16} className="mr-2" />
             Sair
           </Button>
         </div>
 
-        {/* Management Tabs - Universal Mobile System */}
-        <Tabs defaultValue="attendants" className="space-y-4 constrain-all" value={activeTab} onValueChange={setActiveTab}>
-          {/* Ultra-Responsive Mobile Tab Navigation */}
-          <div className="mobile-tabs-wrapper constrain-all">
-            <div className="bg-secondary-dark border border-border rounded-lg overflow-hidden constrain-all">
-              <TabsList className="admin-tabs-grid bg-transparent h-auto constrain-all">
+        {/* Demonstration of Intelligent Adaptation */}
+        <AdminAdaptationDemo />
+
+        {/* Intelligent Management Tabs */}
+        <Tabs defaultValue="attendants" className="space-y-4" value={activeTab} onValueChange={setActiveTab}>
+          {/* Intelligent Adaptive Tab Navigation */}
+          <div className="w-full overflow-x-auto">
+            <div className="bg-secondary-dark border border-border rounded-lg overflow-hidden">
+              <TabsList className="grid bg-transparent h-auto p-2 gap-1" style={{
+                gridTemplateColumns: 'repeat(' + (metrics.deviceType === 'mobile' ? 'auto-fit' : '8') + ', minmax(' + (metrics.deviceType === 'mobile' ? '80px' : '100px') + ', 1fr))'
+              }}>
                 {[
                   { value: 'attendants', icon: Users, label: 'Atendentes' },
                   { value: 'sales', icon: DollarSign, label: 'Vendas' },
@@ -955,10 +968,21 @@ export default function Admin() {
                   <TabsTrigger
                     key={value}
                     value={value}
-                    className="flex flex-col items-center justify-center gap-1 space-universal-xs text-universal-xs text-secondary-light data-[state=active]:text-primary-light data-[state=active]:bg-primary-dark/30 transition-all border-0 bg-transparent rounded-md constrain-all"
+                    className={`
+                      flex flex-col items-center justify-center gap-1
+                      ${classes.card}
+                      ${metrics.deviceType === 'mobile' ? 'p-2' : 'p-3'}
+                      ${classes.text.replace('-sm', '-xs')}
+                      text-secondary-light
+                      data-[state=active]:text-primary-light
+                      data-[state=active]:bg-primary-dark/30
+                      transition-all border-0 bg-transparent rounded-md
+                    `.trim()}
                   >
-                    <Icon className="icon-universal-sm flex-shrink-0" />
-                    <span className="leading-tight text-center truncate w-full">{label}</span>
+                    <Icon size={metrics.deviceType === 'mobile' ? 14 : 16} className="flex-shrink-0" />
+                    <span className="leading-tight text-center truncate w-full">
+                      {metrics.deviceType === 'mobile' && label.length > 8 ? label.substring(0, 8) + '...' : label}
+                    </span>
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -967,58 +991,70 @@ export default function Admin() {
 
 
 
-          {/* Attendants Management - Universal Mobile */}
-          <TabsContent value="attendants" className="space-universal-md constrain-width">
-            {/* Dashboard Stats - Universal Mobile */}
-            <DashboardStats />
-            {/* Add Attendant Button - Universal Mobile */}
-            <div className="lg:hidden">
+          {/* Intelligent Attendants Management */}
+          <TabsContent value="attendants" className={classes.spacing}>
+            {/* Intelligent Dashboard Stats */}
+            <AdaptiveSection padding="small">
+              <DashboardStats />
+            </AdaptiveSection>
+            
+            {/* Intelligent Add Attendant Button */}
+            <div className={metrics.deviceType === 'desktop' ? 'hidden' : 'block'}>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Card className="bg-gradient-to-r from-success/10 to-info/10 border-success/30 hover:from-success/20 hover:to-info/20 cursor-pointer transition-all duration-300 card-universal constrain-width">
-                    <CardContent className="space-universal-lg text-center">
-                      <Plus className="mx-auto mb-3 text-success icon-universal-xl" />
-                      <h3 className="text-universal-lg font-bold text-primary-light mb-2">Adicionar Novo Atendente</h3>
-                      <p className="text-universal-sm text-secondary-light">Preencha as informações para criar um novo atendente</p>
+                  <AdaptiveCard className="bg-gradient-to-r from-success/10 to-info/10 border-success/30 hover:from-success/20 hover:to-info/20 cursor-pointer transition-all duration-300">
+                    <CardContent className={classes.spacing + ' text-center'}>
+                      <Plus 
+                        className="mx-auto mb-3 text-success" 
+                        size={metrics.deviceType === 'mobile' ? 24 : 32} 
+                      />
+                      <h3 className={classes.text.replace('-sm', '-lg') + ' font-bold text-primary-light mb-2'}>
+                        Adicionar Novo Atendente
+                      </h3>
+                      <p className={classes.text + ' text-secondary-light'}>
+                        Preencha as informações para criar um novo atendente
+                      </p>
                     </CardContent>
-                  </Card>
+                  </AdaptiveCard>
                 </DialogTrigger>
-                <DialogContent className="bg-card border-border text-primary-light card-universal mx-4 constrain-width">
+                <DialogContent className={'bg-card border-border text-primary-light ' + classes.card + ' ' + (metrics.deviceType === 'mobile' ? 'mx-4' : 'mx-auto')}>
                   <DialogHeader>
-                    <DialogTitle className="text-universal-lg text-primary-light">Novo Atendente</DialogTitle>
+                    <DialogTitle className={classes.text.replace('-sm', '-lg') + ' text-primary-light'}>
+                      Novo Atendente
+                    </DialogTitle>
                   </DialogHeader>
-                  <div className="space-universal-md">
+                  <div className={classes.spacing}>
                     <div>
-                      <Label className="text-universal-sm text-secondary-light">Nome *</Label>
+                      <Label className={classes.text + ' text-secondary-light'}>Nome *</Label>
                       <Input
                         value={newAttendant.name}
                         onChange={(e) => setNewAttendant({...newAttendant, name: e.target.value})}
                         placeholder="Nome do atendente"
-                        className="input-universal bg-input border-border text-primary-light"
+                        className={classes.button + ' bg-input border-border text-primary-light'}
                       />
                     </div>
                     <div>
-                      <Label className="text-universal-sm text-secondary-light">URL da Imagem *</Label>
+                      <Label className={classes.text + ' text-secondary-light'}>URL da Imagem *</Label>
                       <Input
                         value={newAttendant.imageUrl}
                         onChange={(e) => setNewAttendant({...newAttendant, imageUrl: e.target.value})}
                         placeholder="https://exemplo.com/foto.jpg"
-                        className="input-universal bg-input border-border text-primary-light"
+                        className={classes.button + ' bg-input border-border text-primary-light'}
                       />
                     </div>
                     <Button 
                       onClick={() => createAttendantMutation.mutate(newAttendant)}
                       disabled={!newAttendant.name || !newAttendant.imageUrl || createAttendantMutation.isPending}
-                      className="w-full bg-success text-white hover:bg-success-dark"
+                      className={'w-full bg-success text-white hover:bg-success-dark ' + classes.button}
                     >
                       {createAttendantMutation.isPending ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          <div className={'animate-spin rounded-full border-b-2 border-white mr-2 ' + (metrics.deviceType === 'mobile' ? 'h-3 w-3' : 'h-4 w-4')}></div>
                           Criando...
                         </>
                       ) : (
                         <>
-                          <Plus size={16} className="mr-2" />
+                          <Plus size={metrics.deviceType === 'mobile' ? 14 : 16} className="mr-2" />
                           Criar Atendente
                         </>
                       )}
@@ -1028,14 +1064,16 @@ export default function Admin() {
               </Dialog>
             </div>
 
-            {/* Formulário Completo para Desktop */}
-            <Card className="bg-card border-border hidden lg:block">
+            {/* Intelligent Desktop Form */}
+            <AdaptiveCard className={`bg-card border-border ${metrics.deviceType === 'desktop' ? 'block' : 'hidden'}`}>
               <CardHeader>
-                <CardTitle className="text-primary-light flex items-center gap-2">
-                  <Plus size={20} />
+                <CardTitle className={`text-primary-light flex items-center gap-2 ${classes.text.replace('-sm', '-lg')}`}>
+                  <Plus size={metrics.deviceType === 'mobile' ? 16 : 20} />
                   Adicionar Novo Atendente
                 </CardTitle>
-                <p className="text-secondary-light">Preencha as informações para criar um novo atendente</p>
+                <p className={`${classes.text} text-secondary-light`}>
+                  Preencha as informações para criar um novo atendente
+                </p>
               </CardHeader>
               <CardContent className="space-y-6">
                 <Tabs defaultValue="basic" className="w-full">
@@ -1182,7 +1220,7 @@ export default function Admin() {
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="border-t border-border pt-4">
                       <Label className="text-secondary-light">URL da Imagem</Label>
                       <Input
@@ -1270,7 +1308,7 @@ export default function Admin() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </AdaptiveCard>
 
             {/* Advanced Admin Tools */}
             <Card className="bg-card border-border">
@@ -1291,12 +1329,12 @@ export default function Admin() {
                         sales: sales?.filter(sale => sale.attendantId === attendant.id).length || 0,
                         created: new Date(attendant.createdAt).toLocaleDateString('pt-BR')
                       }));
-                      
+
                       const csv = [
                         'Nome,Vendas Totais,Número de Vendas,Data Cadastro',
                         ...allData.map(d => `${d.name},${d.earnings},${d.sales},${d.created}`)
                       ].join('\n');
-                      
+
                       const blob = new Blob([csv], { type: 'text/csv' });
                       const url = window.URL.createObjectURL(blob);
                       const link = document.createElement('a');
@@ -1304,7 +1342,7 @@ export default function Admin() {
                       link.download = 'relatorio_atendentes.csv';
                       link.click();
                       window.URL.revokeObjectURL(url);
-                      
+
                       toast({ title: "Relatório exportado!", description: "CSV com todos os atendentes baixado." });
                     }}
                     variant="outline"
@@ -1313,7 +1351,7 @@ export default function Admin() {
                     <FileText size={16} className="mr-2" />
                     Exportar Relatório CSV
                   </Button>
-                  
+
                   <Button
                     onClick={() => {
                       queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
@@ -1326,13 +1364,13 @@ export default function Admin() {
                     <RefreshCw size={16} className="mr-2" />
                     Sincronizar Dados
                   </Button>
-                  
+
                   <Button
                     onClick={() => {
                       const total = filteredAndSortedAttendants.length;
                       const active = filteredAndSortedAttendants.filter(a => a.status === 'active').length;
                       const totalSales = filteredAndSortedAttendants.reduce((sum, a) => sum + parseFloat(a.earnings), 0);
-                      
+
                       const summary = `📊 RESUMO GERAL
 📈 Total de Atendentes: ${total}
 ✅ Ativos: ${active}
@@ -1353,7 +1391,7 @@ export default function Admin() {
                   <Button
                     onClick={() => {
                       const message = `🎯 DESAFIO DO DIA!\n\nVamos bater nossa meta de vendas! 💪\n\n${filteredAndSortedAttendants.map(a => `• ${a.name}`).join('\n')}\n\nBom trabalho equipe! 🚀`;
-                      
+
                       if (navigator.share) {
                         navigator.share({ title: 'Motivação da Equipe', text: message });
                       } else {
@@ -1527,7 +1565,7 @@ export default function Admin() {
                                     <MessageCircle size={14} />
                                   </Button>
                                 </div>
-                                
+
                                 {/* Secondary Actions Row */}
                                 <div className="flex gap-1">
                                   <Button
@@ -1676,7 +1714,7 @@ export default function Admin() {
                                         <Share2 size={12} />
                                       </Button>
                                       <Button
-                                        onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
+                                        onClick={() => downloadImage(attendant.imageUrl, attendant.name + '_profile')}
                                         variant="outline"
                                         size="sm"
                                         className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
@@ -1828,7 +1866,7 @@ export default function Admin() {
                                   </div>
                                   <div className="flex gap-1">
                                     <Button
-                                      onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
+                                      onClick={() => downloadImage(attendant.imageUrl, attendant.name + '_profile')}
                                       variant="outline"
                                       size="sm"
                                       className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
@@ -1852,7 +1890,7 @@ export default function Admin() {
                                       variant="outline"
                                       size="sm"
                                       className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
-                                      title={`${attendant.status === 'active' ? 'Desativar' : 'Ativar'} atendente`}
+                                      title={(attendant.status === 'active' ? 'Desativar' : 'Ativar') + ' atendente'}
                                     >
                                       {attendant.status === 'active' ? <UserX size={14} /> : <UserCheck size={14} />}
                                     </Button>
@@ -2002,16 +2040,14 @@ export default function Admin() {
                             <h4 className="text-primary-light font-medium">{goal.title}</h4>
                             <p className="text-secondary-light text-sm">
                               {attendant?.name} - R$ {goal.currentValue} / R$ {goal.targetValue}
-                              <span className={`ml-2 px-2 py-1 rounded text-xs ${
-                                goal.isActive ? 'bg-success text-white' : 'bg-secondary-dark text-secondary-light'
-                              }`}>
+                              <span className={'ml-2 px-2 py-1 rounded text-xs ' + (goal.isActive ? 'bg-success text-white' : 'bg-secondary-dark text-secondary-light')}>
                                 {goal.isActive ? 'Ativa' : 'Inativa'}
                               </span>
                             </p>
                             <div className="w-full bg-secondary-dark rounded-full h-2 mt-2">
                               <div 
                                 className="bg-success h-2 rounded-full transition-all"
-                                style={{ width: `${Math.min(progress, 100)}%` }}
+                                style={{ width: Math.min(progress, 100) + '%' }}
                               />
                             </div>
                             <p className="text-xs text-secondary-light mt-1">
@@ -2195,9 +2231,7 @@ export default function Admin() {
                             <h4 className="text-primary-light font-medium">{admin.username}</h4>
                             <p className="text-secondary-light text-sm">
                               {admin.email} • {admin.role}
-                              <span className={`ml-2 px-2 py-1 rounded text-xs ${
-                                admin.isActive ? 'bg-success text-white' : 'bg-danger text-white'
-                              }`}>
+                              <span className={'ml-2 px-2 py-1 rounded text-xs ' + (admin.isActive ? 'bg-success text-white' : 'bg-danger text-white')}>
                                 {admin.isActive ? 'Ativo' : 'Inativo'}
                               </span>
                             </p>
@@ -2259,7 +2293,7 @@ export default function Admin() {
                       // Handle edit functionality
                       toast({
                         title: "Editar atendente",
-                        description: `Editando ${attendant.name}`,
+                        description: 'Editando ' + attendant.name,
                       });
                     }}
                     onDelete={(id) => deleteAttendantMutation.mutate(id)}
@@ -2285,7 +2319,7 @@ export default function Admin() {
                     // Here you could save the layout configuration
                     toast({
                       title: "Layout salvo!",
-                      description: `${widgets.length} widgets configurados.`,
+                      description: widgets.length + ' widgets configurados.',
                     });
                   }}
                 />
@@ -2298,7 +2332,7 @@ export default function Admin() {
             <SystemConfiguration />
           </TabsContent>
         </Tabs>
-      </main>
+      </AdaptiveSection>
 
       {/* Goal Modal */}
       <Dialog open={showGoalModal} onOpenChange={setShowGoalModal}>
@@ -2598,7 +2632,7 @@ export default function Admin() {
                           <div className="w-full bg-secondary-dark rounded-full h-2">
                             <div 
                               className="bg-gradient-to-r from-success to-info h-2 rounded-full transition-all"
-                              style={{ width: `${Math.min(progress, 100)}%` }}
+                              style={{ width: Math.min(progress, 100) + '%' }}
                             />
                           </div>
                           <div className="text-xs text-secondary-light mt-1">
@@ -2692,7 +2726,7 @@ export default function Admin() {
                     </p>
                   </div>
                 </div>
-                
+
                 {/* Quick Stats */}
                 <div className="grid grid-cols-3 gap-3 mt-4">
                   <div className="text-center bg-secondary-dark/30 rounded p-2">
@@ -2841,7 +2875,7 @@ export default function Admin() {
                           Max: 5MB | JPG, PNG, GIF, WebP
                         </span>
                       </div>
-                      
+
                       {/* Drag and Drop Area */}
                       <div 
                         className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-success/50 transition-colors cursor-pointer"
@@ -2874,7 +2908,7 @@ export default function Admin() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="border-t border-border pt-4">
                     <Label className="text-secondary-light">URL da Imagem</Label>
                     <div className="flex gap-2">
@@ -2986,7 +3020,7 @@ export default function Admin() {
                 <div className="text-3xl font-bold text-success mb-2">R$ {selectedSale.value}</div>
                 <div className="text-secondary-light text-sm">Valor da Venda</div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-secondary-light">Atendente:</span>
@@ -3061,7 +3095,7 @@ export default function Admin() {
                 ))}
               </select>
             </div>
-            
+
             <div>
               <Label className="text-secondary-light">Valor da Venda</Label>
               <Input
@@ -3115,6 +3149,6 @@ export default function Admin() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdaptivePage>
   );
 }
