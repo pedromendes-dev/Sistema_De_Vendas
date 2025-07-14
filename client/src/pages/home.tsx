@@ -6,12 +6,16 @@ import ModernHeader from "@/components/ModernHeader";
 import Navigation from "@/components/Navigation";
 import AttendantCard from "@/components/AttendantCard";
 import DashboardStats from "@/components/DashboardStats";
+import { AdaptivePage, AdaptiveSection } from "@/components/AdaptiveContainer";
+import { AdaptiveAttendantGrid } from "@/components/AdaptiveGrid";
+import { useScreenAdapter } from "@/hooks/useScreenAdapter";
 // import QuickStartGuide from '@/components/QuickStartGuide';
 import type { Attendant } from "@shared/schema";
 
 export default function Home() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { metrics, classes, breakpoint } = useScreenAdapter();
 
   // Fetch attendants
   const { data: attendants, isLoading } = useQuery<Attendant[]>({
