@@ -2,6 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global scroll improvements - reduced smoothness for better control */
+html {
+  scroll-behavior: auto;
+  scroll-padding-top: 1rem;
+  overscroll-behavior-y: contain;
+}
+
+body {
+  scroll-behavior: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Disable excessive smooth scrolling globally */
+* {
+  scroll-behavior: auto;
+}
+
+/* Optional smooth scroll for specific elements only */
+.smooth-scroll-subtle {
+  scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
 /* Mobile-first responsive utilities */
 @layer utilities {
   /* Mobile viewport fix */
