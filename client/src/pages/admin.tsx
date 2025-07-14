@@ -18,7 +18,7 @@ import DashboardStats from "@/components/DashboardStats";
 import { AdaptivePage, AdaptiveSection, AdaptiveCard } from "@/components/AdaptiveContainer";
 import { AdaptiveGrid } from "@/components/AdaptiveGrid";
 import { useScreenAdapter } from "@/hooks/useScreenAdapter";
-import AdminAdaptationDemo from "@/components/AdminAdaptationDemo";
+
 import type { Attendant, Sale, Goal, Achievement } from "@shared/schema";
 
 export default function Admin() {
@@ -945,8 +945,7 @@ export default function Admin() {
           </Button>
         </div>
 
-        {/* Demonstration of Intelligent Adaptation */}
-        <AdminAdaptationDemo />
+
 
         {/* Intelligent Management Tabs */}
         <Tabs defaultValue="attendants" className="space-y-4" value={activeTab} onValueChange={setActiveTab}>
