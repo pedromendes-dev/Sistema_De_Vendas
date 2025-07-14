@@ -916,92 +916,94 @@ export default function Admin() {
       <ModernHeader />
       <Navigation />
 
-      <main className="px-4 py-6 pb-20 sm:pb-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        {/* Admin Dashboard Header */}
-        <div className="flex justify-between items-start mb-6">
+      <main className="container-universal pb-20 sm:pb-8 pt-4 sm:pt-6 constrain-width">
+        {/* Admin Dashboard Header - Mobile Optimized */}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6 constrain-width">
           <div className="flex items-center gap-3">
-            <Shield className="text-danger" size={32} />
+            <Shield className="text-danger icon-universal-xl" />
             <div>
-              <h2 className="text-2xl font-bold text-primary-light">Painel do Gestor</h2>
-              <p className="text-secondary-light">Gerencie todos os aspectos do sistema</p>
+              <h2 className="text-universal-2xl font-bold text-primary-light">Painel do Gestor</h2>
+              <p className="text-universal-sm text-secondary-light">Gerencie todos os aspectos do sistema</p>
             </div>
           </div>
           <Button 
             onClick={handleLogout}
             variant="outline" 
-            className="border-border text-secondary-light hover:text-primary-light"
+            className="btn-universal-md border-border text-secondary-light hover:text-primary-light w-full sm:w-auto"
           >
-            <Lock size={16} className="mr-2" />
+            <Lock className="icon-universal-sm mr-2" />
             Sair
           </Button>
         </div>
 
-        {/* Management Tabs - Mobile Optimized */}
-        <Tabs defaultValue="attendants" className="space-y-4">
-          {/* Mobile Navigation - Horizontal Scroll */}
-          <div className="overflow-x-auto scrollbar-hide">
-            <TabsList className="inline-flex gap-2 bg-transparent p-0 min-w-max">
-              {[
-                { value: 'attendants', icon: Users, label: 'Atendentes' },
-                { value: 'sales', icon: DollarSign, label: 'Vendas' },
-                { value: 'goals', icon: Target, label: 'Metas' },
-                { value: 'achievements', icon: Trophy, label: 'Conquistas' },
-                { value: 'admins', icon: Shield, label: 'Admins' },
-                { value: 'dragdrop', icon: Grip, label: 'Organizar' },
-                { value: 'layout', icon: Layout, label: 'Layout' },
-                { value: 'config', icon: Settings, label: 'Config' }
-              ].map(({ value, icon: Icon, label }) => (
-                <TabsTrigger
-                  key={value}
-                  value={value}
-                  className="flex flex-col items-center gap-1 px-3 py-2 bg-card border border-border rounded-lg text-xs min-w-[70px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-success data-[state=active]:to-info data-[state=active]:text-white whitespace-nowrap"
-                >
-                  <Icon size={16} />
-                  <span className="leading-tight">{label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+        {/* Management Tabs - Universal Mobile System */}
+        <Tabs defaultValue="attendants" className="space-y-4 constrain-all" value={activeTab} onValueChange={setActiveTab}>
+          {/* Ultra-Responsive Mobile Tab Navigation */}
+          <div className="mobile-tabs-wrapper constrain-all">
+            <div className="bg-secondary-dark border border-border rounded-lg overflow-hidden constrain-all">
+              <TabsList className="admin-tabs-grid bg-transparent h-auto constrain-all">
+                {[
+                  { value: 'attendants', icon: Users, label: 'Atendentes' },
+                  { value: 'sales', icon: DollarSign, label: 'Vendas' },
+                  { value: 'goals', icon: Target, label: 'Metas' },
+                  { value: 'achievements', icon: Trophy, label: 'Conquistas' },
+                  { value: 'admins', icon: Shield, label: 'Admins' },
+                  { value: 'organize', icon: Grip, label: 'Organizar' },
+                  { value: 'layout', icon: Layout, label: 'Layout' },
+                  { value: 'configs', icon: Settings, label: 'Config' }
+                ].map(({ value, icon: Icon, label }) => (
+                  <TabsTrigger
+                    key={value}
+                    value={value}
+                    className="flex flex-col items-center justify-center gap-1 space-universal-xs text-universal-xs text-secondary-light data-[state=active]:text-primary-light data-[state=active]:bg-primary-dark/30 transition-all border-0 bg-transparent rounded-md constrain-all"
+                  >
+                    <Icon className="icon-universal-sm flex-shrink-0" />
+                    <span className="leading-tight text-center truncate w-full">{label}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
           </div>
 
 
 
-          {/* Attendants Management */}
-          <TabsContent value="attendants" className="space-y-6">
-            {/* Dashboard Stats - Mobile Optimized */}
+          {/* Attendants Management - Universal Mobile */}
+          <TabsContent value="attendants" className="space-universal-md constrain-width">
+            {/* Dashboard Stats - Universal Mobile */}
             <DashboardStats />
-            {/* Botão de Adicionar para Mobile */}
+            {/* Add Attendant Button - Universal Mobile */}
             <div className="lg:hidden">
               <Dialog>
                 <DialogTrigger asChild>
-                  <Card className="bg-gradient-to-r from-success/10 to-info/10 border-success/30 hover:from-success/20 hover:to-info/20 cursor-pointer transition-all duration-300">
-                    <CardContent className="p-6 text-center">
-                      <Plus className="mx-auto mb-3 text-success" size={32} />
-                      <h3 className="text-lg font-bold text-primary-light mb-2">Adicionar Novo Atendente</h3>
-                      <p className="text-sm text-secondary-light">Preencha as informações para criar um novo atendente</p>
+                  <Card className="bg-gradient-to-r from-success/10 to-info/10 border-success/30 hover:from-success/20 hover:to-info/20 cursor-pointer transition-all duration-300 card-universal constrain-width">
+                    <CardContent className="space-universal-lg text-center">
+                      <Plus className="mx-auto mb-3 text-success icon-universal-xl" />
+                      <h3 className="text-universal-lg font-bold text-primary-light mb-2">Adicionar Novo Atendente</h3>
+                      <p className="text-universal-sm text-secondary-light">Preencha as informações para criar um novo atendente</p>
                     </CardContent>
                   </Card>
                 </DialogTrigger>
-                <DialogContent className="bg-card border-border text-primary-light max-w-md mx-4">
+                <DialogContent className="bg-card border-border text-primary-light card-universal mx-4 constrain-width">
                   <DialogHeader>
-                    <DialogTitle className="text-primary-light">Novo Atendente</DialogTitle>
+                    <DialogTitle className="text-universal-lg text-primary-light">Novo Atendente</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
+                  <div className="space-universal-md">
                     <div>
-                      <Label className="text-secondary-light">Nome *</Label>
+                      <Label className="text-universal-sm text-secondary-light">Nome *</Label>
                       <Input
                         value={newAttendant.name}
                         onChange={(e) => setNewAttendant({...newAttendant, name: e.target.value})}
                         placeholder="Nome do atendente"
-                        className="bg-input border-border text-primary-light"
+                        className="input-universal bg-input border-border text-primary-light"
                       />
                     </div>
                     <div>
-                      <Label className="text-secondary-light">URL da Imagem *</Label>
+                      <Label className="text-universal-sm text-secondary-light">URL da Imagem *</Label>
                       <Input
                         value={newAttendant.imageUrl}
                         onChange={(e) => setNewAttendant({...newAttendant, imageUrl: e.target.value})}
                         placeholder="https://exemplo.com/foto.jpg"
-                        className="bg-input border-border text-primary-light"
+                        className="input-universal bg-input border-border text-primary-light"
                       />
                     </div>
                     <Button 
