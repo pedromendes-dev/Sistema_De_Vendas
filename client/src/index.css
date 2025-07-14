@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile optimizations for scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Global scroll improvements - reduced smoothness for better control */
 html {
   scroll-behavior: auto;

@@ -935,81 +935,98 @@ export default function Admin() {
           </Button>
         </div>
 
-        {/* Management Tabs - Unified Layout */}
-        <Tabs defaultValue="attendants" className="space-y-6">
-          <TabsList className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 bg-transparent p-0">
-            {[
-              { value: 'attendants', icon: Users, label: 'Atendentes' },
-              { value: 'sales', icon: DollarSign, label: 'Vendas' },
-              { value: 'goals', icon: Target, label: 'Metas' },
-              { value: 'achievements', icon: Trophy, label: 'Conquistas' },
-              { value: 'admins', icon: Shield, label: 'Administradores' },
-              { value: 'dragdrop', icon: Grip, label: 'Organizar' },
-              { value: 'layout', icon: Layout, label: 'Layout' },
-              { value: 'config', icon: Settings, label: 'Configurações' }
-            ].map(({ value, icon: Icon, label }) => (
-              <TabsTrigger
-                key={value}
-                value={value}
-                className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 bg-card border border-border rounded-lg text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-success data-[state=active]:to-info data-[state=active]:text-white"
-              >
-                <Icon size={16} className="sm:hidden" />
-                <Icon size={18} className="hidden sm:block" />
-                <span className="leading-tight text-center sm:text-left">{label}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        {/* Management Tabs - Mobile Optimized */}
+        <Tabs defaultValue="attendants" className="space-y-4">
+          {/* Mobile Navigation - Horizontal Scroll */}
+          <div className="overflow-x-auto scrollbar-hide">
+            <TabsList className="inline-flex gap-2 bg-transparent p-0 min-w-max">
+              {[
+                { value: 'attendants', icon: Users, label: 'Atendentes' },
+                { value: 'sales', icon: DollarSign, label: 'Vendas' },
+                { value: 'goals', icon: Target, label: 'Metas' },
+                { value: 'achievements', icon: Trophy, label: 'Conquistas' },
+                { value: 'admins', icon: Shield, label: 'Admins' },
+                { value: 'dragdrop', icon: Grip, label: 'Organizar' },
+                { value: 'layout', icon: Layout, label: 'Layout' },
+                { value: 'config', icon: Settings, label: 'Config' }
+              ].map(({ value, icon: Icon, label }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="flex flex-col items-center gap-1 px-3 py-2 bg-card border border-border rounded-lg text-xs min-w-[70px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-success data-[state=active]:to-info data-[state=active]:text-white whitespace-nowrap"
+                >
+                  <Icon size={16} />
+                  <span className="leading-tight">{label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
 
 
           {/* Attendants Management */}
           <TabsContent value="attendants" className="space-y-6">
-            {/* Quick Stats Dashboard */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="bg-gradient-to-r from-success to-success/80 border-success/30">
-                <CardContent className="p-4 text-center">
-                  <Users className="mx-auto mb-2 text-white" size={24} />
-                  <div className="text-2xl font-bold text-white">
-                    {attendants?.length || 0}
+            {/* Dashboard Stats - Mobile Optimized */}
+            <DashboardStats />
+            {/* Botão de Adicionar para Mobile */}
+            <div className="lg:hidden">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Card className="bg-gradient-to-r from-success/10 to-info/10 border-success/30 hover:from-success/20 hover:to-info/20 cursor-pointer transition-all duration-300">
+                    <CardContent className="p-6 text-center">
+                      <Plus className="mx-auto mb-3 text-success" size={32} />
+                      <h3 className="text-lg font-bold text-primary-light mb-2">Adicionar Novo Atendente</h3>
+                      <p className="text-sm text-secondary-light">Preencha as informações para criar um novo atendente</p>
+                    </CardContent>
+                  </Card>
+                </DialogTrigger>
+                <DialogContent className="bg-card border-border text-primary-light max-w-md mx-4">
+                  <DialogHeader>
+                    <DialogTitle className="text-primary-light">Novo Atendente</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-secondary-light">Nome *</Label>
+                      <Input
+                        value={newAttendant.name}
+                        onChange={(e) => setNewAttendant({...newAttendant, name: e.target.value})}
+                        placeholder="Nome do atendente"
+                        className="bg-input border-border text-primary-light"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-secondary-light">URL da Imagem *</Label>
+                      <Input
+                        value={newAttendant.imageUrl}
+                        onChange={(e) => setNewAttendant({...newAttendant, imageUrl: e.target.value})}
+                        placeholder="https://exemplo.com/foto.jpg"
+                        className="bg-input border-border text-primary-light"
+                      />
+                    </div>
+                    <Button 
+                      onClick={() => createAttendantMutation.mutate(newAttendant)}
+                      disabled={!newAttendant.name || !newAttendant.imageUrl || createAttendantMutation.isPending}
+                      className="w-full bg-success text-white hover:bg-success-dark"
+                    >
+                      {createAttendantMutation.isPending ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Criando...
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} className="mr-2" />
+                          Criar Atendente
+                        </>
+                      )}
+                    </Button>
                   </div>
-                  <div className="text-xs text-white/80">Total Atendentes</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-r from-info to-info/80 border-info/30">
-                <CardContent className="p-4 text-center">
-                  <UserCheck className="mx-auto mb-2 text-white" size={24} />
-                  <div className="text-2xl font-bold text-white">
-                    {attendants?.filter(a => a.status === 'active').length || 0}
-                  </div>
-                  <div className="text-xs text-white/80">Ativos</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-r from-warning to-warning/80 border-warning/30">
-                <CardContent className="p-4 text-center">
-                  <DollarSign className="mx-auto mb-2 text-white" size={24} />
-                  <div className="text-2xl font-bold text-white">
-                    R$ {attendants?.reduce((sum, a) => sum + parseFloat(a.earnings), 0).toFixed(2) || '0.00'}
-                  </div>
-                  <div className="text-xs text-white/80">Vendas Totais</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-r from-purple-500 to-purple-400 border-purple-500/30">
-                <CardContent className="p-4 text-center">
-                  <TrendingUp className="mx-auto mb-2 text-white" size={24} />
-                  <div className="text-2xl font-bold text-white">
-                    {attendants?.length > 0 ? 
-                      (attendants.reduce((sum, a) => sum + parseFloat(a.earnings), 0) / attendants.length).toFixed(2) : 
-                      '0.00'
-                    }
-                  </div>
-                  <div className="text-xs text-white/80">Média por Atendente</div>
-                </CardContent>
-              </Card>
+                </DialogContent>
+              </Dialog>
             </div>
-            <Card className="bg-card border-border">
+
+            {/* Formulário Completo para Desktop */}
+            <Card className="bg-card border-border hidden lg:block">
               <CardHeader>
                 <CardTitle className="text-primary-light flex items-center gap-2">
                   <Plus size={20} />

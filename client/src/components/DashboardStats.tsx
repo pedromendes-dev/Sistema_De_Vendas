@@ -22,27 +22,30 @@ function StatCard({ title, value, change, icon, description, color = 'info' }: S
   };
 
   return (
-    <Card className="bg-card border-border hover:border-primary/20 transition-all duration-300 hover:shadow-lg">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <p className="text-sm font-medium text-secondary-light mb-1">{title}</p>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-2xl font-bold text-primary-light">{value}</h3>
-              {change !== undefined && (
-                <Badge variant={change >= 0 ? "default" : "destructive"} className="text-xs">
-                  {change >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                  {Math.abs(change)}%
-                </Badge>
-              )}
-            </div>
-            {description && (
-              <p className="text-xs text-muted-light mt-1">{description}</p>
-            )}
-          </div>
-          <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
+    <Card className="bg-card border-border hover:border-primary/20 transition-all duration-300 hover:shadow-lg h-full">
+      <CardContent className="p-3 lg:p-4 h-full">
+        <div className="flex flex-col items-center text-center space-y-2 h-full justify-center">
+          {/* Ícone no topo */}
+          <div className={`p-2 lg:p-3 rounded-lg ${colorClasses[color]}`}>
             {icon}
           </div>
+          
+          {/* Valor principal */}
+          <div className="space-y-1">
+            <h3 className="text-lg lg:text-xl font-bold text-primary-light">{value}</h3>
+            <p className="text-xs lg:text-sm font-medium text-secondary-light leading-tight">{title}</p>
+            {description && (
+              <p className="text-xs text-muted-light leading-tight">{description}</p>
+            )}
+          </div>
+
+          {/* Badge de mudança se houver */}
+          {change !== undefined && (
+            <Badge variant={change >= 0 ? "default" : "destructive"} className="text-xs">
+              {change >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+              {Math.abs(change)}%
+            </Badge>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -75,41 +78,77 @@ export default function DashboardStats() {
   const salesChange = -2.1;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <StatCard
-        title="Vendas do Dia"
-        value={todaySales.length}
-        change={salesChange}
-        icon={<DollarSign size={24} />}
-        description="vendas realizadas hoje"
-        color="success"
-      />
-      
-      <StatCard
-        title="Faturamento Total"
-        value={`R$ ${totalRevenue.toFixed(2)}`}
-        change={revenueChange}
-        icon={<TrendingUp size={24} />}
-        description="receita acumulada"
-        color="info"
-      />
-      
-      <StatCard
-        title="Ticket Médio"
-        value={`R$ ${averageTicket.toFixed(2)}`}
-        change={performanceChange}
-        icon={<Target size={24} />}
-        description="valor médio por venda"
-        color="warning"
-      />
-      
-      <StatCard
-        title="Conquistas"
-        value={totalAchievements}
-        icon={<Trophy size={24} />}
-        description="badges conquistadas"
-        color="success"
-      />
+    <div className="space-y-4 mb-8">
+      {/* Grid 2x2 para mobile, expandindo para desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
+        <StatCard
+          title="Atendentes"
+          value={attendants.length}
+          icon={<Users size={20} />}
+          description="total cadastrados"
+          color="info"
+        />
+        
+        <StatCard
+          title="Vendas"
+          value={totalSales}
+          change={salesChange}
+          icon={<DollarSign size={20} />}
+          description="total realizadas"
+          color="success"
+        />
+        
+        <StatCard
+          title="Metas"
+          value={activeGoals}
+          icon={<Target size={20} />}
+          description="ativas"
+          color="warning"
+        />
+        
+        <StatCard
+          title="Ativos"
+          value={attendants.filter((a: any) => a.status === 'active').length}
+          icon={<Zap size={20} />}
+          description="trabalhando"
+          color="success"
+        />
+      </div>
+
+      {/* Cards maiores para informações principais */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-6">
+        <Card className="bg-gradient-to-r from-success/10 to-success/5 border-success/20">
+          <CardContent className="p-4 lg:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-secondary-light mb-1">Vendas Totais</p>
+                <h3 className="text-xl lg:text-2xl font-bold text-success">R$ {totalRevenue.toFixed(2)}</h3>
+                <p className="text-xs text-muted-light">Faturamento acumulado</p>
+              </div>
+              <div className="p-3 rounded-lg bg-success/20 text-success">
+                <TrendingUp size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-r from-info/10 to-info/5 border-info/20">
+          <CardContent className="p-4 lg:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-secondary-light mb-1">Média por Atendente</p>
+                <h3 className="text-xl lg:text-2xl font-bold text-info">
+                  {attendants.length > 0 ? (totalRevenue / attendants.length).toFixed(2) : '0.00'}
+                </h3>
+                <p className="text-xs text-muted-light">Performance individual</p>
+              </div>
+              <div className="p-3 rounded-lg bg-info/20 text-info">
+                <Trophy size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
