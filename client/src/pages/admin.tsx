@@ -306,8 +306,24 @@ export default function Admin() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({ title: "Arquivo muito grande (máximo 5MB)", variant: "destructive" });
+      // Validação de tamanho (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ 
+          title: "Arquivo muito grande", 
+          description: "O arquivo deve ter no máximo 5MB. Tente redimensionar a imagem.",
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      // Validação de tipo de arquivo
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({ 
+          title: "Formato não suportado", 
+          description: "Use apenas imagens nos formatos: JPG, PNG, GIF ou WebP.",
+          variant: "destructive" 
+        });
         return;
       }
       
@@ -315,6 +331,17 @@ export default function Admin() {
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setEditAttendantData({...editAttendantData, imageUrl: result});
+        toast({ 
+          title: "Imagem carregada!", 
+          description: "A imagem foi processada com sucesso." 
+        });
+      };
+      reader.onerror = () => {
+        toast({ 
+          title: "Erro ao processar imagem", 
+          description: "Não foi possível ler o arquivo. Tente novamente.",
+          variant: "destructive" 
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -499,7 +526,7 @@ export default function Admin() {
   });
 
   const updateAttendantMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: { name: string; imageUrl: string } }) => {
+    mutationFn: async ({ id, data }: { id: number; data: { name: string; imageUrl: string; email?: string; phone?: string; department?: string; commission?: string; startDate?: string; status?: string } }) => {
       const response = await apiRequest("PUT", `/api/attendants/${id}`, data);
       if (!response.ok) throw new Error("Failed to update attendant");
       return response.json();
@@ -508,7 +535,16 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
       setShowEditModal(false);
       setEditingAttendant(null);
-      setEditAttendantData({ name: "", imageUrl: "" });
+      setEditAttendantData({ 
+        name: "", 
+        imageUrl: "", 
+        email: "", 
+        phone: "", 
+        department: "", 
+        commission: "", 
+        startDate: "", 
+        status: "active" 
+      });
       toast({ title: "Atendente atualizado com sucesso!" });
     },
     onError: () => {
@@ -2763,26 +2799,59 @@ export default function Admin() {
                 <TabsContent value="image" className="space-y-4 mt-4">
                   <div>
                     <Label className="text-secondary-light">Upload de Imagem</Label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <Button
-                        type="button"
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => document.getElementById('image-upload')?.click()}
+                          variant="outline"
+                          className="border-border text-secondary-light hover:bg-accent"
+                        >
+                          <Upload size={16} className="mr-2" />
+                          Escolher Arquivo
+                        </Button>
+                        <span className="text-xs text-secondary-light">
+                          Max: 5MB | JPG, PNG, GIF, WebP
+                        </span>
+                      </div>
+                      
+                      {/* Drag and Drop Area */}
+                      <div 
+                        className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-success/50 transition-colors cursor-pointer"
                         onClick={() => document.getElementById('image-upload')?.click()}
-                        variant="outline"
-                        className="border-border text-secondary-light hover:bg-accent"
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.classList.add('border-success');
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.classList.remove('border-success');
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.classList.remove('border-success');
+                          const files = e.dataTransfer.files;
+                          if (files.length > 0) {
+                            const event = { target: { files } } as any;
+                            handleImageUpload(event);
+                          }
+                        }}
                       >
-                        <Upload size={16} className="mr-2" />
-                        Escolher Arquivo
-                      </Button>
-                      <span className="text-xs text-secondary-light">
-                        Max: 5MB | JPG, PNG, GIF
-                      </span>
+                        <Upload size={24} className="mx-auto mb-2 text-secondary-light" />
+                        <p className="text-sm text-secondary-light mb-1">
+                          Arraste uma imagem aqui ou clique para selecionar
+                        </p>
+                        <p className="text-xs text-muted-light">
+                          Formatos aceitos: JPG, PNG, GIF, WebP (máx. 5MB)
+                        </p>
+                      </div>
                     </div>
                   </div>
                   
