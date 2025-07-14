@@ -14,6 +14,7 @@ import Navigation from "@/components/Navigation";
 import DragDropManager from "@/components/DragDropManager";
 import ContentBuilder from "@/components/ContentBuilder";
 import SystemConfiguration from "@/components/SystemConfiguration";
+import DashboardStats from "@/components/DashboardStats";
 import type { Attendant, Sale, Goal, Achievement } from "@shared/schema";
 
 export default function Admin() {
