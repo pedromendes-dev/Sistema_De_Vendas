@@ -49,53 +49,55 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-dark via-primary-dark to-secondary-dark/50 constrain-width">
+    <AdaptivePage className="min-h-screen bg-gradient-to-br from-primary-dark via-primary-dark to-secondary-dark/50">
       <ModernHeader />
       <Navigation />
 
-      <main className="universal-container pb-20 sm:pb-8 pt-4 sm:pt-6 constrain-width">
-        {/* Mobile Header */}
-        <div className="sm:hidden mb-4 space-adaptive">
-          <h1 className="text-fluid-xl font-bold text-primary-light mb-1">Sistema de Vendas</h1>
-          <p className="text-fluid-sm text-secondary-light">Registre suas vendas rapidamente</p>
+      <AdaptiveSection className="pb-20 sm:pb-8 pt-4 sm:pt-6">
+        {/* Intelligent Mobile Header */}
+        <div className={`${metrics.deviceType === 'mobile' ? 'block' : 'hidden'} mb-4 ${classes.spacing}`}>
+          <h1 className={`${classes.text.replace('-sm', '-xl')} font-bold text-primary-light mb-1`}>Sistema de Vendas</h1>
+          <p className={`${classes.text} text-secondary-light`}>Registre suas vendas rapidamente</p>
         </div>
 
-        {/* Dashboard Statistics - Universal Responsive */}
-        <div className="mb-4 sm:mb-6">
+        {/* Intelligent Dashboard Statistics */}
+        <AdaptiveSection padding="small" className="mb-4 sm:mb-6">
           <DashboardStats />
-        </div>
+        </AdaptiveSection>
 
-        {/* Quick Action Section for Mobile */}
-        <div className="sm:hidden mb-4 space-adaptive">
-          <div className="bg-gradient-to-r from-success/10 to-info/10 border border-success/20 card-adaptive">
-            <h3 className="text-fluid-lg font-semibold text-primary-light mb-2">🚀 Ação Rápida</h3>
-            <p className="text-fluid-sm text-secondary-light mb-3">Toque em um atendente abaixo para registrar uma venda</p>
-            <div className="flex items-center gap-2 text-fluid-xs text-success">
-              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-              <span>{attendants?.length || 0} atendentes disponíveis</span>
+        {/* Smart Quick Action for Touch Devices */}
+        {metrics.touchSupport && metrics.deviceType === 'mobile' && (
+          <AdaptiveSection padding="small" className="mb-4">
+            <div className={`bg-gradient-to-r from-success/10 to-info/10 border border-success/20 ${classes.card}`}>
+              <h3 className={`${classes.text.replace('-sm', '-lg')} font-semibold text-primary-light mb-2`}>🚀 Ação Rápida</h3>
+              <p className={`${classes.text} text-secondary-light mb-3`}>Toque em um atendente abaixo para registrar uma venda</p>
+              <div className={`flex items-center gap-2 ${classes.text.replace('-sm', '-xs')} text-success`}>
+                <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                <span>{attendants?.length || 0} atendentes disponíveis</span>
+              </div>
             </div>
-          </div>
-        </div>
+          </AdaptiveSection>
+        )}
 
-        {/* Sales Registration */}
+        {/* Intelligent Sales Registration */}
         {!isLoading && (
-          <div className="mb-8">
-            {/* Desktop Header */}
-            <div className="hidden sm:flex items-center justify-between mb-6 space-adaptive">
+          <AdaptiveSection className="mb-8">
+            {/* Adaptive Desktop Header */}
+            <div className={`${metrics.deviceType !== 'mobile' ? 'flex' : 'hidden'} items-center justify-between mb-6 ${classes.spacing}`}>
               <div>
-                <h2 className="text-fluid-2xl font-bold text-primary-light mb-2">Registrar Vendas</h2>
-                <p className="text-fluid-base text-secondary-light">Selecione um atendente para registrar uma nova venda</p>
+                <h2 className={`${classes.text.replace('-sm', '-2xl')} font-bold text-primary-light mb-2`}>Registrar Vendas</h2>
+                <p className={`${classes.text} text-secondary-light`}>Selecione um atendente para registrar uma nova venda</p>
               </div>
             </div>
 
-            {/* Universal Responsive Grid */}
-            <div className="grid-adaptive constrain-width">
+            {/* Intelligent Adaptive Grid */}
+            <AdaptiveAttendantGrid>
               {isLoading ? (
-                Array.from({ length: 6 }).map((_, i) => (
+                Array.from({ length: metrics.deviceType === 'mobile' ? 2 : 6 }).map((_, i) => (
                   <Card key={i} className="bg-card border-border hover:border-primary/20 transition-all duration-300">
-                    <CardContent className="p-6">
+                    <CardContent className={classes.spacing}>
                       <div className="space-y-4 animate-pulse">
-                        <div className="w-20 h-20 bg-accent rounded-full mx-auto" />
+                        <div className={`w-20 h-20 bg-accent rounded-full mx-auto ${metrics.density === 'ultra' ? 'w-24 h-24' : ''}`} />
                         <div className="h-4 bg-accent rounded mx-auto w-3/4" />
                         <div className="h-3 bg-accent rounded mx-auto w-1/2" />
                         <div className="h-10 bg-accent rounded" />
@@ -107,9 +109,9 @@ export default function Home() {
                 attendants?.map((attendant: Attendant, index) => (
                   <div 
                     key={attendant.id} 
-                    className="transform transition-all duration-300 hover:scale-105"
+                    className={`transform transition-all duration-300 ${metrics.touchSupport ? 'active:scale-95' : 'hover:scale-105'}`}
                     style={{ 
-                      animation: `fadeInUp 0.6s ease-out ${index * 0.1}s both`
+                      animation: `fadeInUp 0.6s ease-out ${index * (metrics.deviceType === 'mobile' ? 0.2 : 0.1)}s both`
                     }}
                   >
                     <AttendantCard 
@@ -120,12 +122,10 @@ export default function Home() {
                   </div>
                 ))
               )}
-            </div>
-          </div>
+            </AdaptiveAttendantGrid>
+          </AdaptiveSection>
         )}
-      </main>
-
-
-    </div>
+      </AdaptiveSection>
+    </AdaptivePage>
   );
 }

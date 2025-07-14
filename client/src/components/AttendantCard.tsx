@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSaleSound } from "@/hooks/useSaleSound";
 import { useToast } from "@/hooks/use-toast";
+import { useComponentAdapter } from "@/hooks/useScreenAdapter";
 import type { Attendant } from "@shared/schema";
 
 interface AttendantCardProps {
@@ -23,6 +24,7 @@ export default function AttendantCard({
   const [saleValue, setSaleValue] = useState("");
   const { playSaleSound } = useSaleSound();
   const { toast } = useToast();
+  const { classes, isMobile, isTouch, metrics } = useComponentAdapter('card');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,51 +43,68 @@ export default function AttendantCard({
     setSaleValue("");
   };
 
-  return (
-    <Card className="bg-gradient-to-br from-card to-card/80 border-border hover:border-success/50 transition-all duration-300 shadow-lg hover:shadow-xl group backdrop-blur-sm h-full active:scale-95 touch-adaptive card-adaptive constrain-width">
-      <CardContent className="space-adaptive text-center h-full flex flex-col">
+  // Intelligent styling based on device type and screen metrics
+  const cardClasses = `
+    ${classes} 
+    bg-gradient-to-br from-card to-card/80 
+    border-border hover:border-success/50 
+    transition-all duration-300 
+    shadow-lg hover:shadow-xl 
+    group backdrop-blur-sm h-full
+    ${isTouch ? 'active:scale-95' : 'hover:scale-105'}
+    ${isMobile ? 'constrain-all' : ''}
+  `.trim();
 
-        {/* Avatar Section - Universal Responsive */}
-        <div className="relative mx-auto avatar-adaptive mb-4">
+  const avatarSize = metrics.deviceType === 'mobile' 
+    ? metrics.width <= 320 ? 'w-16 h-16' : 'w-20 h-20'
+    : metrics.deviceType === 'tablet' ? 'w-24 h-24'
+    : 'w-28 h-28';
+
+  return (
+    <Card className={cardClasses}>
+      <CardContent className={`text-center h-full flex flex-col ${isMobile ? 'p-3' : 'p-6'}`}>
+        {/* Intelligent Avatar Section */}
+        <div className={`relative mx-auto ${avatarSize} mb-4`}>
           <div className="absolute inset-0 bg-gradient-to-r from-success to-info rounded-full opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
-          <div className="relative w-full h-full rounded-full overflow-hidden shadow-lg ring-2 ring-success/20 group-hover:ring-success/40 transition-all duration-300 active:scale-95">
+          <div className={`relative w-full h-full rounded-full overflow-hidden shadow-lg ring-2 ring-success/20 group-hover:ring-success/40 transition-all duration-300 ${isTouch ? 'active:scale-95' : ''}`}>
             {attendant.imageUrl ? (
               <img 
                 src={attendant.imageUrl} 
                 alt={attendant.name}
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             ) : (
               <div className="w-full h-full bg-accent flex items-center justify-center">
-                <User className="icon-adaptive text-secondary-light" />
+                <User size={metrics.deviceType === 'mobile' ? 16 : 24} className="text-secondary-light" />
               </div>
             )}
           </div>
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-success to-info rounded-full border-2 border-card shadow-md animate-pulse"></div>
         </div>
 
-        {/* Info Section - Universal Responsive */}
+        {/* Intelligent Info Section */}
         <div className="mb-4">
-          <h3 className="text-fluid-lg font-bold text-primary-light group-hover:text-success transition-colors duration-300 leading-tight mb-2">
+          <h3 className={`font-bold text-primary-light group-hover:text-success transition-colors duration-300 leading-tight mb-2 ${metrics.deviceType === 'mobile' ? 'text-sm' : 'text-lg'}`}>
             {attendant.name}
           </h3>
-          <div className="bg-accent/30 card-adaptive border border-border/50">
-            <p className="text-fluid-xs text-secondary-light mb-1">Faturamento</p>
-            <p className="text-fluid-lg font-bold text-success flex items-center justify-center gap-1">
-              <DollarSign className="icon-adaptive" />
+          <div className={`bg-accent/30 rounded-lg border border-border/50 ${isMobile ? 'p-2' : 'p-3'}`}>
+            <p className={`text-secondary-light mb-1 ${metrics.deviceType === 'mobile' ? 'text-xs' : 'text-sm'}`}>Faturamento</p>
+            <p className={`font-bold text-success flex items-center justify-center gap-1 ${metrics.deviceType === 'mobile' ? 'text-sm' : 'text-lg'}`}>
+              <DollarSign size={metrics.deviceType === 'mobile' ? 14 : 18} />
               <span>R$ {Number(attendant.earnings || 0).toFixed(2)}</span>
             </p>
           </div>
         </div>
 
-        {/* Sale Form - Universal Responsive */}
+        {/* Intelligent Sale Form */}
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-end space-y-3">
           <div className="space-y-2">
-            <Label htmlFor={`sale-${attendant.id}`} className="text-secondary-light text-fluid-xs">
+            <Label htmlFor={`sale-${attendant.id}`} className={`text-secondary-light ${metrics.deviceType === 'mobile' ? 'text-xs' : 'text-sm'}`}>
               Nova Venda
             </Label>
             <div className="relative">
-              <DollarSign className="icon-adaptive absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-light" />
+              <DollarSign size={metrics.deviceType === 'mobile' ? 14 : 16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-light" />
               <Input
                 id={`sale-${attendant.id}`}
                 type="number"
@@ -94,7 +113,10 @@ export default function AttendantCard({
                 value={saleValue}
                 onChange={(e) => setSaleValue(e.target.value)}
                 placeholder="0,00"
-                className="input-adaptive pl-10 bg-input border-border text-primary-light text-center focus:ring-2 focus:ring-success/50 focus:border-success transition-all duration-200"
+                className={`pl-10 bg-input border-border text-primary-light text-center focus:ring-2 focus:ring-success/50 focus:border-success transition-all duration-200 ${
+                  metrics.deviceType === 'mobile' ? 'h-10 text-sm' : 'h-12 text-base'
+                }`}
+                inputMode="decimal"
               />
             </div>
           </div>
