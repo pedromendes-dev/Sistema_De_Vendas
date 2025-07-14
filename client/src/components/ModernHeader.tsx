@@ -191,26 +191,26 @@ export default function ModernHeader() {
 
   return (
     <div className="relative">
-      <header className="bg-gradient-to-r from-card via-card to-accent/10 border-b border-border/50 backdrop-blur-lg">
-        <div className="px-3 sm:px-6 lg:px-8 mx-auto max-w-7xl">
-          <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20">
+      <header className="bg-gradient-to-r from-card via-card to-accent/10 border-b border-border/50 backdrop-blur-lg constrain-width">
+        <div className="universal-container">
+          <div className="flex items-center justify-between header-adaptive">
 
             {/* Left Section - Logo & Title */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-success to-info rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-lg sm:text-xl font-bold text-white">$</span>
+            <div className="flex items-center space-adaptive">
+              <div className="flex items-center space-adaptive">
+                <div className="avatar-adaptive bg-gradient-to-br from-success to-info flex items-center justify-center shadow-lg">
+                  <span className="text-fluid-lg font-bold text-white">$</span>
                 </div>
                 <div className="hidden sm:block">
-                  <h1 className="text-xl lg:text-2xl font-bold text-primary-light">
+                  <h1 className="text-fluid-xl font-bold text-primary-light">
                     SalesControl Pro
                   </h1>
-                  <p className="text-xs text-secondary-light">
+                  <p className="text-fluid-xs text-secondary-light">
                     Sistema Gamificado de Vendas
                   </p>
                 </div>
                 <div className="sm:hidden">
-                  <h1 className="text-lg font-bold text-primary-light">Sales</h1>
+                  <h1 className="text-fluid-lg font-bold text-primary-light">Sales</h1>
                 </div>
               </div>
             </div>
@@ -239,14 +239,14 @@ export default function ModernHeader() {
             </div>
 
             {/* Right Section - Time, Actions & Notifications */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="flex items-center space-adaptive">
 
               {/* Time Display */}
               <div className="hidden lg:block text-right">
-                <div className="text-sm font-bold text-primary-light">
+                <div className="text-fluid-sm font-bold text-primary-light">
                   {getTimeString()}
                 </div>
-                <div className="text-xs text-secondary-light">
+                <div className="text-fluid-xs text-secondary-light">
                   {getCurrentDate()}
                 </div>
               </div>
@@ -256,20 +256,20 @@ export default function ModernHeader() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="sm:hidden w-8 h-8 p-0 hover:bg-accent/50"
+                className="sm:hidden btn-adaptive hover:bg-accent/50 touch-adaptive"
               >
-                <Search size={14} />
+                <Search className="icon-adaptive" />
               </Button>
 
               {/* Action Buttons */}
-              <div className="flex items-center space-x-1 sm:space-x-2">
+              <div className="flex items-center space-adaptive">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={toggleFullscreen}
-                  className="hidden sm:flex w-9 h-9 p-0 hover:bg-accent/50"
+                  className="hidden sm:flex btn-adaptive hover:bg-accent/50 touch-adaptive"
                 >
-                  {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                  {isFullscreen ? <Minimize2 className="icon-adaptive" /> : <Maximize2 className="icon-adaptive" />}
                 </Button>
 
                 <ModernNotificationButton />
@@ -278,10 +278,9 @@ export default function ModernHeader() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowSettings(true)}
-                  className="w-8 h-8 sm:w-9 sm:h-9 p-0 hover:bg-accent/50"
+                  className="btn-adaptive hover:bg-accent/50 touch-adaptive"
                 >
-                  <Settings size={14} className="sm:hidden" />
-                  <Settings size={16} className="hidden sm:block" />
+                  <Settings className="icon-adaptive" />
                 </Button>
               </div>
             </div>

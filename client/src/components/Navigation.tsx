@@ -22,9 +22,9 @@ export default function Navigation() {
   return (
     <>
       {/* Desktop Navigation */}
-      <nav className="hidden sm:block bg-secondary-dark border-b border-gray-700">
-        <div className="px-4 mx-auto max-w-6xl">
-          <div className="flex space-x-8 overflow-x-auto">
+      <nav className="hidden sm:block bg-secondary-dark border-b border-gray-700 constrain-width">
+        <div className="universal-container">
+          <div className="flex space-x-4 overflow-x-auto nav-adaptive mobile-scroll">
             {navigationItems.map((item, index) => {
               const Icon = item.icon;
               const isActive = location === item.path;
@@ -33,8 +33,8 @@ export default function Navigation() {
                 <Link key={item.path} href={item.path}>
                   <div
                     className={`
-                      flex items-center gap-2 px-4 py-4 text-sm font-medium transition-all duration-200 cursor-pointer
-                      border-b-2 border-transparent whitespace-nowrap
+                      flex items-center gap-2 space-adaptive text-fluid-sm font-medium transition-all duration-200 cursor-pointer
+                      border-b-2 border-transparent whitespace-nowrap touch-adaptive
                       hover:transform hover:scale-105
                       ${
                         isActive
@@ -43,7 +43,7 @@ export default function Navigation() {
                       }
                     `}
                   >
-                    <Icon size={18} />
+                    <Icon className="icon-adaptive" />
                     <span>{item.label}</span>
                   </div>
                 </Link>
@@ -54,8 +54,8 @@ export default function Navigation() {
       </nav>
 
       {/* Mobile Navigation - Bottom Fixed */}
-      <div className="sm:hidden bg-card border-t border-border/30 fixed bottom-0 left-0 right-0 z-50">
-        <div className="grid grid-cols-6 h-16">
+      <div className="sm:hidden bg-card border-t border-border/30 fixed bottom-0 left-0 right-0 z-50 constrain-width">
+        <div className="grid grid-cols-6 bottom-nav-adaptive">
           {navigationItems.map(({ path, label, icon: Icon }) => {
             const isActive = location === path;
             
@@ -64,15 +64,15 @@ export default function Navigation() {
                 key={path} 
                 href={path}
                 className={`
-                  flex flex-col items-center justify-center gap-1 p-1 transition-all duration-200 h-16 min-h-0
+                  flex flex-col items-center justify-center gap-1 transition-all duration-200 bottom-nav-item touch-adaptive
                   ${isActive 
                     ? 'text-success bg-success/10 border-t-2 border-success' 
                     : 'text-secondary-light hover:text-primary-light hover:bg-card/50'
                   }
                 `}
               >
-                <Icon size={16} className="flex-shrink-0" />
-                <span className="text-xs font-medium leading-tight text-center max-w-full truncate px-1">
+                <Icon className="icon-adaptive flex-shrink-0" />
+                <span className="text-fluid-xs font-medium leading-tight text-center max-w-full truncate px-1">
                   {label}
                 </span>
               </Link>

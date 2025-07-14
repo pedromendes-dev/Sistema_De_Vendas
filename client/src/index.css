@@ -173,8 +173,101 @@ body {
   }
 
   .mobile-card-shadow {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
+
+  /* Universal Responsive System - Adapts to ANY screen size */
+  .universal-container {
+    width: 100%;
+    max-width: 100vw;
+    margin: 0 auto;
+    padding: 0 clamp(8px, 2vw, 24px);
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  /* Fluid Typography */
+  .text-fluid-xs { font-size: clamp(10px, 2vw, 12px); line-height: 1.4; }
+  .text-fluid-sm { font-size: clamp(12px, 2.5vw, 14px); line-height: 1.4; }
+  .text-fluid-base { font-size: clamp(14px, 3vw, 16px); line-height: 1.5; }
+  .text-fluid-lg { font-size: clamp(16px, 3.5vw, 18px); line-height: 1.5; }
+  .text-fluid-xl { font-size: clamp(18px, 4vw, 20px); line-height: 1.5; }
+
+  /* Adaptive Components */
+  .btn-adaptive {
+    height: clamp(36px, 10vw, 44px);
+    min-width: clamp(36px, 10vw, 44px);
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+    font-size: clamp(13px, 3vw, 15px);
+    border-radius: clamp(6px, 1.5vw, 8px);
+  }
+
+  .card-adaptive {
+    border-radius: clamp(8px, 2vw, 12px);
+    padding: clamp(12px, 3vw, 20px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .input-adaptive {
+    height: clamp(36px, 10vw, 44px);
+    font-size: clamp(14px, 3.5vw, 16px);
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+    border-radius: clamp(6px, 1.5vw, 8px);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Responsive Grid */
+  .grid-adaptive {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: clamp(12px, 3vw, 24px);
+    width: 100%;
+  }
+
+  /* Avatar Sizes */
+  .avatar-adaptive {
+    width: clamp(48px, 12vw, 80px);
+    height: clamp(48px, 12vw, 80px);
+    border-radius: 50%;
+  }
+
+  /* Safe Spacing */
+  .space-adaptive {
+    padding: clamp(8px, 2vw, 16px);
+    margin: clamp(4px, 1vw, 8px);
+  }
+
+  /* Touch Targets */
+  .touch-adaptive {
+    min-height: clamp(44px, 11vw, 48px);
+    min-width: clamp(44px, 11vw, 48px);
+    touch-action: manipulation;
+  }
+
+  /* Responsive Navigation */
+  .nav-adaptive {
+    height: clamp(56px, 14vw, 72px);
+    padding: 0 clamp(8px, 2vw, 16px);
+  }
+
+  /* Header Optimization */
+  .header-adaptive {
+    height: clamp(48px, 12vw, 64px);
+    padding: 0 clamp(12px, 3vw, 24px);
+  }
+
+  /* Icon Sizing */
+  .icon-adaptive { 
+    width: clamp(16px, 4vw, 20px); 
+    height: clamp(16px, 4vw, 20px); 
+  }
+
+  /* Constrain Elements */
+  .constrain-width { max-width: 100vw; overflow-x: hidden; }
+  .constrain-height { max-height: 100vh; overflow-y: auto; }
 
   .mobile-card-active {
     transform: scale(0.98);

@@ -42,11 +42,11 @@ export default function AttendantCard({
   };
 
   return (
-    <Card className="bg-gradient-to-br from-card to-card/80 border-border hover:border-success/50 transition-all duration-300 shadow-lg hover:shadow-xl group backdrop-blur-sm h-full active:scale-95 touch-manipulation">
-      <CardContent className="p-4 sm:p-6 text-center space-y-4 sm:space-y-6 h-full flex flex-col">
+    <Card className="bg-gradient-to-br from-card to-card/80 border-border hover:border-success/50 transition-all duration-300 shadow-lg hover:shadow-xl group backdrop-blur-sm h-full active:scale-95 touch-adaptive card-adaptive constrain-width">
+      <CardContent className="space-adaptive text-center h-full flex flex-col">
 
-        {/* Avatar Section - Mobile Optimized */}
-        <div className="relative mx-auto w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24">
+        {/* Avatar Section - Universal Responsive */}
+        <div className="relative mx-auto avatar-adaptive mb-4">
           <div className="absolute inset-0 bg-gradient-to-r from-success to-info rounded-full opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
           <div className="relative w-full h-full rounded-full overflow-hidden shadow-lg ring-2 ring-success/20 group-hover:ring-success/40 transition-all duration-300 active:scale-95">
             {attendant.imageUrl ? (
@@ -57,37 +57,35 @@ export default function AttendantCard({
               />
             ) : (
               <div className="w-full h-full bg-accent flex items-center justify-center">
-                <User className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-secondary-light" />
+                <User className="icon-adaptive text-secondary-light" />
               </div>
             )}
           </div>
-          <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-r from-success to-info rounded-full border-2 border-card shadow-md animate-pulse"></div>
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-success to-info rounded-full border-2 border-card shadow-md animate-pulse"></div>
         </div>
 
-        {/* Info Section - Mobile Optimized */}
-        <div className="space-y-2 sm:space-y-3">
-          <h3 className="text-base sm:text-lg font-bold text-primary-light group-hover:text-success transition-colors duration-300 leading-tight">
+        {/* Info Section - Universal Responsive */}
+        <div className="mb-4">
+          <h3 className="text-fluid-lg font-bold text-primary-light group-hover:text-success transition-colors duration-300 leading-tight mb-2">
             {attendant.name}
           </h3>
-          <div className="bg-accent/30 rounded-lg p-2 sm:p-3 border border-border/50">
-            <p className="text-xs sm:text-sm text-secondary-light mb-1">Faturamento</p>
-            <p className="text-lg sm:text-xl font-bold text-success flex items-center justify-center gap-1">
-              <DollarSign size={16} className="sm:hidden" />
-              <DollarSign size={20} className="hidden sm:block" />
-              <span className="text-sm sm:text-lg">R$ {Number(attendant.earnings || 0).toFixed(2)}</span>
+          <div className="bg-accent/30 card-adaptive border border-border/50">
+            <p className="text-fluid-xs text-secondary-light mb-1">Faturamento</p>
+            <p className="text-fluid-lg font-bold text-success flex items-center justify-center gap-1">
+              <DollarSign className="icon-adaptive" />
+              <span>R$ {Number(attendant.earnings || 0).toFixed(2)}</span>
             </p>
           </div>
         </div>
 
-        {/* Sale Form - Mobile Optimized */}
-        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 flex-1 flex flex-col justify-end">
+        {/* Sale Form - Universal Responsive */}
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-end space-y-3">
           <div className="space-y-2">
-            <Label htmlFor={`sale-${attendant.id}`} className="text-secondary-light text-xs sm:text-sm">
+            <Label htmlFor={`sale-${attendant.id}`} className="text-secondary-light text-fluid-xs">
               Nova Venda
             </Label>
             <div className="relative">
-              <DollarSign size={16} className="sm:hidden absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-light" />
-              <DollarSign size={18} className="hidden sm:block absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-light" />
+              <DollarSign className="icon-adaptive absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-light" />
               <Input
                 id={`sale-${attendant.id}`}
                 type="number"
@@ -96,7 +94,7 @@ export default function AttendantCard({
                 value={saleValue}
                 onChange={(e) => setSaleValue(e.target.value)}
                 placeholder="0,00"
-                className="pl-10 bg-input border-border text-primary-light text-center text-base sm:text-lg focus:ring-2 focus:ring-success/50 focus:border-success transition-all duration-200 h-10 sm:h-11"
+                className="input-adaptive pl-10 bg-input border-border text-primary-light text-center focus:ring-2 focus:ring-success/50 focus:border-success transition-all duration-200"
               />
             </div>
           </div>
@@ -104,18 +102,17 @@ export default function AttendantCard({
           <Button 
             type="submit" 
             disabled={!saleValue || isLoading}
-            className="w-full bg-gradient-to-r from-success to-info hover:from-success/90 hover:to-info/90 text-white font-semibold py-2.5 sm:py-3 rounded-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:active:scale-100 text-sm sm:text-base touch-manipulation"
+            className="btn-adaptive w-full bg-gradient-to-r from-success to-info hover:from-success/90 hover:to-info/90 text-white font-semibold transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:active:scale-100 touch-adaptive"
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
-                <span className="text-xs sm:text-sm">Registrando...</span>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                <span className="text-fluid-xs">Registrando...</span>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Plus size={16} className="sm:hidden" />
-                <Plus size={18} className="hidden sm:block" />
-                <span className="text-xs sm:text-sm">Registrar Venda</span>
+                <Plus className="icon-adaptive" />
+                <span className="text-fluid-xs">Registrar Venda</span>
               </div>
             )}
           </Button>
