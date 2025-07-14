@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="chartGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#34d399;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with rounded rectangle for modern look -->
+  <rect x="2" y="2" width="28" height="28" rx="6" ry="6" fill="url(#bgGrad)" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>
+  
+  <!-- Chart container background -->
+  <rect x="5" y="12" width="22" height="15" rx="2" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>
+  
+  <!-- Rising chart bars -->
+  <rect x="7" y="21" width="2.5" height="4" fill="url(#chartGrad)" rx="0.5"/>
+  <rect x="10.5" y="19" width="2.5" height="6" fill="url(#chartGrad)" rx="0.5"/>
+  <rect x="14" y="16" width="2.5" height="9" fill="url(#chartGrad)" rx="0.5"/>
+  <rect x="17.5" y="17.5" width="2.5" height="7.5" fill="url(#chartGrad)" rx="0.5"/>
+  <rect x="21" y="14" width="2.5" height="11" fill="url(#chartGrad)" rx="0.5"/>
+  <rect x="24.5" y="15.5" width="2.5" height="9.5" fill="url(#chartGrad)" rx="0.5"/>
+  
+  <!-- Dollar symbol in top area -->
+  <circle cx="16" cy="8.5" r="4.5" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="0.5"/>
+  <text x="16" y="12" font-family="Arial, sans-serif" font-size="7" font-weight="bold" text-anchor="middle" fill="white">$</text>
+  
+  <!-- Trending up arrow -->
+  <path d="M22 7 L25 7 L25 10 M25 7 L20 12" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8"/>
+</svg>
