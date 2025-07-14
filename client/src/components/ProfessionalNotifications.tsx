@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, Check, X, AlertCircle } from 'lucide-react';
+import { Bell, Check, X, AlertCircle, DollarSign, Trophy, Target, Gift, BellRing, CheckCheck, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,6 +21,36 @@ interface Notification {
   createdAt: string;
 }
 
+// Get notification icon based on type
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case 'sale':
+      return <DollarSign size={20} className="text-success" />;
+    case 'achievement':
+      return <Trophy size={20} className="text-warning" />;
+    case 'goal':
+      return <Target size={20} className="text-info" />;
+    case 'system':
+      return <BellRing size={20} className="text-secondary" />;
+    default:
+      return <Bell size={20} className="text-secondary" />;
+  }
+};
+
+// Get notification priority color
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'high':
+      return 'bg-red-500';
+    case 'medium':
+      return 'bg-yellow-500';
+    case 'low':
+      return 'bg-blue-500';
+    default:
+      return 'bg-gray-500';
+  }
+};
+
 export default function ProfessionalNotifications() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -30,7 +60,7 @@ export default function ProfessionalNotifications() {
   // Fetch unread notifications only
   const { data: unreadNotifications = [] } = useQuery({
     queryKey: ["/api/notifications/unread"],
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
 
   // Fetch all notifications when dropdown is open
