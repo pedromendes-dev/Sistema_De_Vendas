@@ -1,12 +1,8 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Trophy, Target, TrendingUp, Star, Plus, User } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useSaleSound } from "@/hooks/useSaleSound";
-import { useToast } from "@/hooks/use-toast";
 import type { Attendant } from "@shared/schema";
 
 interface AttendantCardProps {
