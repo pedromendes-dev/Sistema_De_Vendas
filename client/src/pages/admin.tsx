@@ -14,6 +14,7 @@ import Navigation from "@/components/Navigation";
 import DragDropManager from "@/components/DragDropManager";
 import ContentBuilder from "@/components/ContentBuilder";
 import SystemConfiguration from "@/components/SystemConfiguration";
+import DashboardStats from "@/components/DashboardStats";
 import { AdaptivePage, AdaptiveSection, AdaptiveCard } from "@/components/AdaptiveContainer";
 import { AdaptiveGrid } from "@/components/AdaptiveGrid";
 import { useScreenAdapter } from "@/hooks/useScreenAdapter";
