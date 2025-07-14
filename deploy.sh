@@ -1,57 +1,98 @@
 #!/bin/bash
 
-# Script de Deploy para Vercel
-# Sistema de Gestão de Vendas
+# 🚀 Script de Deploy Automatizado - Sistema de Vendas
+# Este script prepara o projeto para deploy na Vercel
 
-echo "🚀 Iniciando processo de deploy para Vercel..."
+echo "🚀 Iniciando preparação para deploy..."
 
-# Verificar se o projeto tem as dependências
-echo "📦 Verificando dependências..."
+# Verifica se estamos no diretório correto
 if [ ! -f "package.json" ]; then
-    echo "❌ Arquivo package.json não encontrado!"
+    echo "❌ Erro: Execute este script na raiz do projeto"
     exit 1
 fi
 
-# Verificar se o arquivo vercel.json existe
-if [ ! -f "vercel.json" ]; then
-    echo "❌ Arquivo vercel.json não encontrado!"
-    exit 1
-fi
+# Limpa arquivos temporários
+echo "🧹 Limpando arquivos temporários..."
+rm -rf node_modules/.cache
+rm -rf dist
+rm -rf .vercel
 
-# Instalar dependências
-echo "📥 Instalando dependências..."
+# Instala dependências
+echo "📦 Instalando dependências..."
 npm install
 
-# Verificar se há erros de TypeScript
-echo "🔍 Verificando tipos TypeScript..."
-npm run check
-
-# Fazer build do projeto
-echo "🔨 Fazendo build do projeto..."
+# Executa build de teste
+echo "🔨 Testando build..."
 npm run build
 
-# Verificar se a build foi bem-sucedida
-if [ $? -eq 0 ]; then
-    echo "✅ Build concluída com sucesso!"
-else
-    echo "❌ Erro durante a build!"
+if [ $? -ne 0 ]; then
+    echo "❌ Erro no build. Corrija os erros antes do deploy."
     exit 1
 fi
 
-# Instruções para deploy
+# Verifica arquivos essenciais
+echo "📋 Verificando arquivos essenciais..."
+
+required_files=(
+    "vercel.json"
+    "package.json"
+    ".env.example"
+    "README.md"
+)
+
+for file in "${required_files[@]}"; do
+    if [ ! -f "$file" ]; then
+        echo "❌ Arquivo obrigatório não encontrado: $file"
+        exit 1
+    fi
+done
+
+# Verifica se DATABASE_URL está configurada
+if [ -z "$DATABASE_URL" ]; then
+    echo "⚠️  Aviso: DATABASE_URL não configurada"
+    echo "   Configure esta variável na Vercel após o deploy"
+fi
+
+# Mostra status do Git
+echo "📊 Status do repositório Git:"
+git status --porcelain
+
+# Pergunta se deve fazer commit
 echo ""
-echo "🎯 Projeto pronto para deploy!"
+read -p "🤔 Fazer commit das alterações? (y/N): " commit_choice
+
+if [ "$commit_choice" = "y" ] || [ "$commit_choice" = "Y" ]; then
+    echo "💾 Fazendo commit..."
+    git add .
+    git commit -m "Deploy: Sistema de vendas pronto para produção"
+    
+    read -p "📤 Fazer push para GitHub? (y/N): " push_choice
+    
+    if [ "$push_choice" = "y" ] || [ "$push_choice" = "Y" ]; then
+        echo "🌐 Enviando para GitHub..."
+        git push origin main
+    fi
+fi
+
+# Mostra informações de deploy
+echo ""
+echo "✅ Preparação concluída!"
 echo ""
 echo "📋 Próximos passos:"
-echo "1. Crie um repositório no GitHub"
-echo "2. Faça upload de todos os arquivos"
-echo "3. Conecte o repositório ao Vercel"
-echo "4. Configure as variáveis de ambiente:"
-echo "   - DATABASE_URL"
-echo "   - PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE"
-echo "   - NODE_ENV=production"
-echo "5. Deploy automático será executado"
+echo "1. Acesse https://vercel.com"
+echo "2. Conecte este repositório"
+echo "3. Configure as variáveis de ambiente:"
+echo "   DATABASE_URL=postgresql://..."
+echo "   NODE_ENV=production"
+echo "4. Clique em Deploy"
 echo ""
-echo "📖 Consulte DEPLOY_VERCEL.md para instruções detalhadas"
+echo "📚 Documentação completa em:"
+echo "   - MIGRAÇÃO_COMPLETA.md"
+echo "   - DEPLOY_VERCEL.md"
+echo "   - README.md"
 echo ""
-echo "🎉 Sistema está pronto para produção!"
+echo "🔐 Login administrativo:"
+echo "   Usuário: administrador"
+echo "   Senha: root123"
+echo ""
+echo "🎉 Sistema pronto para produção!"

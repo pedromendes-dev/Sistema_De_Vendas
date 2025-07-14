@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Settings, Maximize2, Minimize2, X, User, DollarSign, Target, Trophy, Bell, Volume2, VolumeX, Moon, Sun, Monitor } from 'lucide-react';
+import { Search, Settings, Maximize2, Minimize2, X, User, DollarSign, Target, Trophy, Volume2, VolumeX, Moon, Sun, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useQuery } from '@tanstack/react-query';
-import NotificationCenter from './NotificationCenter';
+import ProfessionalNotifications from './ProfessionalNotifications';
 import type { Attendant, Sale, Goal, Achievement } from '@shared/schema';
 
 export default function ModernHeader() {
@@ -15,7 +15,7 @@ export default function ModernHeader() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
+
   const [showSettings, setShowSettings] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -39,10 +39,7 @@ export default function ModernHeader() {
     queryKey: ["/api/achievements"],
   });
 
-  const { data: unreadNotifications = [] } = useQuery({
-    queryKey: ["/api/notifications/unread"],
-    refetchInterval: autoRefresh ? 5000 : false,
-  });
+
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -96,17 +93,7 @@ export default function ModernHeader() {
     saveSettings();
   }, [soundEnabled, darkMode, autoRefresh, compactView]);
 
-  // Close notifications when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showNotifications && !(event.target as Element).closest('.notification-dropdown')) {
-        setShowNotifications(false);
-      }
-    };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showNotifications]);
 
   const getCurrentDate = () => {
     const now = new Date();
@@ -280,26 +267,7 @@ export default function ModernHeader() {
                   <Search size={16} />
                 </Button>
 
-                <div className="relative">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    className="w-9 h-9 p-0 hover:bg-accent/50 relative"
-                  >
-                    <Bell size={16} />
-                    {unreadNotifications.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {unreadNotifications.length > 9 ? '9+' : unreadNotifications.length}
-                      </span>
-                    )}
-                  </Button>
-                  {showNotifications && (
-                    <div className="absolute top-full right-0 mt-2 z-50 notification-dropdown">
-                      <NotificationCenter />
-                    </div>
-                  )}
-                </div>
+                <ProfessionalNotifications />
 
                 <Button
                   variant="ghost"

@@ -13,6 +13,7 @@ import ModernHeader from "@/components/ModernHeader";
 import Navigation from "@/components/Navigation";
 import DragDropManager from "@/components/DragDropManager";
 import ContentBuilder from "@/components/ContentBuilder";
+import SystemConfiguration from "@/components/SystemConfiguration";
 import type { Attendant, Sale, Goal, Achievement } from "@shared/schema";
 
 export default function Admin() {
@@ -900,7 +901,7 @@ export default function Admin() {
 
         {/* Management Tabs - Unified Layout */}
         <Tabs defaultValue="attendants" className="space-y-6">
-          <TabsList className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2 bg-transparent p-0">
+          <TabsList className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2 bg-transparent p-0">
             {[
               { value: 'attendants', icon: Users, label: 'Atendentes' },
               { value: 'sales', icon: DollarSign, label: 'Vendas' },
@@ -908,7 +909,8 @@ export default function Admin() {
               { value: 'achievements', icon: Trophy, label: 'Conquistas' },
               { value: 'admins', icon: Shield, label: 'Administradores' },
               { value: 'dragdrop', icon: Grip, label: 'Organizar' },
-              { value: 'layout', icon: Layout, label: 'Layout' }
+              { value: 'layout', icon: Layout, label: 'Layout' },
+              { value: 'config', icon: Settings, label: 'Configurações' }
             ].map(({ value, icon: Icon, label }) => (
               <TabsTrigger
                 key={value}
@@ -2233,6 +2235,11 @@ export default function Admin() {
                 />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* System Configuration */}
+          <TabsContent value="config" className="space-y-6">
+            <SystemConfiguration />
           </TabsContent>
         </Tabs>
       </main>
