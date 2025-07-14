@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useQuery } from '@tanstack/react-query';
-import ProfessionalNotifications from './ProfessionalNotifications';
+
 import type { Attendant, Sale, Goal, Achievement } from '@shared/schema';
 
 export default function ModernHeader() {
@@ -267,8 +267,6 @@ export default function ModernHeader() {
                 >
                   <Search size={16} />
                 </Button>
-
-                <ProfessionalNotifications />
 
                 <Button
                   variant="ghost"
