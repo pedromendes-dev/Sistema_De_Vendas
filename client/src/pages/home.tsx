@@ -53,15 +53,8 @@ export default function Home() {
         {/* Dashboard Statistics */}
         <DashboardStats />
 
-        {/* Quick Start Guide or Sales Registration */}
-        {!isLoading && (!attendants || attendants.length === 0) ? (
-          <div className="mb-8">
-            <div className="text-center p-8 bg-card border border-border rounded-lg">
-              <h3 className="text-xl font-semibold text-primary-light mb-4">Bem-vindo ao Sistema de Vendas!</h3>
-              <p className="text-secondary-light mb-6">Comece criando seu primeiro atendente para registrar vendas.</p>
-            </div>
-          </div>
-        ) : (
+        {/* Sales Registration */}
+        {!isLoading && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <div>

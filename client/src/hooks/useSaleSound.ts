@@ -1,78 +1,102 @@
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 
-export function useSaleSound() {
-  const audioContextRef = useRef<AudioContext | null>(null);
-  
-  const createCashRegisterSound = useCallback(() => {
+export const useSaleSound = () => {
+  // Criar contexto de áudio
+  const audioContext = useCallback(() => {
     try {
-      // Criar AudioContext se não existir
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
+      return new (window.AudioContext || (window as any).webkitAudioContext)();
+    } catch (e) {
+      console.warn('Web Audio API não suportada');
+      return null;
+    }
+  }, []);
+
+  // Som de dinheiro/venda
+  const playSaleSound = useCallback(async () => {
+    const ctx = audioContext();
+    if (!ctx) return;
+
+    try {
+      // Criar oscilador para som de dinheiro
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
       
-      const audioContext = audioContextRef.current;
-      const currentTime = audioContext.currentTime;
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
       
-      // Som de caixa registradora - múltiplos tons
-      const frequencies = [800, 1200, 1600, 2000, 1400, 1000];
-      const duration = 0.8;
+      // Configurar som de "cha-ching" (dinheiro)
+      oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.1);
+      oscillator.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.3);
       
-      frequencies.forEach((freq, index) => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(freq, currentTime + index * 0.1);
-        oscillator.type = 'sine';
-        
-        // Envelope para som mais suave
-        gainNode.gain.setValueAtTime(0, currentTime + index * 0.1);
-        gainNode.gain.linearRampToValueAtTime(0.3, currentTime + index * 0.1 + 0.05);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + index * 0.1 + 0.15);
-        
-        oscillator.start(currentTime + index * 0.1);
-        oscillator.stop(currentTime + index * 0.1 + 0.2);
-      });
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
       
-      // Som de moedas caindo
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.5);
+      
+      // Adicionar segundo tom para efeito "cha-ching"
       setTimeout(() => {
-        const coinSounds = [600, 800, 1000, 1200];
-        coinSounds.forEach((freq, index) => {
-          const oscillator = audioContext.createOscillator();
-          const gainNode = audioContext.createGain();
-          
-          oscillator.connect(gainNode);
-          gainNode.connect(audioContext.destination);
-          
-          oscillator.frequency.setValueAtTime(freq, currentTime + 0.3 + index * 0.05);
-          oscillator.type = 'triangle';
-          
-          gainNode.gain.setValueAtTime(0, currentTime + 0.3 + index * 0.05);
-          gainNode.gain.linearRampToValueAtTime(0.2, currentTime + 0.3 + index * 0.05 + 0.02);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, currentTime + 0.3 + index * 0.05 + 0.1);
-          
-          oscillator.start(currentTime + 0.3 + index * 0.05);
-          oscillator.stop(currentTime + 0.3 + index * 0.05 + 0.1);
-        });
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        
+        osc2.frequency.setValueAtTime(1000, ctx.currentTime);
+        osc2.frequency.exponentialRampToValueAtTime(500, ctx.currentTime + 0.2);
+        
+        gain2.gain.setValueAtTime(0, ctx.currentTime);
+        gain2.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.01);
+        gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        
+        osc2.start(ctx.currentTime);
+        osc2.stop(ctx.currentTime + 0.3);
       }, 100);
       
     } catch (error) {
-      console.log('Audio not supported or blocked');
+      console.warn('Erro ao reproduzir som:', error);
     }
-  }, []);
-  
-  const playSaleSound = useCallback(() => {
-    // Verificar se o som está habilitado
-    const settings = localStorage.getItem('app_settings');
-    const soundEnabled = settings ? JSON.parse(settings).soundEnabled !== false : true;
-    
-    if (soundEnabled) {
-      createCashRegisterSound();
+  }, [audioContext]);
+
+  // Som de sucesso (para grandes vendas)
+  const playSuccessSound = useCallback(async () => {
+    const ctx = audioContext();
+    if (!ctx) return;
+
+    try {
+      // Sequência de tons ascendentes (success)
+      const frequencies = [523, 659, 784, 1047]; // C, E, G, C (acorde)
+      
+      frequencies.forEach((freq, index) => {
+        setTimeout(() => {
+          const oscillator = ctx.createOscillator();
+          const gainNode = ctx.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(ctx.destination);
+          
+          oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+          oscillator.type = 'sine';
+          
+          gainNode.gain.setValueAtTime(0, ctx.currentTime);
+          gainNode.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.01);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+          
+          oscillator.start(ctx.currentTime);
+          oscillator.stop(ctx.currentTime + 0.3);
+        }, index * 80);
+      });
+      
+    } catch (error) {
+      console.warn('Erro ao reproduzir som de sucesso:', error);
     }
-  }, [createCashRegisterSound]);
-  
-  return { playSaleSound };
-}
+  }, [audioContext]);
+
+  return {
+    playSaleSound,
+    playSuccessSound
+  };
+};
