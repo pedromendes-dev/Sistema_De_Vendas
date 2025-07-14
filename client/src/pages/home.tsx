@@ -6,7 +6,7 @@ import ModernHeader from "@/components/ModernHeader";
 import Navigation from "@/components/Navigation";
 import AttendantCard from "@/components/AttendantCard";
 import DashboardStats from "@/components/DashboardStats";
-import QuickStartGuide from "@/components/QuickStartGuide";
+// import QuickStartGuide from '@/components/QuickStartGuide';
 import type { Attendant } from "@shared/schema";
 
 export default function Home() {
@@ -56,7 +56,7 @@ export default function Home() {
         {/* Quick Start Guide or Sales Registration */}
         {!isLoading && (!attendants || attendants.length === 0) ? (
           <div className="mb-8">
-            <QuickStartGuide />
+            {/* <QuickStartGuide /> */}
           </div>
         ) : (
           <div className="mb-8">
