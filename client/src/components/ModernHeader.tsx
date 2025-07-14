@@ -21,6 +21,7 @@ export default function ModernHeader() {
   const [darkMode, setDarkMode] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [compactView, setCompactView] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   // Fetch data for search
   const { data: attendants = [] } = useQuery<Attendant[]>({
@@ -99,7 +100,7 @@ export default function ModernHeader() {
     const now = new Date();
     const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    
+
     return `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
   };
 
@@ -128,7 +129,7 @@ export default function ModernHeader() {
     }
 
     const query = searchQuery.toLowerCase();
-    
+
     const filteredAttendants = attendants.filter(attendant =>
       attendant.name.toLowerCase().includes(query)
     );
@@ -193,7 +194,7 @@ export default function ModernHeader() {
       <header className="bg-gradient-to-r from-card via-card to-accent/10 border-b border-border/50 backdrop-blur-lg">
         <div className="px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl">
           <div className="flex items-center justify-between h-16 lg:h-20">
-            
+
             {/* Left Section - Logo & Title */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-3">
@@ -236,7 +237,7 @@ export default function ModernHeader() {
 
             {/* Right Section - Time, Actions & Notifications */}
             <div className="flex items-center space-x-3">
-              
+
               {/* Time Display */}
               <div className="hidden lg:block text-right">
                 <div className="text-sm font-bold text-primary-light">
