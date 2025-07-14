@@ -78,11 +78,11 @@ function SortableWidget({ widget, onUpdate, onDelete }: SortableWidgetProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
-                className="cursor-grab active:cursor-grabbing text-secondary-light hover:text-primary-light p-1"
+                className="cursor-grab active:cursor-grabbing p-2 rounded-lg bg-accent/50 hover:bg-accent text-secondary-light hover:text-primary-light transition-all duration-200 border border-border/30 hover:border-border/60 shadow-sm hover:shadow-md"
                 {...attributes}
                 {...listeners}
               >
-                <GripVertical size={20} />
+                <GripVertical size={18} />
               </button>
               <div className="text-primary-light">{getIcon()}</div>
               <CardTitle className="text-lg text-primary-light">{widget.title}</CardTitle>

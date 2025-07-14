@@ -58,11 +58,11 @@ function SortableRow({ item, columns, onEdit, onDelete }: SortableRowProps) {
     >
       <TableCell className="w-12">
         <button
-          className="cursor-grab active:cursor-grabbing text-secondary-light hover:text-primary-light p-1"
+          className="cursor-grab active:cursor-grabbing p-1.5 rounded-md bg-accent/30 hover:bg-accent/60 text-secondary-light hover:text-primary-light transition-all duration-200 border border-border/20 hover:border-border/40"
           {...attributes}
           {...listeners}
         >
-          <GripVertical size={16} />
+          <GripVertical size={14} />
         </button>
       </TableCell>
       

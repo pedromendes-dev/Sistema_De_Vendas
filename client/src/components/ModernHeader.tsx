@@ -259,14 +259,7 @@ export default function ModernHeader() {
                   {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                 </Button>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className="md:hidden w-9 h-9 p-0 hover:bg-accent/50"
-                >
-                  <Search size={16} />
-                </Button>
+
 
                 <ModernNotificationButton />
 
