@@ -773,6 +773,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Search route
+  app.get('/api/search', async (req, res) => {
+    try {
+      const { q, type, dateFrom, dateTo, attendantId, minValue, maxValue } = req.query;
+      
+      let results: any = {
+        attendants: [],
+        sales: [],
+        goals: [],
+        achievements: [],
+        totalResults: 0
+      };
+
+      // Search attendants
+      if (!type || type === 'all' || type === 'attendants') {
+        const attendants = await storage.getAllAttendants();
+        results.attendants = attendants.filter(a => {
+          if (q && !a.name.toLowerCase().includes(q.toString().toLowerCase())) return false;
+          if (attendantId && a.id !== parseInt(attendantId.toString())) return false;
+          return true;
+        }).map(a => ({
+          ...a,
+          salesCount: 0 // Will be calculated below
+        }));
+      }
+
+      // Search sales
+      if (!type || type === 'all' || type === 'sales' || type === 'clients') {
+        const sales = await storage.getAllSales();
+        const attendants = await storage.getAllAttendants();
+        
+        results.sales = sales.filter(s => {
+          if (q) {
+            const searchTerm = q.toString().toLowerCase();
+            const matchesValue = s.value.includes(searchTerm);
+            const matchesClient = s.clientName?.toLowerCase().includes(searchTerm) ||
+                                s.clientPhone?.includes(searchTerm) ||
+                                s.clientEmail?.toLowerCase().includes(searchTerm) ||
+                                s.clientAddress?.toLowerCase().includes(searchTerm);
+            if (!matchesValue && !matchesClient) return false;
+          }
+          
+          if (dateFrom && new Date(s.createdAt) < new Date(dateFrom.toString())) return false;
+          if (dateTo && new Date(s.createdAt) > new Date(dateTo.toString())) return false;
+          if (attendantId && s.attendantId !== parseInt(attendantId.toString())) return false;
+          if (minValue && parseFloat(s.value) < parseFloat(minValue.toString())) return false;
+          if (maxValue && parseFloat(s.value) > parseFloat(maxValue.toString())) return false;
+          
+          return true;
+        }).map(s => ({
+          ...s,
+          attendant: attendants.find(a => a.id === s.attendantId)
+        }));
+
+        // Calculate sales count for attendants
+        if (results.attendants.length > 0) {
+          results.attendants = results.attendants.map((a: any) => ({
+            ...a,
+            salesCount: sales.filter(s => s.attendantId === a.id).length
+          }));
+        }
+      }
+
+      // Search goals
+      if (!type || type === 'all' || type === 'goals') {
+        const goals = await storage.getAllGoals();
+        const attendants = await storage.getAllAttendants();
+        
+        results.goals = goals.filter(g => {
+          if (q && !g.title.toLowerCase().includes(q.toString().toLowerCase())) return false;
+          if (attendantId && g.attendantId !== parseInt(attendantId.toString())) return false;
+          if (dateFrom && new Date(g.deadline) < new Date(dateFrom.toString())) return false;
+          if (dateTo && new Date(g.deadline) > new Date(dateTo.toString())) return false;
+          return true;
+        }).map(g => ({
+          ...g,
+          attendant: attendants.find(a => a.id === g.attendantId)
+        }));
+      }
+
+      // Search achievements
+      if (!type || type === 'all' || type === 'achievements') {
+        const achievements = await storage.getAllAchievements();
+        const attendants = await storage.getAllAttendants();
+        
+        results.achievements = achievements.filter(a => {
+          if (q && !a.title.toLowerCase().includes(q.toString().toLowerCase())) return false;
+          if (attendantId && a.attendantId !== parseInt(attendantId.toString())) return false;
+          if (dateFrom && new Date(a.unlockedAt) < new Date(dateFrom.toString())) return false;
+          if (dateTo && new Date(a.unlockedAt) > new Date(dateTo.toString())) return false;
+          return true;
+        }).map(a => ({
+          ...a,
+          attendant: attendants.find(att => att.id === a.attendantId)
+        }));
+      }
+
+      results.totalResults = results.attendants.length + results.sales.length + 
+                            results.goals.length + results.achievements.length;
+
+      res.json(results);
+    } catch (error) {
+      console.error('Search error:', error);
+      res.status(500).json({ error: 'Failed to search' });
+    }
+  });
+
   // Backup routes
   app.get("/api/backup/create", async (req, res) => {
     try {

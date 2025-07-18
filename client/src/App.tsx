@@ -12,6 +12,7 @@ import Goals from "@/pages/goals";
 import Admin from "@/pages/admin";
 import Dashboard from "@/pages/dashboard";
 import SoundTest from "@/pages/sound-test";
+import Search from "@/pages/search";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/goals" component={Goals} />
       <Route path="/admin" component={Admin} />
       <Route path="/sound-test" component={SoundTest} />
+      <Route path="/search" component={Search} />
       <Route component={NotFound} />
     </Switch>
   );

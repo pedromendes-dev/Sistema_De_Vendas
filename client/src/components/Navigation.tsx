@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { DollarSign, Trophy, History, Users, Shield, Target, LayoutDashboard } from "lucide-react";
+import { DollarSign, Trophy, History, Users, Shield, Target, LayoutDashboard, Search } from "lucide-react";
 
 interface NavigationItem {
   path: string;
@@ -12,6 +12,7 @@ const navigationItems: NavigationItem[] = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/ranking", label: "Ranking", icon: Trophy },
   { path: "/history", label: "Histórico", icon: History },
+  { path: "/search", label: "Buscar", icon: Search },
   { path: "/attendants", label: "Atendentes", icon: Users },
   { path: "/goals", label: "Metas", icon: Target },
   { path: "/admin", label: "Área do Gestor", icon: Shield },
@@ -56,7 +57,7 @@ export default function Navigation() {
 
       {/* Mobile Navigation - Bottom Fixed */}
       <div className="sm:hidden bg-card border-t border-border/30 fixed bottom-0 left-0 right-0 z-50 constrain-width">
-        <div className="grid grid-cols-6 bottom-nav-adaptive">
+        <div className="grid grid-cols-4 bottom-nav-adaptive overflow-x-auto">
           {navigationItems.map(({ path, label, icon: Icon }) => {
             const isActive = location === path;
             
