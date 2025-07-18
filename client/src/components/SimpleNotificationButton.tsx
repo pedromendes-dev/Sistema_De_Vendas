@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { Bell, X, Trash2, Clock, CheckCheck, DollarSign, Trophy, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -95,14 +96,15 @@ export default function SimpleNotificationButton() {
   const unreadCount = unreadNotifications.length;
 
   return (
-    <>
+    <div className="relative" ref={dropdownRef}>
       {/* Notification Button */}
       <Button
         variant="ghost"
         size="sm"
         className="relative hover:bg-accent/50"
         onClick={() => {
-          console.log('Notification button clicked!');
+          console.log('Notification button clicked! isOpen:', isOpen);
+          console.log('Notifications count:', unreadCount);
           setIsOpen(!isOpen);
         }}
       >
@@ -116,11 +118,16 @@ export default function SimpleNotificationButton() {
       </Button>
 
       {/* Dropdown Menu */}
-      {isOpen && (
+      {isOpen && ReactDOM.createPortal(
         <div
-          ref={dropdownRef}
-          className="fixed top-16 right-4 w-96 max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-lg shadow-xl"
-          style={{ zIndex: 9999999 }}
+          className="fixed w-96 max-w-[calc(100vw-2rem)] bg-white border-2 border-gray-300 rounded-lg shadow-2xl"
+          style={{ 
+            position: 'fixed',
+            top: '80px',
+            right: '20px',
+            zIndex: 999999999,
+            display: 'block'
+          }}
         >
           {/* Header */}
           <div className="p-4 border-b border-gray-200 bg-gray-50">
@@ -235,8 +242,9 @@ export default function SimpleNotificationButton() {
               </Button>
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
-    </>
+    </div>
   );
 }
