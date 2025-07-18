@@ -30,6 +30,11 @@ export function useRouteChange() {
           queryClient.invalidateQueries({ queryKey: ['/api/goals'] });
           queryClient.invalidateQueries({ queryKey: ['/api/achievements'] });
           break;
+        case '/dashboard':
+          queryClient.invalidateQueries({ queryKey: ['/api/attendants'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/sales'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/goals'] });
+          break;
         case '/admin':
           queryClient.invalidateQueries({ queryKey: ['/api/admin'] });
           break;

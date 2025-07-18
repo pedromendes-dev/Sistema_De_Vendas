@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertSaleSchema, insertAttendantSchema, insertNotificationSchema, insertGoalSchema, insertAchievementSchema } from "@shared/schema";
 import { z } from "zod";
+import { registerReportRoutes } from "./routes/reports";
 
 // WebSocket clients storage
 const wsClients = new Set<WebSocket>();
@@ -37,6 +38,8 @@ export function broadcastPerformanceUpdate(data: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register report routes
+  registerReportRoutes(app);
   // Get all attendants
   app.get("/api/attendants", async (req, res) => {
     try {
@@ -317,7 +320,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const admin = await storage.getAdminByUsername(username);
       
-      if (!admin || admin.password !== password) {
+      if (!admin) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Verificar senha com bcrypt (compatível com senhas antigas)
+      let isValidPassword = false;
+      if (admin.password.startsWith('$2')) {
+        // Senha já está hasheada
+        const { verifyPassword } = await import("./utils/auth");
+        isValidPassword = await verifyPassword(password, admin.password);
+      } else {
+        // Senha antiga em texto plano (temporário)
+        isValidPassword = admin.password === password;
+      }
+      
+      if (!isValidPassword) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
