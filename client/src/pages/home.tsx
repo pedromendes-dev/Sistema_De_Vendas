@@ -6,6 +6,7 @@ import ModernHeader from "@/components/ModernHeader";
 import Navigation from "@/components/Navigation";
 import AttendantCard from "@/components/AttendantCard";
 import DashboardStats from "@/components/DashboardStats";
+import PageLoader from "@/components/PageLoader";
 import { AdaptivePage, AdaptiveSection } from "@/components/AdaptiveContainer";
 import { AdaptiveAttendantGrid } from "@/components/AdaptiveGrid";
 import { useScreenAdapter } from "@/hooks/useScreenAdapter";
@@ -53,6 +54,10 @@ export default function Home() {
       clientEmail: clientData?.email
     });
   };
+
+  if (isLoading) {
+    return <PageLoader message="Carregando atendentes..." />;
+  }
 
   return (
     <AdaptivePage className="min-h-screen bg-gradient-to-br from-primary-dark via-primary-dark to-secondary-dark/50">

@@ -175,8 +175,17 @@ export default function GoalsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-primary-dark flex items-center justify-center">
-        <div className="text-lg text-secondary-light">Carregando...</div>
+      <div className="min-h-screen bg-primary-dark">
+        <Header />
+        <Navigation />
+        <div className="flex items-center justify-center py-20">
+          <Card className="bg-card border-border p-8">
+            <CardContent className="flex flex-col items-center gap-4">
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+              <p className="text-secondary-light">Carregando metas...</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
