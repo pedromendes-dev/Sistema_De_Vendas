@@ -253,6 +253,10 @@ Preferred communication style: Simple, everyday language.
 - 2025-07-18: **REMOVED ADVANCED SEARCH** - Removed "Busca Avançada" functionality per user request
 - 2025-07-18: Deleted search page (/search) and removed it from navigation menu
 - 2025-07-18: Fixed SelectItem component to prevent empty value errors
+- 2025-07-18: **CLIENT DATA NOW REQUIRED** - Made client name and phone number mandatory fields
+- 2025-07-18: Removed optional toggle for client data - fields always visible on sale form
+- 2025-07-18: Added validation to ensure name and phone are provided before sale registration
+- 2025-07-18: Email remains optional field for client data capture
 - 2025-07-18: **LAYOUT TAB FUNCTIONALITY IMPLEMENTED** - Added complete customization options for visual appearance
 - 2025-07-18: Layout tab now includes theme colors, text sizes, display modes, and animation settings
 - 2025-07-18: Config tab confirmed working with comprehensive SystemConfiguration component
