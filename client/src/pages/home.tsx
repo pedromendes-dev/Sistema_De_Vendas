@@ -7,12 +7,14 @@ import Navigation from "@/components/Navigation";
 import AttendantCard from "@/components/AttendantCard";
 import DashboardStats from "@/components/DashboardStats";
 import PageLoader from "@/components/PageLoader";
+import QuickBackup from "@/components/QuickBackup";
 import { AdaptivePage, AdaptiveSection } from "@/components/AdaptiveContainer";
 import { AdaptiveAttendantGrid } from "@/components/AdaptiveGrid";
 import { useScreenAdapter } from "@/hooks/useScreenAdapter";
 // import QuickStartGuide from '@/components/QuickStartGuide';
 import type { Attendant } from "@shared/schema";
 import { playSaleSound } from "@/utils/sound-effects";
+import { createAutoBackup } from "@/utils/auto-backup";
 
 export default function Home() {
   const { toast } = useToast();
@@ -30,7 +32,7 @@ export default function Home() {
       const response = await apiRequest("POST", "/api/sales", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Tocar som de caixa registradora
       playSaleSound();
       
@@ -39,6 +41,9 @@ export default function Home() {
         description: "A venda foi registrada e os ganhos foram atualizados.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+      
+      // Criar backup automático após venda
+      await createAutoBackup('sale');
     },
     onError: () => {
       toast({
@@ -78,6 +83,11 @@ export default function Home() {
         {/* Intelligent Dashboard Statistics */}
         <AdaptiveSection padding="small" className="mb-4 sm:mb-6">
           <DashboardStats />
+        </AdaptiveSection>
+
+        {/* Quick Backup Section */}
+        <AdaptiveSection padding="small" className="mb-4">
+          <QuickBackup />
         </AdaptiveSection>
 
         {/* Smart Quick Action for Touch Devices */}
