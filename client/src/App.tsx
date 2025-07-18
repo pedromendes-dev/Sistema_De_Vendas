@@ -11,6 +11,7 @@ import Attendants from "@/pages/attendants";
 import Goals from "@/pages/goals";
 import Admin from "@/pages/admin";
 import Dashboard from "@/pages/dashboard";
+import SoundTest from "@/pages/sound-test";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/attendants" component={Attendants} />
       <Route path="/goals" component={Goals} />
       <Route path="/admin" component={Admin} />
+      <Route path="/sound-test" component={SoundTest} />
       <Route component={NotFound} />
     </Switch>
   );

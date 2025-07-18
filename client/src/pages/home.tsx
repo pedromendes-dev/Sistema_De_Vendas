@@ -12,6 +12,7 @@ import { AdaptiveAttendantGrid } from "@/components/AdaptiveGrid";
 import { useScreenAdapter } from "@/hooks/useScreenAdapter";
 // import QuickStartGuide from '@/components/QuickStartGuide';
 import type { Attendant } from "@shared/schema";
+import { playSaleSound } from "@/utils/sound-effects";
 
 export default function Home() {
   const { toast } = useToast();
@@ -30,6 +31,9 @@ export default function Home() {
       return response.json();
     },
     onSuccess: () => {
+      // Tocar som de caixa registradora
+      playSaleSound();
+      
       toast({
         title: "🎉 Venda registrada!",
         description: "A venda foi registrada e os ganhos foram atualizados.",

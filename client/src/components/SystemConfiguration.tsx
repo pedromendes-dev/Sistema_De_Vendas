@@ -409,6 +409,64 @@ export default function SystemConfiguration() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Sound Settings */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              Sons e Notificações
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Som de Caixa Registradora</Label>
+                <p className="text-sm text-muted-foreground">Tocar som ao registrar vendas</p>
+                <a href="/sound-test" target="_blank" className="text-xs text-primary hover:underline">
+                  Clique aqui para testar os sons →
+                </a>
+              </div>
+              <Switch
+                checked={config.notifications.enableSound}
+                onCheckedChange={(checked) => updateConfig('notifications', 'enableSound', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Notificações Push</Label>
+                <p className="text-sm text-muted-foreground">Receber notificações do navegador</p>
+              </div>
+              <Switch
+                checked={config.notifications.enablePush}
+                onCheckedChange={(checked) => updateConfig('notifications', 'enablePush', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Notificações de Vendas</Label>
+                <p className="text-sm text-muted-foreground">Alertas para novas vendas</p>
+              </div>
+              <Switch
+                checked={config.notifications.salesNotifications}
+                onCheckedChange={(checked) => updateConfig('notifications', 'salesNotifications', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Notificações de Conquistas</Label>
+                <p className="text-sm text-muted-foreground">Alertas ao desbloquear conquistas</p>
+              </div>
+              <Switch
+                checked={config.notifications.achievementNotifications}
+                onCheckedChange={(checked) => updateConfig('notifications', 'achievementNotifications', checked)}
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Configuration Preview */}
