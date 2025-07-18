@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { History, TrendingUp, BarChart3, DollarSign, Calendar, Filter, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { History, TrendingUp, BarChart3, DollarSign, Calendar, Filter, Plus, User, Phone, Mail, MapPin, Eye, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
 import type { Attendant, Sale } from "@shared/schema";
@@ -13,6 +17,10 @@ export default function HistoryPage() {
   const [selectedAttendant, setSelectedAttendant] = useState<string>("all");
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [clientFilter, setClientFilter] = useState("");
+  const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch data
   const { data: attendants, isLoading: loadingAttendants } = useQuery<Attendant[]>({
@@ -49,6 +57,54 @@ export default function HistoryPage() {
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date(date));
+  };
+
+  // Delete sale mutation
+  const deleteSaleMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/sales/${id}`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Venda removida!",
+        description: "A venda foi removida com sucesso.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/sales"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+    },
+    onError: () => {
+      toast({
+        title: "Erro ao remover venda",
+        description: "Ocorreu um erro ao remover a venda.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle view details
+  const handleViewDetails = (sale: Sale) => {
+    setSelectedSale(sale);
+    setIsDetailsModalOpen(true);
+  };
+
+  // Handle delete sale
+  const handleDeleteSale = (id: number) => {
+    if (window.confirm("Tem certeza que deseja remover esta venda?")) {
+      deleteSaleMutation.mutate(id);
+    }
+  };
+
+  // Format detailed date
+  const formatDetailedDate = (date: Date) => {
+    return new Intl.DateTimeFormat('pt-BR', {
+      weekday: 'long',
+      day: '2-digit',
+      month: 'long',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -234,11 +290,22 @@ export default function HistoryPage() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="border-border text-secondary-light hover:text-primary-light">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-border text-secondary-light hover:text-primary-light hover:border-info"
+                        onClick={() => handleViewDetails(sale)}
+                      >
+                        <Eye size={14} className="mr-1" />
                         Ver Detalhes
                       </Button>
-                      <Button variant="outline" size="sm" className="border-danger text-danger hover:bg-danger hover:text-primary-light">
-                        Remover
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-danger text-danger hover:bg-danger hover:text-primary-light"
+                        onClick={() => handleDeleteSale(sale.id)}
+                      >
+                        <Trash2 size={14} />
                       </Button>
                     </div>
                   </div>
@@ -248,6 +315,141 @@ export default function HistoryPage() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Sale Details Modal */}
+      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <DialogContent className="bg-card border-border text-primary-light max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-primary-light flex items-center gap-2">
+              <Eye className="text-info" size={24} />
+              Detalhes da Venda
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedSale && (
+            <div className="space-y-6">
+              {/* Sale Information */}
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="bg-secondary-dark border-border">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <DollarSign className="text-success" size={20} />
+                      <h3 className="font-semibold text-primary-light">Valor da Venda</h3>
+                    </div>
+                    <p className="text-2xl font-bold text-success">
+                      R$ {parseFloat(selectedSale.value).toFixed(2).replace('.', ',')}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-secondary-dark border-border">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calendar className="text-info" size={20} />
+                      <h3 className="font-semibold text-primary-light">Data e Hora</h3>
+                    </div>
+                    <p className="text-sm text-secondary-light">
+                      {formatDetailedDate(selectedSale.createdAt)}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Attendant Information */}
+              <Card className="bg-secondary-dark border-border">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <User className="text-warning" size={20} />
+                    <h3 className="font-semibold text-primary-light">Informações do Atendente</h3>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-warning/20 rounded-full flex items-center justify-center">
+                      <User className="text-warning" size={24} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-primary-light">
+                        {getAttendantName(selectedSale.attendantId)}
+                      </p>
+                      <Badge variant="outline" className="mt-1">
+                        ID: {selectedSale.attendantId}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Client Information */}
+              {(selectedSale.clientName || selectedSale.clientPhone || selectedSale.clientEmail) && (
+                <Card className="bg-secondary-dark border-border">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <User className="text-info" size={20} />
+                      <h3 className="font-semibold text-primary-light">Informações do Cliente</h3>
+                    </div>
+                    <div className="space-y-3">
+                      {selectedSale.clientName && (
+                        <div className="flex items-center gap-2">
+                          <User className="text-secondary-light" size={16} />
+                          <span className="text-sm text-secondary-light">Nome:</span>
+                          <span className="text-primary-light">{selectedSale.clientName}</span>
+                        </div>
+                      )}
+                      {selectedSale.clientPhone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="text-secondary-light" size={16} />
+                          <span className="text-sm text-secondary-light">Telefone:</span>
+                          <span className="text-primary-light">{selectedSale.clientPhone}</span>
+                        </div>
+                      )}
+                      {selectedSale.clientEmail && (
+                        <div className="flex items-center gap-2">
+                          <Mail className="text-secondary-light" size={16} />
+                          <span className="text-sm text-secondary-light">Email:</span>
+                          <span className="text-primary-light">{selectedSale.clientEmail}</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Sale ID */}
+              <Card className="bg-secondary-dark border-border">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-secondary-light">ID da Venda</p>
+                      <p className="text-lg font-mono text-primary-light">#{selectedSale.id}</p>
+                    </div>
+                    <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                      Venda Concluída
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDetailsModalOpen(false)}
+                  className="flex-1 border-border text-secondary-light hover:text-primary-light"
+                >
+                  Fechar
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleDeleteSale(selectedSale.id)}
+                  className="border-danger text-danger hover:bg-danger hover:text-primary-light"
+                >
+                  <Trash2 size={16} className="mr-2" />
+                  Remover Venda
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
