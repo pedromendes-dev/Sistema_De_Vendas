@@ -49,11 +49,13 @@ export default function GoalsPage() {
   const createGoalMutation = useMutation({
     mutationFn: async (goalData: any) => {
       const response = await apiRequest("POST", "/api/goals", {
-        ...goalData,
         attendantId: parseInt(goalData.attendantId),
+        title: goalData.title,
+        description: goalData.description,
         targetValue: goalData.targetValue,
-        startDate: new Date(goalData.startDate),
-        endDate: new Date(goalData.endDate),
+        goalType: goalData.goalType,
+        startDate: goalData.startDate,
+        endDate: goalData.endDate,
       });
       return response.json();
     },

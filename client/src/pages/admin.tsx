@@ -810,7 +810,7 @@ export default function Admin() {
         });
       }
     } catch (error) {
-      console.error("Login exception:", error);
+      // Login failed - handled by mutation error
       toast({
         title: "Erro no login",
         description: "Ocorreu um erro ao tentar fazer login. Tente novamente.",
