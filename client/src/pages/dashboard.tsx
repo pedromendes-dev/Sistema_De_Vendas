@@ -195,6 +195,14 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="justify-start"
+                onClick={() => window.location.href = '/'}
+              >
+                <DollarSign className="mr-2 h-4 w-4" />
+                Registrar Venda
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start"
                 onClick={() => window.location.href = '/goals'}
               >
                 <Calendar className="mr-2 h-4 w-4" />
@@ -203,17 +211,9 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="justify-start"
-                onClick={() => window.location.href = '/history'}
-              >
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                Ver Histórico Completo
-              </Button>
-              <Button
-                variant="outline"
-                className="justify-start"
                 onClick={() => window.location.href = '/attendants'}
               >
-                <Download className="mr-2 h-4 w-4" />
+                <Users className="mr-2 h-4 w-4" />
                 Cadastrar Atendente
               </Button>
             </div>

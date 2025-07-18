@@ -34,9 +34,10 @@ export default function Dashboard() {
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       
-      const daySales = sales.filter(sale => 
-        sale.createdAt.toString().startsWith(dateStr)
-      );
+      const daySales = sales.filter(sale => {
+        const saleDate = new Date(sale.createdAt);
+        return saleDate.toISOString().split('T')[0] === dateStr;
+      });
       
       days.push({
         date: date.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric' }),
@@ -63,7 +64,7 @@ export default function Dashboard() {
     { name: 'R$ 51-100', value: sales.filter(s => parseFloat(s.value) > 50 && parseFloat(s.value) <= 100).length, color: '#3b82f6' },
     { name: 'R$ 101-200', value: sales.filter(s => parseFloat(s.value) > 100 && parseFloat(s.value) <= 200).length, color: '#f59e0b' },
     { name: 'R$ 200+', value: sales.filter(s => parseFloat(s.value) > 200).length, color: '#ef4444' }
-  ];
+  ].filter(item => item.value > 0); // Só mostra categorias com vendas
 
   return (
     <div className="space-y-6">
@@ -183,26 +184,34 @@ export default function Dashboard() {
             <CardTitle className="text-lg font-semibold">Distribuição de Vendas por Valor</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={salesDistribution}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {salesDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {salesDistribution.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={salesDistribution}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {salesDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }}
+                    formatter={(value: any) => [`${value} vendas`, 'Quantidade']}
+                  />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                <p>Nenhuma venda registrada ainda</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
