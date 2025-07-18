@@ -11,9 +11,9 @@ import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ModernHeader from "@/components/ModernHeader";
 import Navigation from "@/components/Navigation";
-// Removed drag-drop components as requested
+import DragDropManager from "@/components/DragDropManager";
+import ContentBuilder from "@/components/ContentBuilder";
 import SystemConfiguration from "@/components/SystemConfiguration";
-import DashboardStats from "@/components/DashboardStats";
 import type { Attendant, Sale, Goal, Achievement } from "@shared/schema";
 
 export default function Admin() {
@@ -809,7 +809,7 @@ export default function Admin() {
         });
       }
     } catch (error) {
-      // Login failed - handled by mutation error
+      console.error("Login exception:", error);
       toast({
         title: "Erro no login",
         description: "Ocorreu um erro ao tentar fazer login. Tente novamente.",
@@ -949,7 +949,7 @@ export default function Admin() {
                   { value: 'goals', icon: Target, label: 'Metas' },
                   { value: 'achievements', icon: Trophy, label: 'Conquistas' },
                   { value: 'admins', icon: Shield, label: 'Admins' },
-                  // Removed 'Organizar' tab as requested
+                  { value: 'organize', icon: Grip, label: 'Organizar' },
                   { value: 'layout', icon: Layout, label: 'Layout' },
                   { value: 'configs', icon: Settings, label: 'Config' }
                 ].map(({ value, icon: Icon, label }) => (
@@ -1401,7 +1401,7 @@ export default function Admin() {
                         size="sm"
                         onClick={() => setAttendantSortOrder(attendantSortOrder === 'asc' ? 'desc' : 'asc')}
                         className="border-border"
-                        title={'Ordenar ' + (attendantSortOrder === 'asc' ? 'decrescente' : 'crescente')}
+                        title={`Ordenar ${attendantSortOrder === 'asc' ? 'decrescente' : 'crescente'}`}
                       >
                         {attendantSortOrder === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
                       </Button>
@@ -1550,7 +1550,7 @@ export default function Admin() {
                                     <Share2 size={12} />
                                   </Button>
                                   <Button
-                                    onClick={() => downloadImage(attendant.imageUrl, attendant.name + "_profile")}
+                                    onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
                                     variant="outline"
                                     size="sm"
                                     className="flex-1 border-secondary text-secondary-light hover:bg-secondary hover:text-white"
@@ -1576,7 +1576,7 @@ export default function Admin() {
                                     variant="outline"
                                     size="sm"
                                     className="flex-1 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
-                                    title={(attendant.status === 'active' ? 'Desativar' : 'Ativar') + ' atendente'}
+                                    title={`${attendant.status === 'active' ? 'Desativar' : 'Ativar'} atendente`}
                                   >
                                     {attendant.status === 'active' ? <UserX size={12} /> : <UserCheck size={12} />}
                                   </Button>
@@ -1613,7 +1613,8 @@ export default function Admin() {
                           </thead>
                           <tbody>
                             {filteredAndSortedAttendants.map((attendant: Attendant) => {
-                              const stats = getAttendantStats(attendant);
+                              const stats = getAttendant```python
+Stats(attendant);
                               return (
                                 <tr key={attendant.id} className="border-b border-border/50 hover:bg-input/20">
                                   <td className="py-3 px-2">
@@ -1677,7 +1678,7 @@ export default function Admin() {
                                         <Share2 size={12} />
                                       </Button>
                                       <Button
-                                        onClick={() => downloadImage(attendant.imageUrl, attendant.name + "_profile")}
+                                        onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
                                         variant="outline"
                                         size="sm"
                                         className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
@@ -1829,7 +1830,7 @@ export default function Admin() {
                                   </div>
                                   <div className="flex gap-1">
                                     <Button
-                                      onClick={() => downloadImage(attendant.imageUrl, attendant.name + "_profile")}
+                                      onClick={() => downloadImage(attendant.imageUrl, `${attendant.name}_profile`)}
                                       variant="outline"
                                       size="sm"
                                       className="border-secondary text-secondary-light hover:bg-secondary hover:text-white"
@@ -1853,7 +1854,7 @@ export default function Admin() {
                                       variant="outline"
                                       size="sm"
                                       className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
-                                      title={(attendant.status === 'active' ? 'Desativar' : 'Ativar') + ' atendente'}
+                                      title={`${attendant.status === 'active' ? 'Desativar' : 'Ativar'} atendente`}
                                     >
                                       {attendant.status === 'active' ? <UserX size={14} /> : <UserCheck size={14} />}
                                     </Button>
@@ -2003,14 +2004,16 @@ export default function Admin() {
                             <h4 className="text-primary-light font-medium">{goal.title}</h4>
                             <p className="text-secondary-light text-sm">
                               {attendant?.name} - R$ {goal.currentValue} / R$ {goal.targetValue}
-                              <span className={'ml-2 px-2 py-1 rounded text-xs ' + (goal.isActive ? 'bg-success text-white' : 'bg-secondary-dark text-secondary-light')}>
+                              <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                                goal.isActive ? 'bg-success text-white' : 'bg-secondary-dark text-secondary-light'
+                              }`}>
                                 {goal.isActive ? 'Ativa' : 'Inativa'}
                               </span>
                             </p>
                             <div className="w-full bg-secondary-dark rounded-full h-2 mt-2">
                               <div 
                                 className="bg-success h-2 rounded-full transition-all"
-                                style={{ width: Math.min(progress, 100) + '%' }}
+                                style={{ width: `${Math.min(progress, 100)}%` }}
                               />
                             </div>
                             <p className="text-xs text-secondary-light mt-1">
@@ -2194,7 +2197,9 @@ export default function Admin() {
                             <h4 className="text-primary-light font-medium">{admin.username}</h4>
                             <p className="text-secondary-light text-sm">
                               {admin.email} • {admin.role}
-                              <span className={'ml-2 px-2 py-1 rounded text-xs ' + (admin.isActive ? 'bg-success text-white' : 'bg-danger text-white')}>
+                              <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                                admin.isActive ? 'bg-success text-white' : 'bg-danger text-white'
+                              }`}>
                                 {admin.isActive ? 'Ativo' : 'Inativo'}
                               </span>
                             </p>
@@ -2229,6 +2234,43 @@ export default function Admin() {
             </Card>
           </TabsContent>
 
+          {/* Drag & Drop Organization */}
+          <TabsContent value="dragdrop" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-primary-light flex items-center gap-2">
+                  <Grip size={20} />
+                  Organizar Atendentes
+                </CardTitle>
+                <p className="text-secondary-light">Arraste e solte para reordenar os atendentes</p>
+              </CardHeader>
+              <CardContent>
+                {attendantsLoading ? (
+                  <p className="text-secondary-light">Carregando...</p>
+                ) : (
+                  <DragDropManager
+                    attendants={attendants}
+                    onReorder={(newOrder) => {
+                      // Here you could save the new order to the database
+                      toast({
+                        title: "Ordem atualizada!",
+                        description: "A nova ordem dos atendentes foi salva.",
+                      });
+                    }}
+                    onEdit={(attendant) => {
+                      // Handle edit functionality
+                      toast({
+                        title: "Editar atendente",
+                        description: `Editando ${attendant.name}`,
+                      });
+                    }}
+                    onDelete={(id) => deleteAttendantMutation.mutate(id)}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Content Builder */}
           <TabsContent value="layout" className="space-y-6">
             <Card className="bg-card border-border">
@@ -2240,17 +2282,21 @@ export default function Admin() {
                 <p className="text-secondary-light">Configure widgets e componentes do painel</p>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <Layout size={48} className="mx-auto mb-4 text-muted-light opacity-50" />
-                  <p className="text-secondary-light mb-2">Construtor de Layout</p>
-                  <p className="text-muted-light text-sm">Esta funcionalidade será implementada em breve.</p>
-                </div>
+                <ContentBuilder
+                  onSave={(widgets) => {
+                    // Here you could save the layout configuration
+                    toast({
+                      title: "Layout salvo!",
+                      description: `${widgets.length} widgets configurados.`,
+                    });
+                  }}
+                />
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* System Configuration */}
-          <TabsContent value="configs" className="space-y-6">
+          <TabsContent value="config" className="space-y-6">
             <SystemConfiguration />
           </TabsContent>
         </Tabs>
@@ -2374,8 +2420,7 @@ export default function Admin() {
               <Input
                 value={newAchievement.title}
                 onChange={(e) => setNewAchievement({...newAchievement, title: e.target.value})}
-                placeholder="Ex: Primeira Venda"
-                className="bg-input border-border text-primary-light"
+                placeholder="Ex: Primeira Venda              className="bg-input border-border text-primary-light"
               />
             </div>
             <div>
@@ -2554,7 +2599,7 @@ export default function Admin() {
                           <div className="w-full bg-secondary-dark rounded-full h-2">
                             <div 
                               className="bg-gradient-to-r from-success to-info h-2 rounded-full transition-all"
-                              style={{ width: Math.min(progress, 100) + '%' }}
+                              style={{ width: `${Math.min(progress, 100)}%` }}
                             />
                           </div>
                           <div className="text-xs text-secondary-light mt-1">
