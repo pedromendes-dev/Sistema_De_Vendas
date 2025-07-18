@@ -54,8 +54,8 @@ export default function GoalsPage() {
         description: goalData.description,
         targetValue: goalData.targetValue,
         goalType: goalData.goalType,
-        startDate: goalData.startDate,
-        endDate: goalData.endDate,
+        startDate: new Date(goalData.startDate),
+        endDate: new Date(goalData.endDate),
       });
       return response.json();
     },

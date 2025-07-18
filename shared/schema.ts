@@ -94,10 +94,15 @@ export const insertAdminSchema = createInsertSchema(admins).omit({
   updatedAt: true,
 });
 
-export const insertGoalSchema = createInsertSchema(goals).omit({
-  id: true,
-  currentValue: true,
-  createdAt: true,
+export const insertGoalSchema = z.object({
+  attendantId: z.number(),
+  title: z.string(),
+  description: z.string().optional(),
+  targetValue: z.string(),
+  goalType: z.string(),
+  startDate: z.string().transform(val => new Date(val)),
+  endDate: z.string().transform(val => new Date(val)),
+  isActive: z.number().default(1).optional(),
 });
 
 export const insertAchievementSchema = createInsertSchema(achievements).omit({
