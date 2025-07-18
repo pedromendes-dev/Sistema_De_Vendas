@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useQuery } from '@tanstack/react-query';
-import ModernNotificationButton from './ModernNotificationButton';
+import SimpleNotificationButton from './SimpleNotificationButton';
 import type { Attendant, Sale, Goal, Achievement } from '@shared/schema';
 
 export default function ModernHeader() {
@@ -272,7 +272,7 @@ export default function ModernHeader() {
                   {isFullscreen ? <Minimize2 className="icon-adaptive" /> : <Maximize2 className="icon-adaptive" />}
                 </Button>
 
-                <ModernNotificationButton />
+                <SimpleNotificationButton />
 
                 <Button
                   variant="ghost"

@@ -206,16 +206,16 @@ export default function ModernNotificationButton() {
       {/* Modern Dropdown */}
       {isOpen && (
         <div 
-          className="fixed right-4 top-20 w-80 sm:w-96 max-w-[90vw] bg-card border border-border rounded-xl shadow-2xl z-[99999]" 
+          className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-w-[90vw] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl" 
           style={{ 
-            position: 'fixed',
+            position: 'absolute',
             maxHeight: '80vh',
-            overflow: 'auto'
+            overflowY: 'auto',
+            zIndex: 999999
           }}>
           
           {/* Header */}
-          <div className="p-4 bg-gradient-to-r from-accent/30 to-accent/10 border-b border-border/50"
-               style={{ background: 'linear-gradient(to right, #f0f0f0, #e0e0e0)' }}>
+          <div className="p-4 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg">
@@ -258,12 +258,12 @@ export default function ModernNotificationButton() {
           {/* Notifications List */}
           <ScrollArea className="max-h-[400px]">
             {displayNotifications.length === 0 ? (
-              <div className="p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-accent/20 rounded-full flex items-center justify-center">
-                  <Bell size={24} className="text-secondary-light opacity-50" />
+              <div className="p-8 text-center bg-red-100">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
+                  <Bell size={24} className="text-gray-500" />
                 </div>
-                <h4 className="text-sm font-medium text-primary-light mb-1">Nenhuma notificação</h4>
-                <p className="text-xs text-secondary-light">
+                <h4 className="text-sm font-medium text-gray-900 mb-1">Nenhuma notificação</h4>
+                <p className="text-xs text-gray-600">
                   As notificações de vendas e conquistas aparecerão aqui
                 </p>
               </div>
