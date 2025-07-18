@@ -158,7 +158,7 @@ export default function ModernNotificationButton() {
   const displayNotifications = isOpen ? allNotifications : [];
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef} style={{ position: 'relative', zIndex: 9999 }}>
       {/* Modern Bell Button */}
       <Button
         variant="ghost"
@@ -170,6 +170,8 @@ export default function ModernNotificationButton() {
         }`}
         onClick={() => {
           console.log('Notification button clicked! Current state:', isOpen);
+          console.log('Unread notifications:', unreadNotifications);
+          console.log('All notifications:', allNotifications);
           setIsOpen(!isOpen);
         }}
       >
@@ -203,10 +205,17 @@ export default function ModernNotificationButton() {
 
       {/* Modern Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-3 w-96 bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-2xl shadow-2xl backdrop-blur-xl z-[9999] overflow-hidden" style={{ position: 'absolute', right: '0', top: '100%' }}>
+        <div 
+          className="fixed right-4 top-20 w-80 sm:w-96 max-w-[90vw] bg-card border border-border rounded-xl shadow-2xl z-[99999]" 
+          style={{ 
+            position: 'fixed',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
           
           {/* Header */}
-          <div className="p-4 bg-gradient-to-r from-accent/30 to-accent/10 border-b border-border/50">
+          <div className="p-4 bg-gradient-to-r from-accent/30 to-accent/10 border-b border-border/50"
+               style={{ background: 'linear-gradient(to right, #f0f0f0, #e0e0e0)' }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg">

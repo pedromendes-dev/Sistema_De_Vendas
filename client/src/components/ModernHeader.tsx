@@ -191,7 +191,7 @@ export default function ModernHeader() {
 
   return (
     <div className="relative">
-      <header className="bg-gradient-to-r from-card via-card to-accent/10 border-b border-border/50 backdrop-blur-lg constrain-width">
+      <header className="bg-gradient-to-r from-card via-card to-accent/10 border-b border-border/50 backdrop-blur-lg constrain-width relative">
         <div className="universal-container">
           <div className="flex items-center justify-between header-adaptive">
 
