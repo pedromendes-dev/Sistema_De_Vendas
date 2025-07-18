@@ -1,11 +1,11 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import Navigation from "@/components/Navigation";
-import Dashboard from "@/components/Dashboard";
+import { DashboardAdvanced } from "@/components/DashboardAdvanced";
 import PageLoader from "@/components/PageLoader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, FileSpreadsheet, Calendar, TrendingUp } from "lucide-react";
+import { Download, FileSpreadsheet, Calendar, TrendingUp, DollarSign, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -183,7 +183,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Dashboard Component */}
-        <Dashboard />
+        <DashboardAdvanced />
 
         {/* Quick Actions */}
         <Card className="mt-6 bg-card border-border">
