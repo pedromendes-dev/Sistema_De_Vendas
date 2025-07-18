@@ -263,6 +263,10 @@ Preferred communication style: Simple, everyday language.
 - 2025-07-18: Added real-time search and sorting functionality (by name, value, or sales count)
 - 2025-07-18: Statistics dashboard shows total clients, revenue, and sales count
 - 2025-07-18: Clients navigation added to main menu with UserCheck icon
+- 2025-07-18: **CLIENT INFO IN SALES HISTORY** - Added client information display directly in sales history listing
+- 2025-07-18: Sales history now shows client name, phone and email in the main list view
+- 2025-07-18: Client data appears both in the sales list and in the detailed view modal
+- 2025-07-18: Sales cards show "Cliente não informado" when client data is missing
 - 2025-07-18: **LAYOUT TAB FUNCTIONALITY IMPLEMENTED** - Added complete customization options for visual appearance
 - 2025-07-18: Layout tab now includes theme colors, text sizes, display modes, and animation settings
 - 2025-07-18: Config tab confirmed working with comprehensive SystemConfiguration component

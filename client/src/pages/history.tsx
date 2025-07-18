@@ -275,21 +275,31 @@ export default function HistoryPage() {
                     key={sale.id}
                     className="flex items-center justify-between p-4 bg-secondary-dark rounded-lg border border-border hover:border-success/50 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-1">
                       <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center">
                         <DollarSign className="text-success" size={20} />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium text-primary-light">
-                          {getAttendantName(sale.attendantId)}
+                          {sale.clientName || 'Cliente não informado'}
                         </p>
                         <p className="text-sm text-secondary-light">
                           Atendente: {getAttendantName(sale.attendantId)}
                         </p>
+                        {sale.clientPhone && (
+                          <p className="text-xs text-muted-light">
+                            📱 {sale.clientPhone}
+                          </p>
+                        )}
+                        {sale.clientEmail && (
+                          <p className="text-xs text-muted-light">
+                            ✉️ {sale.clientEmail}
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <div className="text-center">
+                    <div className="text-center px-4">
                       <p className="text-lg font-bold text-success">
                         R$ {parseFloat(sale.value).toFixed(2).replace('.', ',')}
                       </p>
