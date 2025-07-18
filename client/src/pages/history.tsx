@@ -421,7 +421,7 @@ export default function HistoryPage() {
                       <p className="text-sm text-secondary-light">ID da Venda</p>
                       <p className="text-lg font-mono text-primary-light">#{selectedSale.id}</p>
                     </div>
-                    <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                    <Badge variant="outline" className="bg-white text-green-700 border border-green-300">
                       Venda Concluída
                     </Badge>
                   </div>

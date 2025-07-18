@@ -157,11 +157,11 @@ export default function GoalsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Concluída": return "bg-success text-primary-light";
-      case "Em andamento": return "bg-info text-primary-light";
-      case "Vencida": return "bg-danger text-primary-light";
-      case "Finalizada": return "bg-secondary-light text-primary-light";
-      default: return "bg-muted-light text-primary-light";
+      case "Concluída": return "bg-white text-green-700 border border-green-300";
+      case "Em andamento": return "bg-white text-blue-700 border border-blue-300";
+      case "Vencida": return "bg-white text-red-700 border border-red-300";
+      case "Finalizada": return "bg-white text-gray-700 border border-gray-300";
+      default: return "bg-white text-gray-700 border border-gray-300";
     }
   };
 
@@ -325,7 +325,7 @@ export default function GoalsPage() {
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-xl font-bold text-primary-light">{goal.title}</h3>
                         <Badge className={getStatusColor(status)}>{status}</Badge>
-                        <Badge variant="outline" className="text-info border-info">
+                        <Badge variant="outline" className="bg-white text-blue-700 border border-blue-300">
                           {getGoalTypeLabel(goal.goalType)}
                         </Badge>
                       </div>

@@ -116,13 +116,13 @@ export default function NotificationCenter({ className = "" }: NotificationCente
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return <Badge variant="destructive" className="text-xs animate-pulse">Urgente</Badge>;
+        return <Badge className="text-xs animate-pulse bg-white text-red-700 border border-red-300">Urgente</Badge>;
       case 'high':
-        return <Badge variant="destructive" className="text-xs">Alta</Badge>;
+        return <Badge className="text-xs bg-white text-red-700 border border-red-300">Alta</Badge>;
       case 'medium':
-        return <Badge variant="default" className="text-xs bg-warning text-primary-dark">Média</Badge>;
+        return <Badge className="text-xs bg-white text-yellow-700 border border-yellow-300">Média</Badge>;
       case 'low':
-        return <Badge variant="secondary" className="text-xs">Baixa</Badge>;
+        return <Badge className="text-xs bg-white text-gray-700 border border-gray-300">Baixa</Badge>;
       default:
         return null;
     }

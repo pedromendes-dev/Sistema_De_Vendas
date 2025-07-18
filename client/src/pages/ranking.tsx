@@ -66,13 +66,13 @@ export default function Ranking() {
   const getRankBadge = (position: number) => {
     switch (position) {
       case 0:
-        return <Badge className="bg-gradient-to-r from-yellow-400 to-orange-400 text-primary-dark font-bold">🥇 1º Lugar</Badge>;
+        return <Badge className="bg-white text-yellow-700 border border-yellow-400 font-bold">🥇 1º Lugar</Badge>;
       case 1:
-        return <Badge className="bg-gradient-to-r from-gray-300 to-gray-500 text-primary-dark font-bold">🥈 2º Lugar</Badge>;
+        return <Badge className="bg-white text-gray-700 border border-gray-400 font-bold">🥈 2º Lugar</Badge>;
       case 2:
-        return <Badge className="bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold">🥉 3º Lugar</Badge>;
+        return <Badge className="bg-white text-amber-700 border border-amber-400 font-bold">🥉 3º Lugar</Badge>;
       default:
-        return <Badge variant="outline" className="border-border text-secondary-light">{position + 1}º Lugar</Badge>;
+        return <Badge variant="outline" className="bg-white text-gray-700 border border-gray-400">{position + 1}º Lugar</Badge>;
     }
   };
 

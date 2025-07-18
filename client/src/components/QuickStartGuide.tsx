@@ -170,7 +170,7 @@ export default function QuickStartGuide() {
 
                 <div className="flex-shrink-0">
                   {step.completed ? (
-                    <Badge variant="default" className="bg-success text-white">
+                    <Badge variant="default" className="bg-white text-green-700 border border-green-300">
                       Concluído
                     </Badge>
                   ) : (
