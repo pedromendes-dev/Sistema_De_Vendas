@@ -53,6 +53,7 @@ export interface IStorage {
   getGoalsByAttendant(attendantId: number): Promise<Goal[]>;
   getActiveGoalsByAttendant(attendantId: number): Promise<Goal[]>;
   createGoal(goal: InsertGoal): Promise<Goal>;
+  updateGoal(id: number, updates: Partial<Goal>): Promise<Goal | undefined>;
   updateGoalProgress(id: number, currentValue: string): Promise<Goal | undefined>;
   deactivateGoal(id: number): Promise<Goal | undefined>;
   deleteGoal(id: number): Promise<boolean>;
@@ -61,6 +62,8 @@ export interface IStorage {
   getAllAchievements(): Promise<Achievement[]>;
   getAchievementsByAttendant(attendantId: number): Promise<Achievement[]>;
   createAchievement(achievement: InsertAchievement): Promise<Achievement>;
+  updateAchievement(id: number, updates: Partial<Achievement>): Promise<Achievement | undefined>;
+  deleteAchievement(id: number): Promise<boolean>;
   
   // Leaderboard
   getAllLeaderboard(): Promise<Leaderboard[]>;
@@ -289,6 +292,33 @@ export class DatabaseStorage implements IStorage {
   async createAchievement(insertAchievement: InsertAchievement): Promise<Achievement> {
     const [achievement] = await db.insert(achievements).values(insertAchievement).returning();
     return achievement;
+  }
+
+  async updateAchievement(id: number, updates: Partial<Achievement>): Promise<Achievement | undefined> {
+    const [achievement] = await db
+      .update(achievements)
+      .set(updates)
+      .where(eq(achievements.id, id))
+      .returning();
+    return achievement || undefined;
+  }
+
+  async deleteAchievement(id: number): Promise<boolean> {
+    try {
+      await db.delete(achievements).where(eq(achievements.id, id));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async updateGoal(id: number, updates: Partial<Goal>): Promise<Goal | undefined> {
+    const [goal] = await db
+      .update(goals)
+      .set(updates)
+      .where(eq(goals.id, id))
+      .returning();
+    return goal || undefined;
   }
 
   // Leaderboard methods

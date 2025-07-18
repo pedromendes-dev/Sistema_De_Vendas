@@ -74,10 +74,12 @@ export default function ModernNotificationButton() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch unread notifications
+  // Fetch unread notifications com otimização
   const { data: unreadNotifications = [] } = useQuery({
     queryKey: ["/api/notifications/unread"],
-    refetchInterval: 5000,
+    refetchInterval: 30000, // Reduzido para 30 segundos
+    staleTime: 15000, // Cache válido por 15 segundos
+    refetchOnWindowFocus: true, // Atualiza ao focar na janela
   });
 
   // Fetch all notifications when dropdown is open

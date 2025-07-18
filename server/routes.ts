@@ -544,27 +544,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const { attendantId, title, description, targetValue, type } = req.body;
       
-      // TODO: Implement updateGoal method in storage
-      // For now, we'll simulate it by deleting and recreating
-      const existingGoal = await storage.getAllGoals();
-      const goalToUpdate = existingGoal.find(g => g.id === id);
-      
-      if (!goalToUpdate) {
+      const updates = { attendantId, title, description, targetValue, goalType: type };
+      const updatedGoal = await storage.updateGoal(id, updates);
+      if (!updatedGoal) {
         return res.status(404).json({ message: "Goal not found" });
       }
-
-      // Create updated goal with same current progress
-      const updatedGoalData = {
-        attendantId: attendantId || goalToUpdate.attendantId,
-        title: title || goalToUpdate.title,
-        description: description || goalToUpdate.description,
-        targetValue: targetValue || goalToUpdate.targetValue,
-        currentValue: goalToUpdate.currentValue,
-        type: type || goalToUpdate.type,
-        isActive: goalToUpdate.isActive
-      };
-
-      res.json({ message: "Goal update simulated", data: updatedGoalData });
+      res.json(updatedGoal);
     } catch (error) {
       res.status(500).json({ message: "Failed to update goal" });
     }
@@ -642,26 +627,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const { attendantId, title, description, pointsAwarded, badgeColor } = req.body;
       
-      // TODO: Implement updateAchievement method in storage
-      // For now, we'll simulate it
-      const existingAchievements = await storage.getAllAchievements();
-      const achievementToUpdate = existingAchievements.find(a => a.id === id);
-      
-      if (!achievementToUpdate) {
+      const updates = { attendantId, title, description, pointsAwarded, badgeColor };
+      const updatedAchievement = await storage.updateAchievement(id, updates);
+      if (!updatedAchievement) {
         return res.status(404).json({ message: "Achievement not found" });
       }
-
-      const updatedAchievementData = {
-        attendantId: attendantId || achievementToUpdate.attendantId,
-        title: title || achievementToUpdate.title,
-        description: description || achievementToUpdate.description,
-        pointsAwarded: pointsAwarded || achievementToUpdate.pointsAwarded,
-        badgeColor: badgeColor || achievementToUpdate.badgeColor,
-        icon: achievementToUpdate.icon,
-        achievedAt: achievementToUpdate.achievedAt
-      };
-
-      res.json({ message: "Achievement update simulated", data: updatedAchievementData });
+      res.json(updatedAchievement);
     } catch (error) {
       res.status(500).json({ message: "Failed to update achievement" });
     }
@@ -671,9 +642,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       
-      // TODO: Implement deleteAchievement method in storage
-      // For now, we'll simulate it
-      res.json({ message: "Achievement deletion simulated" });
+      const success = await storage.deleteAchievement(id);
+      if (!success) {
+        return res.status(404).json({ message: "Achievement not found" });
+      }
+      res.json({ message: "Achievement deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete achievement" });
     }
