@@ -948,7 +948,6 @@ export default function Admin() {
                   { value: 'goals', icon: Target, label: 'Metas' },
                   { value: 'achievements', icon: Trophy, label: 'Conquistas' },
                   { value: 'admins', icon: Shield, label: 'Admins' },
-                  { value: 'organize', icon: Grip, label: 'Organizar' },
                   { value: 'layout', icon: Layout, label: 'Layout' },
                   { value: 'configs', icon: Settings, label: 'Config' }
                 ].map(({ value, icon: Icon, label }) => (
@@ -2257,21 +2256,124 @@ export default function Admin() {
               <CardHeader>
                 <CardTitle className="text-primary-light flex items-center gap-2">
                   <Layout size={20} />
-                  Construtor de Layout
+                  Personalização de Layout
                 </CardTitle>
-                <p className="text-secondary-light">Configure widgets e componentes do painel</p>
+                <p className="text-secondary-light">Configure a aparência do sistema</p>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-secondary-light">Construtor de layout em desenvolvimento.</p>
-                  <p className="text-sm text-secondary-light mt-2">Em breve você poderá personalizar widgets e componentes.</p>
+              <CardContent className="space-y-6">
+                {/* Tema de Cores */}
+                <div className="space-y-4">
+                  <h4 className="text-primary-light font-semibold flex items-center gap-2">
+                    <Activity size={16} />
+                    Tema de Cores
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Button 
+                      variant="outline" 
+                      className="flex flex-col gap-2 p-4 h-auto border-2 hover:border-primary"
+                    >
+                      <div className="w-full h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded"></div>
+                      <span className="text-xs">Padrão</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="flex flex-col gap-2 p-4 h-auto border-2 hover:border-primary"
+                    >
+                      <div className="w-full h-8 bg-gradient-to-r from-green-600 to-teal-600 rounded"></div>
+                      <span className="text-xs">Natureza</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="flex flex-col gap-2 p-4 h-auto border-2 hover:border-primary"
+                    >
+                      <div className="w-full h-8 bg-gradient-to-r from-red-600 to-orange-600 rounded"></div>
+                      <span className="text-xs">Energia</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="flex flex-col gap-2 p-4 h-auto border-2 hover:border-primary"
+                    >
+                      <div className="w-full h-8 bg-gradient-to-r from-gray-600 to-slate-600 rounded"></div>
+                      <span className="text-xs">Profissional</span>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Tamanho de Fonte */}
+                <div className="space-y-4">
+                  <h4 className="text-primary-light font-semibold flex items-center gap-2">
+                    <FileText size={16} />
+                    Tamanho do Texto
+                  </h4>
+                  <div className="flex items-center gap-4">
+                    <Button variant="outline" size="sm">Pequeno</Button>
+                    <Button variant="outline" size="sm" className="border-primary">Normal</Button>
+                    <Button variant="outline" size="sm">Grande</Button>
+                    <Button variant="outline" size="sm">Extra Grande</Button>
+                  </div>
+                </div>
+
+                {/* Modo de Exibição */}
+                <div className="space-y-4">
+                  <h4 className="text-primary-light font-semibold flex items-center gap-2">
+                    <Grid size={16} />
+                    Modo de Exibição Padrão
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="border-2 border-border rounded-lg p-4 hover:border-primary cursor-pointer">
+                      <Grid className="mb-2" size={24} />
+                      <p className="text-sm font-medium">Grade de Cards</p>
+                      <p className="text-xs text-secondary-light">Visualização em cards</p>
+                    </div>
+                    <div className="border-2 border-border rounded-lg p-4 hover:border-primary cursor-pointer">
+                      <List className="mb-2" size={24} />
+                      <p className="text-sm font-medium">Lista Detalhada</p>
+                      <p className="text-xs text-secondary-light">Visualização em tabela</p>
+                    </div>
+                    <div className="border-2 border-border rounded-lg p-4 hover:border-primary cursor-pointer">
+                      <BarChart3 className="mb-2" size={24} />
+                      <p className="text-sm font-medium">Dashboard</p>
+                      <p className="text-xs text-secondary-light">Foco em estatísticas</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Animações */}
+                <div className="space-y-4">
+                  <h4 className="text-primary-light font-semibold flex items-center gap-2">
+                    <Zap size={16} />
+                    Animações e Efeitos
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center justify-between">
+                      <span className="text-sm">Animações de transição</span>
+                      <input type="checkbox" className="toggle" defaultChecked />
+                    </label>
+                    <label className="flex items-center justify-between">
+                      <span className="text-sm">Efeitos de hover</span>
+                      <input type="checkbox" className="toggle" defaultChecked />
+                    </label>
+                    <label className="flex items-center justify-between">
+                      <span className="text-sm">Animações de entrada</span>
+                      <input type="checkbox" className="toggle" defaultChecked />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <Button className="bg-success text-white">
+                    Salvar Configurações
+                  </Button>
+                  <Button variant="outline">
+                    Restaurar Padrão
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* System Configuration */}
-          <TabsContent value="config" className="space-y-6">
+          <TabsContent value="configs" className="space-y-6">
             <SystemConfiguration />
           </TabsContent>
         </Tabs>

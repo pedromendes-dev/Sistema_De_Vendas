@@ -155,7 +155,7 @@ export default function ModernNotificationButton() {
   }, [isOpen]);
 
   const unreadCount = unreadNotifications.length;
-  const displayNotifications = isOpen ? allNotifications : [];
+  const displayNotifications = allNotifications;
 
   return (
     <div className="relative" ref={dropdownRef} style={{ position: 'relative', zIndex: 9999 }}>
