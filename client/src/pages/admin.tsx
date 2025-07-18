@@ -13,6 +13,7 @@ import ModernHeader from "@/components/ModernHeader";
 import Navigation from "@/components/Navigation";
 import SystemConfiguration from "@/components/SystemConfiguration";
 import DashboardStats from "@/components/DashboardStats";
+import DashboardWidgetCustomizer from "@/components/DashboardWidgetCustomizer";
 import type { Attendant, Sale, Goal, Achievement } from "@shared/schema";
 
 export default function Admin() {
@@ -948,6 +949,7 @@ export default function Admin() {
                   { value: 'goals', icon: Target, label: 'Metas' },
                   { value: 'achievements', icon: Trophy, label: 'Conquistas' },
                   { value: 'admins', icon: Shield, label: 'Admins' },
+                  { value: 'widgets', icon: Grip, label: 'Widgets' },
                   { value: 'layout', icon: Layout, label: 'Layout' },
                   { value: 'configs', icon: Settings, label: 'Config' }
                 ].map(({ value, icon: Icon, label }) => (
@@ -2248,6 +2250,11 @@ export default function Admin() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Dashboard Widget Customizer */}
+          <TabsContent value="widgets" className="space-y-6">
+            <DashboardWidgetCustomizer />
           </TabsContent>
 
           {/* Content Builder */}
