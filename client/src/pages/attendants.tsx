@@ -16,6 +16,10 @@ export default function Attendants() {
   const [isNewAttendantDialogOpen, setIsNewAttendantDialogOpen] = useState(false);
   const [newAttendantName, setNewAttendantName] = useState("");
   const [newAttendantImage, setNewAttendantImage] = useState("");
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingAttendant, setEditingAttendant] = useState<Attendant | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editImage, setEditImage] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -97,6 +101,98 @@ export default function Attendants() {
       name: newAttendantName,
       imageUrl: newAttendantImage,
     });
+  };
+
+  // Edit attendant mutation
+  const editAttendantMutation = useMutation({
+    mutationFn: async (data: { id: number; name: string; imageUrl: string }) => {
+      const response = await apiRequest("PUT", `/api/attendants/${data.id}`, {
+        name: data.name,
+        imageUrl: data.imageUrl,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Atendente atualizado!",
+        description: "Os dados do atendente foram atualizados com sucesso.",
+      });
+      setIsEditDialogOpen(false);
+      setEditingAttendant(null);
+      setEditName("");
+      setEditImage("");
+      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+    },
+    onError: () => {
+      toast({
+        title: "Erro ao atualizar",
+        description: "Ocorreu um erro ao atualizar o atendente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete attendant mutation
+  const deleteAttendantMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/attendants/${id}`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Atendente removido!",
+        description: "O atendente foi removido com sucesso.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
+    },
+    onError: () => {
+      toast({
+        title: "Erro ao remover",
+        description: "Ocorreu um erro ao remover o atendente.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEditAttendant = (attendant: Attendant) => {
+    setEditingAttendant(attendant);
+    setEditName(attendant.name);
+    setEditImage(attendant.imageUrl);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateAttendant = () => {
+    if (!editName.trim()) {
+      toast({
+        title: "Nome obrigatório",
+        description: "Por favor, insira o nome do atendente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!editImage.trim()) {
+      toast({
+        title: "Imagem obrigatória",
+        description: "Por favor, insira a URL da imagem do atendente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!editingAttendant) return;
+
+    editAttendantMutation.mutate({
+      id: editingAttendant.id,
+      name: editName,
+      imageUrl: editImage,
+    });
+  };
+
+  const handleDeleteAttendant = (id: number) => {
+    if (window.confirm("Tem certeza que deseja remover este atendente?")) {
+      deleteAttendantMutation.mutate(id);
+    }
   };
 
   if (isLoading) {
@@ -231,6 +327,7 @@ export default function Attendants() {
                     variant="outline" 
                     size="sm" 
                     className="flex-1 border-border text-secondary-light hover:text-primary-light hover:border-success"
+                    onClick={() => handleEditAttendant(attendant)}
                   >
                     <Edit size={14} className="mr-1" />
                     Editar
@@ -239,6 +336,7 @@ export default function Attendants() {
                     variant="outline" 
                     size="sm" 
                     className="border-danger text-danger hover:bg-danger hover:text-primary-light"
+                    onClick={() => handleDeleteAttendant(attendant.id)}
                   >
                     <Trash2 size={14} />
                   </Button>
@@ -248,6 +346,62 @@ export default function Attendants() {
           ))}
         </div>
       </main>
+
+      {/* Edit Attendant Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="bg-card border-border text-primary-light">
+          <DialogHeader>
+            <DialogTitle className="text-primary-light">Editar Atendente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editName" className="text-secondary-light">Nome</Label>
+              <Input
+                id="editName"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Nome do atendente"
+                className="bg-input border-border text-primary-light placeholder:text-muted-light"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editImageUrl" className="text-secondary-light">URL da Imagem</Label>
+              <Input
+                id="editImageUrl"
+                value={editImage}
+                onChange={(e) => setEditImage(e.target.value)}
+                placeholder="https://..."
+                className="bg-input border-border text-primary-light placeholder:text-muted-light"
+              />
+            </div>
+            {editImage && (
+              <div className="flex justify-center">
+                <img 
+                  src={editImage} 
+                  alt="Preview" 
+                  className="w-20 h-20 rounded-full object-cover border-2 border-border"
+                />
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+                className="flex-1 border-border text-secondary-light"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleUpdateAttendant}
+                disabled={editAttendantMutation.isPending}
+                className="flex-1 bg-success text-primary-light hover:bg-success-dark"
+              >
+                {editAttendantMutation.isPending ? "Atualizando..." : "Atualizar"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
