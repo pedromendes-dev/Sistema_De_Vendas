@@ -12,6 +12,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ModernHeader from "@/components/ModernHeader";
 import Navigation from "@/components/Navigation";
 import SystemConfiguration from "@/components/SystemConfiguration";
+import DashboardStats from "@/components/DashboardStats";
 import type { Attendant, Sale, Goal, Achievement } from "@shared/schema";
 
 export default function Admin() {

@@ -168,7 +168,10 @@ export default function ModernNotificationButton() {
             ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20 border border-blue-500/20' 
             : 'hover:bg-accent/50 border border-transparent hover:border-border/50'
         }`}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          console.log('Notification button clicked! Current state:', isOpen);
+          setIsOpen(!isOpen);
+        }}
       >
         <div className="relative">
           <Bell 
@@ -200,7 +203,7 @@ export default function ModernNotificationButton() {
 
       {/* Modern Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-3 w-96 bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-2xl shadow-2xl backdrop-blur-xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-3 w-96 bg-gradient-to-br from-card to-card/95 border border-border/50 rounded-2xl shadow-2xl backdrop-blur-xl z-[9999] overflow-hidden" style={{ position: 'absolute', right: '0', top: '100%' }}>
           
           {/* Header */}
           <div className="p-4 bg-gradient-to-r from-accent/30 to-accent/10 border-b border-border/50">
