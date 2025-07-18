@@ -218,12 +218,12 @@ export default function ModernHeader() {
             {/* Center Section - Search (Hidden on small screens) */}
             <div className="hidden md:flex flex-1 max-w-md mx-8">
               <div className="relative w-full">
-                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-light" />
+                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
                 <Input
                   placeholder="Buscar atendentes, vendas, metas..."
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-10 pr-10 bg-input/50 border-border/50 focus:border-border/50 transition-colors"
+                  className="pl-10 pr-10 bg-white/90 border-border/50 focus:border-border/50 transition-colors text-gray-800 placeholder:text-gray-500"
                 />
                 {searchQuery && (
                   <Button
@@ -291,12 +291,12 @@ export default function ModernHeader() {
         {isSearchOpen && (
           <div className="md:hidden px-4 pb-3 border-t border-border/30">
             <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-light" />
+              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" />
               <Input
                 placeholder="Buscar atendentes, vendas, metas..."
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-10 pr-10 bg-input/50 border-border/50"
+                className="pl-10 pr-10 bg-white/90 border-border/50 text-gray-800 placeholder:text-gray-500"
                 autoFocus
               />
               {searchQuery && (
