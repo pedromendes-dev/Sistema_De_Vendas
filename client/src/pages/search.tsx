@@ -256,7 +256,7 @@ export default function SearchPage() {
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   {attendants.map((attendant: any) => (
                     <SelectItem key={attendant.id} value={attendant.id.toString()}>
                       {attendant.name}
