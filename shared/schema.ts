@@ -13,6 +13,9 @@ export const sales = pgTable("sales", {
   id: serial("id").primaryKey(),
   attendantId: integer("attendant_id").notNull(),
   value: decimal("value", { precision: 10, scale: 2 }).notNull(),
+  clientName: text("client_name"),
+  clientPhone: text("client_phone"),
+  clientEmail: text("client_email"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

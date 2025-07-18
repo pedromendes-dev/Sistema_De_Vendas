@@ -12,7 +12,7 @@ import type { Attendant } from "@shared/schema";
 
 interface AttendantCardProps {
   attendant: Attendant;
-  onSaleSubmit: (attendantId: number, value: string) => void;
+  onSaleSubmit: (attendantId: number, value: string, clientData?: { name?: string; phone?: string; email?: string }) => void;
   isLoading: boolean;
 }
 
@@ -22,6 +22,10 @@ export default function AttendantCard({
   isLoading = false 
 }: AttendantCardProps) {
   const [saleValue, setSaleValue] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [showClientFields, setShowClientFields] = useState(false);
   const { playSaleSound } = useSaleSound();
   const { toast } = useToast();
   const { classes, isMobile, isTouch, metrics } = useComponentAdapter('card');
@@ -38,9 +42,19 @@ export default function AttendantCard({
       return;
     }
 
-    onSaleSubmit(attendant.id, saleValue);
+    const clientData = {
+      name: clientName.trim() || undefined,
+      phone: clientPhone.trim() || undefined,
+      email: clientEmail.trim() || undefined,
+    };
+
+    onSaleSubmit(attendant.id, saleValue, clientData);
     playSaleSound(); // Tocar som de venda
     setSaleValue("");
+    setClientName("");
+    setClientPhone("");
+    setClientEmail("");
+    setShowClientFields(false);
   };
 
   // Intelligent styling based on device type and screen metrics
@@ -120,6 +134,65 @@ export default function AttendantCard({
               />
             </div>
           </div>
+
+          {/* Client Data Toggle */}
+          <Button 
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowClientFields(!showClientFields)}
+            className="text-xs border-border hover:bg-accent/20"
+          >
+            {showClientFields ? 'Ocultar' : 'Dados do Cliente'}
+          </Button>
+
+          {/* Client Fields */}
+          {showClientFields && (
+            <div className="space-y-2 p-3 bg-accent/10 rounded-lg border border-border/30">
+              <div className="space-y-2">
+                <Label className={`text-secondary-light ${metrics.deviceType === 'mobile' ? 'text-xs' : 'text-sm'}`}>
+                  Nome do Cliente
+                </Label>
+                <Input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="Nome completo"
+                  className={`bg-input border-border text-primary-light focus:ring-2 focus:ring-success/50 focus:border-success transition-all duration-200 ${
+                    metrics.deviceType === 'mobile' ? 'h-8 text-sm' : 'h-10 text-base'
+                  }`}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className={`text-secondary-light ${metrics.deviceType === 'mobile' ? 'text-xs' : 'text-sm'}`}>
+                  Telefone
+                </Label>
+                <Input
+                  type="tel"
+                  value={clientPhone}
+                  onChange={(e) => setClientPhone(e.target.value)}
+                  placeholder="(11) 99999-9999"
+                  className={`bg-input border-border text-primary-light focus:ring-2 focus:ring-success/50 focus:border-success transition-all duration-200 ${
+                    metrics.deviceType === 'mobile' ? 'h-8 text-sm' : 'h-10 text-base'
+                  }`}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className={`text-secondary-light ${metrics.deviceType === 'mobile' ? 'text-xs' : 'text-sm'}`}>
+                  Email
+                </Label>
+                <Input
+                  type="email"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  placeholder="cliente@email.com"
+                  className={`bg-input border-border text-primary-light focus:ring-2 focus:ring-success/50 focus:border-success transition-all duration-200 ${
+                    metrics.deviceType === 'mobile' ? 'h-8 text-sm' : 'h-10 text-base'
+                  }`}
+                />
+              </div>
+            </div>
+          )}
 
           <Button 
             type="submit" 

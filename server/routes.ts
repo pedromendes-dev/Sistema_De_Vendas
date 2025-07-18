@@ -134,7 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Create sale notification
         const saleNotification = await storage.createNotification({
           type: "sale",
-          title: "💰 Nova Venda!",
+          title: "Nova Venda Registrada!",
           message: `${updatedAttendant.name} registrou uma venda de R$ ${validatedData.value}`,
           attendantId: validatedData.attendantId,
           metadata: JSON.stringify({ saleValue: validatedData.value, totalEarnings: currentEarnings }),
@@ -162,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Create achievement notification
             const achievementNotification = await storage.createNotification({
               type: "achievement",
-              title: "🏆 Nova Conquista!",
+              title: "Nova Conquista Desbloqueada!",
               message: `${updatedAttendant.name} conquistou: ${achievement.title}`,
               attendantId: validatedData.attendantId,
               metadata: JSON.stringify({ achievementId: achievement.id, pointsAwarded: 100 }),
@@ -194,7 +194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (allSales.length % 25 === 0) {
           const milestoneNotification = await storage.createNotification({
             type: "team_milestone",
-            title: "🎉 Marco da Equipe!",
+            title: "Marco da Equipe Alcançado!",
             message: `A equipe alcançou ${allSales.length} vendas registradas!`,
             metadata: JSON.stringify({ milestone: allSales.length }),
             priority: "high"

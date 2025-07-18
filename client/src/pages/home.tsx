@@ -24,7 +24,7 @@ export default function Home() {
 
   // Create sale mutation
   const createSaleMutation = useMutation({
-    mutationFn: async (data: { attendantId: number; value: string }) => {
+    mutationFn: async (data: { attendantId: number; value: string; clientName?: string; clientPhone?: string; clientEmail?: string }) => {
       const response = await apiRequest("POST", "/api/sales", data);
       return response.json();
     },
@@ -44,8 +44,14 @@ export default function Home() {
     },
   });
 
-  const handleSaleSubmit = (attendantId: number, value: string) => {
-    createSaleMutation.mutate({ attendantId, value });
+  const handleSaleSubmit = (attendantId: number, value: string, clientData?: { name?: string; phone?: string; email?: string }) => {
+    createSaleMutation.mutate({ 
+      attendantId, 
+      value, 
+      clientName: clientData?.name,
+      clientPhone: clientData?.phone,
+      clientEmail: clientData?.email
+    });
   };
 
   return (
