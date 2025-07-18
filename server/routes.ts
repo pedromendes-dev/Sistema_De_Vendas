@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { insertSaleSchema, insertAttendantSchema, insertNotificationSchema, insertGoalSchema, insertAchievementSchema } from "@shared/schema";
 import { z } from "zod";
 import { registerReportRoutes } from "./routes/reports";
+import { backupManager } from "./utils/backup";
 
 // WebSocket clients storage
 const wsClients = new Set<WebSocket>();
@@ -769,6 +770,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Notification deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete notification" });
+    }
+  });
+
+  // Backup routes
+  app.get("/api/backup/create", async (req, res) => {
+    try {
+      const { filename, data } = await backupManager.createFullBackup();
+      res.json({ 
+        message: "Backup criado com sucesso", 
+        filename,
+        size: data.metadata.backupSize,
+        records: data.metadata.totalRecords 
+      });
+    } catch (error) {
+      console.error("Backup creation error:", error);
+      res.status(500).json({ message: "Erro ao criar backup" });
+    }
+  });
+
+  app.get("/api/backup/list", async (req, res) => {
+    try {
+      const backups = await backupManager.listBackups();
+      res.json(backups);
+    } catch (error) {
+      console.error("List backups error:", error);
+      res.status(500).json({ message: "Erro ao listar backups" });
+    }
+  });
+
+  app.get("/api/backup/download/:filename", async (req, res) => {
+    try {
+      const { filename } = req.params;
+      const backup = await backupManager.getBackup(filename);
+      
+      if (!backup) {
+        return res.status(404).json({ message: "Backup não encontrado" });
+      }
+
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.json(backup);
+    } catch (error) {
+      console.error("Download backup error:", error);
+      res.status(500).json({ message: "Erro ao baixar backup" });
+    }
+  });
+
+  app.get("/api/backup/export-sql", async (req, res) => {
+    try {
+      const sql = await backupManager.exportToSQL();
+      const filename = `backup_${new Date().toISOString().split('T')[0]}.sql`;
+      
+      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(sql);
+    } catch (error) {
+      console.error("Export SQL error:", error);
+      res.status(500).json({ message: "Erro ao exportar SQL" });
+    }
+  });
+
+  app.delete("/api/backup/clean", async (req, res) => {
+    try {
+      const { days = 30 } = req.query;
+      const deleted = await backupManager.deleteOldBackups(Number(days));
+      res.json({ 
+        message: `${deleted} backups antigos removidos`,
+        deleted 
+      });
+    } catch (error) {
+      console.error("Clean backups error:", error);
+      res.status(500).json({ message: "Erro ao limpar backups" });
     }
   });
 

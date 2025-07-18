@@ -64,6 +64,10 @@ replit.nix
 # Backup files
 *.backup
 *.bak
+backups/
+*.backup.json
+*.backup.sql
+latest_backup.json
 
 # Package lock files (choose one)
 # npm

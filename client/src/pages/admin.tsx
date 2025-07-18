@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck, Search, Filter, Grid, List, BarChart3, Calendar, TrendingUp, Award, Star, Download, Upload, Copy, Share2, MessageCircle, Phone, Mail, FileText, Activity, Settings, Zap, Clock, Award as AwardIcon, Crown, RefreshCw, ArrowUp, ArrowDown, MoreVertical } from "lucide-react";
+import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck, Search, Filter, Grid, List, BarChart3, Calendar, TrendingUp, Award, Star, Download, Upload, Copy, Share2, MessageCircle, Phone, Mail, FileText, Activity, Settings, Zap, Clock, Award as AwardIcon, Crown, RefreshCw, ArrowUp, ArrowDown, MoreVertical, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,6 +14,7 @@ import Navigation from "@/components/Navigation";
 import SystemConfiguration from "@/components/SystemConfiguration";
 import DashboardStats from "@/components/DashboardStats";
 import DashboardWidgetCustomizer from "@/components/DashboardWidgetCustomizer";
+import { BackupManager } from "@/components/BackupManager";
 import type { Attendant, Sale, Goal, Achievement } from "@shared/schema";
 
 export default function Admin() {
@@ -951,7 +952,8 @@ export default function Admin() {
                   { value: 'admins', icon: Shield, label: 'Admins' },
                   { value: 'widgets', icon: Grip, label: 'Widgets' },
                   { value: 'layout', icon: Layout, label: 'Layout' },
-                  { value: 'configs', icon: Settings, label: 'Config' }
+                  { value: 'configs', icon: Settings, label: 'Config' },
+                  { value: 'backup', icon: Database, label: 'Backup' }
                 ].map(({ value, icon: Icon, label }) => (
                   <TabsTrigger
                     key={value}
@@ -2377,6 +2379,11 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Backup System */}
+          <TabsContent value="backup" className="space-y-6">
+            <BackupManager />
           </TabsContent>
 
           {/* System Configuration */}
