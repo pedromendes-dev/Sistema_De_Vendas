@@ -1,4 +1,4 @@
-# SalesControl Pro
+# Sistema de Vendas && Gerenciamento
 
 Sistema gamificado de gestão de vendas com interface moderna e responsiva.
 
@@ -81,16 +81,8 @@ npm run build
 
 ## 🔧 Configuração
 
-### Variáveis de Ambiente
-```bash
-DATABASE_URL=postgresql://user:pass@host:port/db
-```
-
 ### Banco de Dados
 O sistema utiliza PostgreSQL com Drizzle ORM. As tabelas são criadas automaticamente.
-
-### Credenciais Padrão
-- **Admin**: administrador / root123
 
 ## 📱 Responsividade
 
