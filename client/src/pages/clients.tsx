@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useState, useMemo } from "react";
 import { User, Phone, Mail, MapPin, ShoppingBag, Calendar, Search, Users } from "lucide-react";
+import Header from "@/components/Header";
+import Navigation from "@/components/Navigation";
 
 interface Client {
   name: string;
@@ -102,11 +104,14 @@ export default function ClientsPage() {
   const totalSalesCount = filteredClients.reduce((sum, client) => sum + client.totalSales, 0);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary-light mb-2">Clientes</h1>
-        <p className="text-secondary-light">Gerencie e visualize todos os clientes cadastrados</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Header />
+      <Navigation />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-primary-light mb-2">Clientes</h1>
+          <p className="text-secondary-light">Gerencie e visualize todos os clientes cadastrados</p>
+        </div>
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -272,6 +277,7 @@ export default function ClientsPage() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }

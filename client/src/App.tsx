@@ -10,6 +10,7 @@ import History from "@/pages/history";
 import Attendants from "@/pages/attendants";
 import Goals from "@/pages/goals";
 import Admin from "@/pages/admin";
+import FirebaseAdmin from "@/pages/firebase-admin";
 import Dashboard from "@/pages/dashboard";
 import SoundTest from "@/pages/sound-test";
 import Clients from "@/pages/clients";
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/goals" component={Goals} />
       <Route path="/clients" component={Clients} />
       <Route path="/admin" component={Admin} />
+      <Route path="/firebase-admin" component={FirebaseAdmin} />
       <Route path="/sound-test" component={SoundTest} />
       <Route component={NotFound} />
     </Switch>
