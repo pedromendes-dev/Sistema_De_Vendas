@@ -74,3 +74,5 @@ latest_backup.json
 # package-lock.json
 # yarn
 # yarn.lock
+.vercel
+.env*.local

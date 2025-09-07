@@ -7,6 +7,10 @@
       "config": {
         "includeFiles": ["dist/**", "client/**"]
       }
+    },
+    {
+      "src": "dist/public/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -16,16 +20,11 @@
     },
     {
       "src": "/(.*)",
-      "dest": "server/index.ts"
+      "dest": "dist/public/$1"
     }
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "server/index.ts": {
-      "maxDuration": 30
-    }
   },
   "installCommand": "npm install",
   "buildCommand": "npm run build"

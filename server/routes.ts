@@ -2,7 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertSaleSchema, insertAttendantSchema, insertNotificationSchema, insertGoalSchema, insertAchievementSchema } from "@shared/schema";
 import { z } from "zod";
 import { registerReportRoutes } from "./routes/reports";
 import { backupManager } from "./utils/backup";
@@ -45,7 +44,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/attendants", async (req, res) => {
     try {
       const attendants = await storage.getAllAttendants();
-      res.json(attendants);
+      const adaptedAttendants = attendants.map(adaptFirestoreAttendant);
+      res.json(adaptedAttendants);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch attendants" });
     }
@@ -54,12 +54,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get attendant by ID
   app.get("/api/attendants/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = req.params.id;
       const attendant = await storage.getAttendant(id);
       if (!attendant) {
         return res.status(404).json({ message: "Attendant not found" });
       }
-      res.json(attendant);
+      res.json(adaptFirestoreAttendant(attendant));
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch attendant" });
     }
@@ -69,8 +69,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/attendants", async (req, res) => {
     try {
       const validatedData = insertAttendantSchema.parse(req.body);
-      const attendant = await storage.createAttendant(validatedData);
-      res.status(201).json(attendant);
+      const firestoreData = adaptToFirestoreAttendant(validatedData);
+      const attendant = await storage.createAttendant(firestoreData);
+      res.status(201).json(adaptFirestoreAttendant(attendant));
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
@@ -121,46 +122,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertSaleSchema.parse(req.body);
       
       // Check if attendant exists
-      const attendant = await storage.getAttendant(validatedData.attendantId);
+      const attendant = await storage.getAttendant(validatedData.attendantId.toString());
       if (!attendant) {
         return res.status(404).json({ message: "Attendant not found" });
       }
 
-      const sale = await storage.createSale(validatedData);
+      const firestoreData = adaptToFirestoreSale(validatedData);
+      const sale = await storage.createSale(firestoreData);
       
       // Update goal progress for the attendant
-      const activeGoals = await storage.getActiveGoalsByAttendant(validatedData.attendantId);
-      const updatedAttendant = await storage.getAttendant(validatedData.attendantId);
+      const activeGoals = await storage.getActiveGoalsByAttendant(validatedData.attendantId.toString());
+      const updatedAttendant = await storage.getAttendant(validatedData.attendantId.toString());
       
       if (updatedAttendant) {
-        const currentEarnings = parseFloat(updatedAttendant.earnings);
+        const currentEarnings = parseFloat(updatedAttendant.earnings.toString());
         
         // Create sale notification
         const saleNotification = await storage.createNotification({
           type: "sale",
           title: "Nova Venda Registrada!",
           message: `${updatedAttendant.name} registrou uma venda de R$ ${validatedData.value}`,
-          attendantId: validatedData.attendantId,
+          attendantId: validatedData.attendantId.toString(),
           metadata: JSON.stringify({ saleValue: validatedData.value, totalEarnings: currentEarnings }),
-          priority: "normal"
+          priority: "normal",
+          isRead: false,
+          createdAt: new Date()
         });
         
-        broadcastNotification(saleNotification);
+        broadcastNotification(adaptFirestoreNotification(saleNotification));
         
         // Check for goal completion and create achievements
         for (const goal of activeGoals) {
-          const progress = (currentEarnings / parseFloat(goal.targetValue)) * 100;
-          await storage.updateGoalProgress(goal.id, updatedAttendant.earnings);
+          const progress = (currentEarnings / parseFloat(goal.targetValue.toString())) * 100;
+          await storage.updateGoalProgress(goal.id!, updatedAttendant.earnings);
           
           // Create achievement if goal is completed
           if (progress >= 100 && goal.isActive) {
             const achievement = await storage.createAchievement({
-              attendantId: validatedData.attendantId,
+              attendantId: validatedData.attendantId.toString(),
               title: `Meta Alcançada: ${goal.title}`,
               description: `Parabéns! Você atingiu a meta de R$ ${goal.targetValue}`,
               icon: "trophy",
               badgeColor: "#10b981",
-              pointsAwarded: 100
+              pointsAwarded: 100,
+              achievedAt: new Date()
             });
             
             // Create achievement notification
@@ -168,27 +173,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
               type: "achievement",
               title: "Nova Conquista Desbloqueada!",
               message: `${updatedAttendant.name} conquistou: ${achievement.title}`,
-              attendantId: validatedData.attendantId,
+              attendantId: validatedData.attendantId.toString(),
               metadata: JSON.stringify({ achievementId: achievement.id, pointsAwarded: 100 }),
-              priority: "high"
+              priority: "high",
+              isRead: false,
+              createdAt: new Date()
             });
             
-            broadcastNotification(achievementNotification);
+            broadcastNotification(adaptFirestoreNotification(achievementNotification));
             
             // Update leaderboard
-            const leaderboardEntry = await storage.getLeaderboardByAttendant(validatedData.attendantId);
-            const currentPoints = leaderboardEntry ? leaderboardEntry.totalPoints : 0;
-            const currentStreak = leaderboardEntry ? leaderboardEntry.currentStreak + 1 : 1;
-            const bestStreak = leaderboardEntry ? Math.max(leaderboardEntry.bestStreak || 0, currentStreak) : 1;
-            
-            await storage.updateLeaderboard(validatedData.attendantId, currentPoints + 100, currentStreak, bestStreak);
-            await storage.updateLeaderboardRanks();
+            const leaderboardEntry = await storage.updateLeaderboardEntry(
+              validatedData.attendantId.toString(),
+              {
+                totalPoints: 100,
+                currentStreak: 1,
+                bestStreak: 1
+              }
+            );
             
             broadcastPerformanceUpdate({
               type: "leaderboard_update",
               attendantId: validatedData.attendantId,
               attendantName: updatedAttendant.name,
-              newPoints: currentPoints + 100
+              newPoints: 100
             });
           }
         }
@@ -201,14 +209,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             title: "Marco da Equipe Alcançado!",
             message: `A equipe alcançou ${allSales.length} vendas registradas!`,
             metadata: JSON.stringify({ milestone: allSales.length }),
-            priority: "high"
+            priority: "high",
+            isRead: false,
+            createdAt: new Date()
           });
           
-          broadcastNotification(milestoneNotification);
+          broadcastNotification(adaptFirestoreNotification(milestoneNotification));
         }
       }
       
-      res.status(201).json(sale);
+      res.status(201).json(adaptFirestoreSale(sale));
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
@@ -221,7 +231,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/sales", async (req, res) => {
     try {
       const sales = await storage.getAllSales();
-      res.json(sales);
+      const adaptedSales = sales.map(adaptFirestoreSale);
+      res.json(adaptedSales);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch sales" });
     }

@@ -1,9 +1,52 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access to all documents for authenticated users
+    
+    // Regras para Atendentes
+    match /attendants/{attendantId} {
+      allow read: if true; // Todos podem ler atendentes
+      allow write: if request.auth != null; // Apenas usuários autenticados podem escrever
+    }
+    
+    // Regras para Vendas
+    match /sales/{saleId} {
+      allow read: if request.auth != null; // Apenas usuários autenticados podem ler
+      allow create: if request.auth != null; // Apenas usuários autenticados podem criar vendas
+      allow update, delete: if request.auth != null; // Apenas usuários autenticados podem modificar
+    }
+    
+    // Regras para Administradores
+    match /admins/{adminId} {
+      allow read, write: if request.auth != null; // Apenas usuários autenticados
+    }
+    
+    // Regras para Metas
+    match /goals/{goalId} {
+      allow read: if true; // Todos podem ler metas
+      allow write: if request.auth != null; // Apenas usuários autenticados podem escrever
+    }
+    
+    // Regras para Conquistas
+    match /achievements/{achievementId} {
+      allow read: if true; // Todos podem ler conquistas
+      allow write: if request.auth != null; // Apenas usuários autenticados podem escrever
+    }
+    
+    // Regras para Ranking
+    match /leaderboard/{leaderboardId} {
+      allow read: if true; // Todos podem ler ranking
+      allow write: if request.auth != null; // Apenas usuários autenticados podem escrever
+    }
+    
+    // Regras para Notificações
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null; // Apenas usuários autenticados podem ler suas notificações
+      allow write: if request.auth != null; // Apenas usuários autenticados podem escrever
+    }
+    
+    // Regra padrão - negar acesso a documentos não especificados
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }
