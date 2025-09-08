@@ -826,8 +826,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const matchesValue = s.value.includes(searchTerm);
             const matchesClient = s.clientName?.toLowerCase().includes(searchTerm) ||
                                 s.clientPhone?.includes(searchTerm) ||
-                                s.clientEmail?.toLowerCase().includes(searchTerm) ||
-                                s.clientAddress?.toLowerCase().includes(searchTerm);
+                                s.clientEmail?.toLowerCase().includes(searchTerm);
             if (!matchesValue && !matchesClient) return false;
           }
           
@@ -860,8 +859,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results.goals = goals.filter(g => {
           if (q && !g.title.toLowerCase().includes(q.toString().toLowerCase())) return false;
           if (attendantId && g.attendantId !== parseInt(attendantId.toString())) return false;
-          if (dateFrom && new Date(g.deadline) < new Date(dateFrom.toString())) return false;
-          if (dateTo && new Date(g.deadline) > new Date(dateTo.toString())) return false;
+          if (dateFrom && new Date(g.endDate) < new Date(dateFrom.toString())) return false;
+          if (dateTo && new Date(g.endDate) > new Date(dateTo.toString())) return false;
           return true;
         }).map(g => ({
           ...g,
@@ -877,8 +876,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results.achievements = achievements.filter(a => {
           if (q && !a.title.toLowerCase().includes(q.toString().toLowerCase())) return false;
           if (attendantId && a.attendantId !== parseInt(attendantId.toString())) return false;
-          if (dateFrom && new Date(a.unlockedAt) < new Date(dateFrom.toString())) return false;
-          if (dateTo && new Date(a.unlockedAt) > new Date(dateTo.toString())) return false;
+          if (dateFrom && new Date(a.achievedAt) < new Date(dateFrom.toString())) return false;
+          if (dateTo && new Date(a.achievedAt) > new Date(dateTo.toString())) return false;
           return true;
         }).map(a => ({
           ...a,
