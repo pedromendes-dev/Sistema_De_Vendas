@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck, Search, Filter, Grid, List, BarChart3, Calendar, TrendingUp, Award, Star, Download, Upload, Copy, Share2, MessageCircle, Phone, Mail, FileText, Activity, Settings, Zap, Clock, Award as AwardIcon, Crown, RefreshCw, ArrowUp, ArrowDown, MoreVertical, Database, Flame } from "lucide-react";
+import { Shield, Eye, EyeOff, Users, DollarSign, Target, Trophy, Trash2, Edit, Plus, Lock, Layout, Grip, UserPlus, UserX, UserCheck, Search, Filter, Grid, List, BarChart3, Calendar, TrendingUp, Award, Star, Download, Upload, Copy, Share2, MessageCircle, Phone, Mail, FileText, Activity, Settings, Zap, Clock, Award as AwardIcon, Crown, RefreshCw, ArrowUp, ArrowDown, MoreVertical, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -909,18 +909,7 @@ export default function Admin() {
               
               <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-sm text-secondary-light mb-3 text-center">
-                  Ou use autenticação Firebase
                 </p>
-                <Button 
-                  onClick={() => window.location.href = '/firebase-admin'}
-                  variant="outline" 
-                  className="w-full"
-                >
-                  <div className="flex items-center gap-2">
-                    <Flame size={20} />
-                    Login com Firebase
-                  </div>
-                </Button>
               </div>
             </CardContent>
           </Card>
