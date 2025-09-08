@@ -19,8 +19,8 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "installCommand": "npm install",
-  "buildCommand": "echo 'Build completed'",
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build",
   "functions": {
     "server/index.ts": {
       "maxDuration": 30
