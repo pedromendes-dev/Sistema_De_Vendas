@@ -5,7 +5,14 @@ import {
   achievements, 
   notifications,
   leaderboard,
-  admins
+  admins,
+  type Attendant,
+  type Sale,
+  type Goal,
+  type Achievement,
+  type Notification,
+  type Leaderboard,
+  type Admin
 } from "@shared/schema";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -85,7 +92,7 @@ export class BackupManager {
         achievements: achievementsData,
         notifications: notificationsData,
         leaderboard: leaderboardData,
-        admins: adminsData.map(admin => ({
+        admins: adminsData.map((admin: Admin) => ({
           ...admin,
           password: "[ENCRYPTED]" // Don't expose passwords in backups
         }))
@@ -217,12 +224,12 @@ DELETE FROM attendants;
 `;
 
     // Generate INSERT statements for attendants
-    attendantsData.forEach(attendant => {
+    attendantsData.forEach((attendant: Attendant) => {
       sql += `INSERT INTO attendants (id, name, "imageUrl", earnings) VALUES (${attendant.id}, '${attendant.name.replace(/'/g, "''")}', '${attendant.imageUrl.replace(/'/g, "''")}', '${attendant.earnings}');\n`;
     });
 
     sql += '\n-- Insert Sales\n';
-    salesData.forEach(sale => {
+    salesData.forEach((sale: Sale) => {
       const clientName = sale.clientName ? `'${sale.clientName.replace(/'/g, "''")}'` : 'NULL';
       const clientPhone = sale.clientPhone ? `'${sale.clientPhone.replace(/'/g, "''")}'` : 'NULL';
       const clientEmail = sale.clientEmail ? `'${sale.clientEmail.replace(/'/g, "''")}'` : 'NULL';
@@ -230,25 +237,25 @@ DELETE FROM attendants;
     });
 
     sql += '\n-- Insert Goals\n';
-    goalsData.forEach(goal => {
+    goalsData.forEach((goal: Goal) => {
       const description = goal.description ? `'${goal.description.replace(/'/g, "''")}'` : 'NULL';
       sql += `INSERT INTO goals (id, "attendantId", title, description, "targetValue", "currentValue", "endDate", "isActive", "createdAt") VALUES (${goal.id}, ${goal.attendantId}, '${goal.title.replace(/'/g, "''")}', ${description}, '${goal.targetValue}', '${goal.currentValue}', '${goal.endDate}', ${goal.isActive}, '${goal.createdAt}');\n`;
     });
 
     sql += '\n-- Insert Achievements\n';
-    achievementsData.forEach(achievement => {
+    achievementsData.forEach((achievement: Achievement) => {
       const description = achievement.description ? `'${achievement.description.replace(/'/g, "''")}'` : 'NULL';
       sql += `INSERT INTO achievements (id, "attendantId", title, description, "pointsAwarded", "badgeColor", "achievedAt") VALUES (${achievement.id}, ${achievement.attendantId}, '${achievement.title.replace(/'/g, "''")}', ${description}, ${achievement.pointsAwarded}, '${achievement.badgeColor}', '${achievement.achievedAt}');\n`;
     });
 
     sql += '\n-- Insert Notifications\n';
-    notificationsData.forEach(notification => {
+    notificationsData.forEach((notification: Notification) => {
       const message = notification.message ? `'${notification.message.replace(/'/g, "''")}'` : 'NULL';
       sql += `INSERT INTO notifications (id, type, title, message, "isRead", "createdAt") VALUES (${notification.id}, '${notification.type}', '${notification.title.replace(/'/g, "''")}', ${message}, ${notification.isRead}, '${notification.createdAt}');\n`;
     });
 
     sql += '\n-- Insert Leaderboard\n';
-    leaderboardData.forEach(entry => {
+    leaderboardData.forEach((entry: Leaderboard) => {
       sql += `INSERT INTO leaderboard (id, "attendantId", "totalPoints", "currentStreak", "bestStreak", "rank", "updatedAt") VALUES (${entry.id}, ${entry.attendantId}, ${entry.totalPoints}, ${entry.currentStreak}, ${entry.bestStreak}, ${entry.rank}, '${entry.updatedAt}');\n`;
     });
 

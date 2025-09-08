@@ -38,7 +38,10 @@ registerRoutes(app);
 
 // Setup Vite for development
 if (process.env.NODE_ENV === 'development') {
-  setupVite(app);
+  // Note: setupVite requires a server parameter, but in Vercel functions
+  // we don't have access to the HTTP server, so we'll skip Vite setup
+  // and just serve static files
+  serveStatic(app);
 } else {
   // Serve static files in production
   serveStatic(app);
