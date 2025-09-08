@@ -92,12 +92,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const { name, imageUrl } = req.body;
       
-      const attendant = await storage.getAttendant(id);
+      const attendant = await storage.getAttendant(id.toString());
       if (!attendant) {
         return res.status(404).json({ message: "Attendant not found" });
       }
       
-      const updatedAttendant = await storage.updateAttendant(id, { name, imageUrl });
+      const updatedAttendant = await storage.updateAttendant(id.toString(), { name, imageUrl });
       if (!updatedAttendant) {
         return res.status(500).json({ message: "Failed to update attendant" });
       }
@@ -112,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/attendants/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const success = await storage.deleteAttendant(id);
+      const success = await storage.deleteAttendant(id.toString());
       if (!success) {
         return res.status(404).json({ message: "Attendant not found" });
       }
@@ -277,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/sales/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const success = await storage.deleteSale(id);
+      const success = await storage.deleteSale(id.toString());
       if (!success) {
         return res.status(404).json({ message: "Sale not found" });
       }
@@ -291,7 +291,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/sales/attendant/:attendantId", async (req, res) => {
     try {
       const attendantId = parseInt(req.params.attendantId);
-      const sales = await storage.getSalesByAttendant(attendantId);
+      const sales = await storage.getSalesByAttendant(attendantId.toString());
       res.json(sales);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch sales" });
@@ -302,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/attendants/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const deleted = await storage.deleteAttendant(id);
+      const deleted = await storage.deleteAttendant(id.toString());
       if (!deleted) {
         return res.status(404).json({ message: "Attendant not found" });
       }
@@ -316,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/goals/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const deleted = await storage.deleteGoal(id);
+      const deleted = await storage.deleteGoal(id.toString());
       if (!deleted) {
         return res.status(404).json({ message: "Goal not found" });
       }
@@ -457,7 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (role !== undefined) updates.role = role;
       if (isActive !== undefined) updates.isActive = isActive;
 
-      const updatedAdmin = await storage.updateAdmin(parseInt(id), updates);
+      const updatedAdmin = await storage.updateAdmin(id, updates);
       if (!updatedAdmin) {
         return res.status(404).json({ message: "Admin not found" });
       }
@@ -484,7 +484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/users/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const success = await storage.deleteAdmin(parseInt(id));
+      const success = await storage.deleteAdmin(id);
       
       if (!success) {
         return res.status(404).json({ message: "Admin not found" });
@@ -501,7 +501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/users/:id/activate", async (req, res) => {
     try {
       const { id } = req.params;
-      const admin = await storage.activateAdmin(parseInt(id));
+      const admin = await storage.activateAdmin(id);
       
       if (!admin) {
         return res.status(404).json({ message: "Admin not found" });
@@ -518,7 +518,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/users/:id/deactivate", async (req, res) => {
     try {
       const { id } = req.params;
-      const admin = await storage.deactivateAdmin(parseInt(id));
+      const admin = await storage.deactivateAdmin(id);
       
       if (!admin) {
         return res.status(404).json({ message: "Admin not found" });
@@ -544,7 +544,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/goals/attendant/:attendantId", async (req, res) => {
     try {
       const attendantId = parseInt(req.params.attendantId);
-      const goals = await storage.getGoalsByAttendant(attendantId);
+      const goals = await storage.getGoalsByAttendant(attendantId.toString());
       res.json(goals);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch goals" });
@@ -554,7 +554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/goals/active/:attendantId", async (req, res) => {
     try {
       const attendantId = parseInt(req.params.attendantId);
-      const goals = await storage.getActiveGoalsByAttendant(attendantId);
+      const goals = await storage.getActiveGoalsByAttendant(attendantId.toString());
       res.json(goals);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch active goals" });
@@ -580,7 +580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { attendantId, title, description, targetValue, type } = req.body;
       
       const updates = { attendantId, title, description, targetValue, goalType: type };
-      const updatedGoal = await storage.updateGoal(id, updates);
+      const updatedGoal = await storage.updateGoal(id.toString(), updates);
       if (!updatedGoal) {
         return res.status(404).json({ message: "Goal not found" });
       }
@@ -594,7 +594,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { currentValue } = req.body;
-      const goal = await storage.updateGoalProgress(id, currentValue);
+      const goal = await storage.updateGoalProgress(id.toString(), currentValue);
       res.json(goal);
     } catch (error) {
       res.status(500).json({ message: "Failed to update goal progress" });
@@ -826,7 +826,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const matchesValue = s.value.includes(searchTerm);
             const matchesClient = s.clientName?.toLowerCase().includes(searchTerm) ||
                                 s.clientPhone?.includes(searchTerm) ||
-                                s.clientEmail?.toLowerCase().includes(searchTerm);
+                                s.clientEmail?.toLowerCase().includes(searchTerm) ||
+                                (s as any).clientAddress?.toLowerCase().includes(searchTerm);
             if (!matchesValue && !matchesClient) return false;
           }
           
@@ -864,7 +865,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return true;
         }).map(g => ({
           ...g,
-          attendant: attendants.find(a => a.id === g.attendantId)
+          attendant: attendants.find(a => a.id === g.attendantId),
+          deadline: (g as any).deadline || null
         }));
       }
 
@@ -881,7 +883,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return true;
         }).map(a => ({
           ...a,
-          attendant: attendants.find(att => att.id === a.attendantId)
+          attendant: attendants.find(att => att.id === a.attendantId),
+          unlockedAt: (a as any).unlockedAt || null
         }));
       }
 

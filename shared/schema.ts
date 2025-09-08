@@ -16,6 +16,7 @@ export const sales = pgTable("sales", {
   clientName: text("client_name"),
   clientPhone: text("client_phone"),
   clientEmail: text("client_email"),
+  clientAddress: text("client_address"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -41,6 +42,7 @@ export const goals = pgTable("goals", {
   goalType: text("goal_type").notNull(), // 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
+  deadline: timestamp("deadline"),
   isActive: integer("is_active").default(1).notNull(), // 1 for active, 0 for inactive
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -53,7 +55,9 @@ export const achievements = pgTable("achievements", {
   icon: text("icon").notNull(),
   badgeColor: text("badge_color").default("#10b981").notNull(),
   pointsAwarded: integer("points_awarded").default(0).notNull(),
+  points: integer("points").default(0).notNull(),
   achievedAt: timestamp("achieved_at").defaultNow().notNull(),
+  unlockedAt: timestamp("unlocked_at"),
 });
 
 export const leaderboard = pgTable("leaderboard", {
@@ -63,6 +67,9 @@ export const leaderboard = pgTable("leaderboard", {
   currentStreak: integer("current_streak").default(0).notNull(),
   bestStreak: integer("best_streak").default(0).notNull(),
   rank: integer("rank").default(0).notNull(),
+  points: integer("points").default(0).notNull(),
+  salesStreak: integer("sales_streak").default(0).notNull(),
+  lastSaleDate: timestamp("last_sale_date"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 

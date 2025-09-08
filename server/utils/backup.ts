@@ -225,19 +225,23 @@ DELETE FROM attendants;
       const clientName = sale.clientName ? `'${sale.clientName.replace(/'/g, "''")}'` : 'NULL';
       const clientPhone = sale.clientPhone ? `'${sale.clientPhone.replace(/'/g, "''")}'` : 'NULL';
       const clientEmail = sale.clientEmail ? `'${sale.clientEmail.replace(/'/g, "''")}'` : 'NULL';
-      sql += `INSERT INTO sales (id, "attendantId", value, "createdAt", "clientName", "clientPhone", "clientEmail") VALUES (${sale.id}, ${sale.attendantId}, '${sale.value}', '${sale.createdAt}', ${clientName}, ${clientPhone}, ${clientEmail});\n`;
+      const clientAddress = (sale as any).clientAddress ? `'${(sale as any).clientAddress.replace(/'/g, "''")}'` : 'NULL';
+      sql += `INSERT INTO sales (id, "attendantId", value, "createdAt", "clientName", "clientPhone", "clientEmail", "clientAddress") VALUES (${sale.id}, ${sale.attendantId}, '${sale.value}', '${sale.createdAt}', ${clientName}, ${clientPhone}, ${clientEmail}, ${clientAddress});\n`;
     });
 
     sql += '\n-- Insert Goals\n';
     goalsData.forEach(goal => {
       const description = goal.description ? `'${goal.description.replace(/'/g, "''")}'` : 'NULL';
-      sql += `INSERT INTO goals (id, "attendantId", title, description, "targetValue", "currentValue", "endDate", "isActive", "createdAt") VALUES (${goal.id}, ${goal.attendantId}, '${goal.title.replace(/'/g, "''")}', ${description}, '${goal.targetValue}', '${goal.currentValue}', '${goal.endDate}', ${goal.isActive}, '${goal.createdAt}');\n`;
+      const deadline = (goal as any).deadline ? `'${(goal as any).deadline}'` : 'NULL';
+      sql += `INSERT INTO goals (id, "attendantId", title, description, "targetValue", "currentValue", "endDate", "deadline", "isActive", "createdAt") VALUES (${goal.id}, ${goal.attendantId}, '${goal.title.replace(/'/g, "''")}', ${description}, '${goal.targetValue}', '${goal.currentValue}', '${goal.endDate}', ${deadline}, ${goal.isActive}, '${goal.createdAt}');\n`;
     });
 
     sql += '\n-- Insert Achievements\n';
     achievementsData.forEach(achievement => {
       const description = achievement.description ? `'${achievement.description.replace(/'/g, "''")}'` : 'NULL';
-      sql += `INSERT INTO achievements (id, "attendantId", title, description, "pointsAwarded", "badgeColor", "achievedAt") VALUES (${achievement.id}, ${achievement.attendantId}, '${achievement.title.replace(/'/g, "''")}', ${description}, ${achievement.pointsAwarded}, '${achievement.badgeColor}', '${achievement.achievedAt}');\n`;
+      const points = (achievement as any).points || 0;
+      const unlockedAt = (achievement as any).unlockedAt ? `'${(achievement as any).unlockedAt}'` : 'NULL';
+      sql += `INSERT INTO achievements (id, "attendantId", title, description, "pointsAwarded", "points", "badgeColor", "achievedAt", "unlockedAt") VALUES (${achievement.id}, ${achievement.attendantId}, '${achievement.title.replace(/'/g, "''")}', ${description}, ${achievement.pointsAwarded}, ${points}, '${achievement.badgeColor}', '${achievement.achievedAt}', ${unlockedAt});\n`;
     });
 
     sql += '\n-- Insert Notifications\n';
@@ -248,7 +252,10 @@ DELETE FROM attendants;
 
     sql += '\n-- Insert Leaderboard\n';
     leaderboardData.forEach(entry => {
-      sql += `INSERT INTO leaderboard (id, "attendantId", "totalPoints", "currentStreak", "bestStreak", "rank", "updatedAt") VALUES (${entry.id}, ${entry.attendantId}, ${entry.totalPoints}, ${entry.currentStreak}, ${entry.bestStreak}, ${entry.rank}, '${entry.updatedAt}');\n`;
+      const points = (entry as any).points || 0;
+      const salesStreak = (entry as any).salesStreak || 0;
+      const lastSaleDate = (entry as any).lastSaleDate ? `'${(entry as any).lastSaleDate}'` : 'NULL';
+      sql += `INSERT INTO leaderboard (id, "attendantId", "totalPoints", "currentStreak", "bestStreak", "rank", "points", "salesStreak", "lastSaleDate", "updatedAt") VALUES (${entry.id}, ${entry.attendantId}, ${entry.totalPoints}, ${entry.currentStreak}, ${entry.bestStreak}, ${entry.rank}, ${points}, ${salesStreak}, ${lastSaleDate}, '${entry.updatedAt}');\n`;
     });
 
     return sql;

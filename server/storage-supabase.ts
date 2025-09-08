@@ -91,6 +91,7 @@ function convertSupabaseSale(data: any): Sale {
     clientName: data.client_name,
     clientPhone: data.client_phone,
     clientEmail: data.client_email,
+    clientAddress: data.client_address,
     createdAt: data.created_at
   };
 }
@@ -120,6 +121,7 @@ function convertSupabaseGoal(data: any): Goal {
     goalType: data.goal_type,
     startDate: data.start_date,
     endDate: data.end_date,
+    deadline: data.deadline,
     isActive: data.is_active,
     createdAt: data.created_at
   };
@@ -131,7 +133,12 @@ function convertSupabaseAchievement(data: any): Achievement {
     attendantId: data.attendant_id,
     title: data.title,
     description: data.description,
+    icon: data.icon || '🏆',
+    badgeColor: data.badge_color || '#10b981',
+    pointsAwarded: data.points_awarded || 0,
+    points: data.points || 0,
     achievedAt: data.achieved_at,
+    unlockedAt: data.unlocked_at,
     createdAt: data.created_at
   };
 }

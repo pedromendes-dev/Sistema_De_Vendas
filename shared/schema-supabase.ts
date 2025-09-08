@@ -23,6 +23,7 @@ export interface Sale {
   clientName: string | null;
   clientPhone: string | null;
   clientEmail: string | null;
+  clientAddress: string | null;
   createdAt: string;
 }
 
@@ -32,6 +33,7 @@ export interface InsertSale {
   clientName?: string | null;
   clientPhone?: string | null;
   clientEmail?: string | null;
+  clientAddress?: string | null;
 }
 
 export interface Admin {
@@ -65,6 +67,7 @@ export interface Goal {
   goalType: string;
   startDate: string;
   endDate: string;
+  deadline: string | null;
   isActive: boolean;
   createdAt: string;
 }
@@ -78,6 +81,7 @@ export interface InsertGoal {
   goalType: string;
   startDate: string;
   endDate: string;
+  deadline?: string | null;
   isActive?: boolean;
 }
 
@@ -86,7 +90,12 @@ export interface Achievement {
   attendantId: string;
   title: string;
   description: string | null;
+  icon: string;
+  badgeColor: string;
+  pointsAwarded: number;
+  points: number;
   achievedAt: string;
+  unlockedAt: string | null;
   createdAt: string;
 }
 
@@ -94,7 +103,12 @@ export interface InsertAchievement {
   attendantId: string;
   title: string;
   description?: string | null;
+  icon?: string;
+  badgeColor?: string;
+  pointsAwarded?: number;
+  points?: number;
   achievedAt: string;
+  unlockedAt?: string | null;
 }
 
 export interface Notification {
@@ -119,7 +133,15 @@ export interface Leaderboard {
   position: number;
   totalSales: number;
   period: string;
+  totalPoints: number;
+  currentStreak: number;
+  bestStreak: number;
+  rank: number;
+  points: number;
+  salesStreak: number;
+  lastSaleDate: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface InsertLeaderboard {
@@ -127,6 +149,13 @@ export interface InsertLeaderboard {
   position: number;
   totalSales: number;
   period: string;
+  totalPoints?: number;
+  currentStreak?: number;
+  bestStreak?: number;
+  rank?: number;
+  points?: number;
+  salesStreak?: number;
+  lastSaleDate?: string | null;
 }
 
 // Zod Schemas for validation
@@ -142,6 +171,7 @@ export const insertSaleSchema = z.object({
   clientName: z.string().nullable().optional(),
   clientPhone: z.string().nullable().optional(),
   clientEmail: z.string().email().nullable().optional(),
+  clientAddress: z.string().nullable().optional(),
 });
 
 export const insertAdminSchema = z.object({
@@ -162,6 +192,7 @@ export const insertGoalSchema = z.object({
   goalType: z.string().min(1, "Goal type is required"),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().min(1, "End date is required"),
+  deadline: z.string().nullable().optional(),
   isActive: z.boolean().default(true),
 });
 
@@ -169,7 +200,12 @@ export const insertAchievementSchema = z.object({
   attendantId: z.string().min(1, "Attendant ID is required"),
   title: z.string().min(1, "Title is required"),
   description: z.string().nullable().optional(),
+  icon: z.string().optional(),
+  badgeColor: z.string().optional(),
+  pointsAwarded: z.number().default(0).optional(),
+  points: z.number().default(0).optional(),
   achievedAt: z.string().min(1, "Achieved at is required"),
+  unlockedAt: z.string().nullable().optional(),
 });
 
 export const insertNotificationSchema = z.object({
@@ -184,4 +220,11 @@ export const insertLeaderboardSchema = z.object({
   position: z.number().min(1, "Position must be at least 1"),
   totalSales: z.number().min(0, "Total sales cannot be negative"),
   period: z.string().min(1, "Period is required"),
+  totalPoints: z.number().min(0).default(0).optional(),
+  currentStreak: z.number().min(0).default(0).optional(),
+  bestStreak: z.number().min(0).default(0).optional(),
+  rank: z.number().min(0).default(0).optional(),
+  points: z.number().min(0).default(0).optional(),
+  salesStreak: z.number().min(0).default(0).optional(),
+  lastSaleDate: z.string().nullable().optional(),
 });
