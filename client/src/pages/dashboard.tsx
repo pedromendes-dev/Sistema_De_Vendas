@@ -84,11 +84,11 @@ export default function DashboardPage() {
             dailyData.set(date, current);
           });
           
-          dailyData.forEach((data, date) => {
-            (data as any[]).push({
+          dailyData.forEach((dailyData, date) => {
+            data.push({
               'Data': date,
-              'Vendas': data.count,
-              'Faturamento': `R$ ${data.value.toFixed(2)}`
+              'Vendas': dailyData.count,
+              'Faturamento': `R$ ${dailyData.value.toFixed(2)}`
             });
           });
           

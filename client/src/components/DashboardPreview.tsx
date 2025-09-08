@@ -55,10 +55,10 @@ const colorSchemeClasses = {
 
 export default function DashboardPreview({ layout, isPreview = false }: DashboardPreviewProps) {
   // Fetch real data for widgets
-  const { data: attendants = [] } = useQuery({ queryKey: ['/api/attendants'] });
-  const { data: sales = [] } = useQuery({ queryKey: ['/api/sales'] });
-  const { data: goals = [] } = useQuery({ queryKey: ['/api/goals'] });
-  const { data: achievements = [] } = useQuery({ queryKey: ['/api/achievements'] });
+  const { data: attendants = [] } = useQuery<any[]>({ queryKey: ['/api/attendants'] });
+  const { data: sales = [] } = useQuery<any[]>({ queryKey: ['/api/sales'] });
+  const { data: goals = [] } = useQuery<any[]>({ queryKey: ['/api/goals'] });
+  const { data: achievements = [] } = useQuery<any[]>({ queryKey: ['/api/achievements'] });
 
   // Get widget data based on data source
   const getWidgetData = (widget: Widget) => {

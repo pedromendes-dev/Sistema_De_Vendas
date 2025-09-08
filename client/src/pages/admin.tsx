@@ -116,7 +116,7 @@ export default function Admin() {
   };
 
   const copyAttendantInfo = (attendant: Attendant) => {
-    const info = `Nome: ${attendant.name}\nVendas: R$ ${attendant.earnings}\nCadastrado: ${new Date(attendant.createdAt).toLocaleDateString('pt-BR')}`;
+    const info = `Nome: ${attendant.name}\nVendas: R$ ${attendant.earnings}\nCadastrado: ${(attendant as any).createdAt ? new Date((attendant as any).createdAt).toLocaleDateString('pt-BR') : 'N/A'}`;
     navigator.clipboard.writeText(info);
     toast({
       title: "Informações copiadas!",
@@ -130,7 +130,7 @@ export default function Admin() {
 💰 Total em Vendas: R$ ${attendant.earnings}
 🎯 Número de Vendas: ${stats.totalSales}
 🏆 Conquistas: ${stats.totalAchievements}
-📅 Cadastrado em: ${new Date(attendant.createdAt).toLocaleDateString('pt-BR')}`;
+📅 Cadastrado em: ${(attendant as any).createdAt ? new Date((attendant as any).createdAt).toLocaleDateString('pt-BR') : 'N/A'}`;
 
     if (navigator.share) {
       navigator.share({
@@ -169,7 +169,7 @@ export default function Admin() {
       attendant: {
         name: attendant.name,
         earnings: attendant.earnings,
-        created: attendant.createdAt,
+        created: (attendant as any).createdAt || new Date().toISOString(),
       },
       statistics: stats,
       sales: salesData.map(sale => ({
@@ -205,14 +205,17 @@ export default function Admin() {
       const attendant = attendants.find(a => a.id === attendantId);
       if (!attendant) return;
 
-      await apiRequest("PUT", `/api/attendants/${attendantId}`, {
-        status: attendant.status === 'active' ? 'inactive' : 'active'
+      await apiRequest(`/api/attendants/${attendantId}`, {
+        method: "PUT",
+        data: {
+          status: (attendant as any).status === 'active' ? 'inactive' : 'active'
+        }
       });
 
       queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
       toast({
         title: "Status atualizado!",
-        description: attendant.name + ' está agora ' + (attendant.status === 'active' ? 'inativo' : 'ativo') + '.',
+        description: attendant.name + ' está agora ' + ((attendant as any).status === 'active' ? 'inativo' : 'ativo') + '.',
       });
     } catch (error) {
       toast({
@@ -245,27 +248,27 @@ export default function Admin() {
   }, []);
 
   // Data queries
-  const { data: attendants = [], isLoading: attendantsLoading } = useQuery({
+  const { data: attendants = [], isLoading: attendantsLoading } = useQuery<any[]>({
     queryKey: ["/api/attendants"],
     enabled: isAuthenticated
   });
 
-  const { data: sales = [], isLoading: salesLoading } = useQuery({
+  const { data: sales = [], isLoading: salesLoading } = useQuery<any[]>({
     queryKey: ["/api/sales"],
     enabled: isAuthenticated
   });
 
-  const { data: goals = [], isLoading: goalsLoading } = useQuery({
+  const { data: goals = [], isLoading: goalsLoading } = useQuery<any[]>({
     queryKey: ["/api/goals"],
     enabled: isAuthenticated
   });
 
-  const { data: achievements = [], isLoading: achievementsLoading } = useQuery({
+  const { data: achievements = [], isLoading: achievementsLoading } = useQuery<any[]>({
     queryKey: ["/api/achievements"],
     enabled: isAuthenticated
   });
 
-  const { data: admins = [], isLoading: adminsLoading } = useQuery({
+  const { data: admins = [], isLoading: adminsLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/users"],
     enabled: isAuthenticated
   });
@@ -276,12 +279,12 @@ export default function Admin() {
     setEditAttendantData({ 
       name: attendant.name, 
       imageUrl: attendant.imageUrl,
-      email: attendant.email || "",
-      phone: attendant.phone || "",
-      department: attendant.department || "",
-      commission: attendant.commission || "",
-      startDate: attendant.startDate || "",
-      status: attendant.status || "active"
+      email: (attendant as any).email || "",
+      phone: (attendant as any).phone || "",
+      department: (attendant as any).department || "",
+      commission: (attendant as any).commission || "",
+      startDate: (attendant as any).startDate || "",
+      status: (attendant as any).status || "active"
     });
     setShowEditModal(true);
   };
@@ -404,7 +407,7 @@ export default function Admin() {
           comparison = parseFloat(a.earnings) - parseFloat(b.earnings);
           break;
         case 'createdAt':
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          comparison = new Date((a as any).createdAt || 0).getTime() - new Date((b as any).createdAt || 0).getTime();
           break;
       }
       return attendantSortOrder === 'asc' ? comparison : -comparison;
@@ -455,7 +458,7 @@ export default function Admin() {
       title: goal.title,
       description: goal.description || "",
       targetValue: goal.targetValue,
-      type: goal.type
+      type: goal.goalType
     });
     setShowGoalModal(true);
   };
@@ -497,7 +500,7 @@ export default function Admin() {
   // Mutations
   const deleteAttendantMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/attendants/${id}`);
+      const response = await apiRequest(`/api/attendants/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to delete attendant");
       return response.json();
     },
@@ -512,13 +515,25 @@ export default function Admin() {
 
   const createAttendantMutation = useMutation({
     mutationFn: async (data: { name: string; imageUrl: string }) => {
-      const response = await apiRequest("POST", "/api/attendants", { ...data, earnings: "0.00" });
+      const response = await apiRequest("/api/attendants", { 
+        method: "POST", 
+        data: { ...data, earnings: "0.00" } 
+      });
       if (!response.ok) throw new Error("Failed to create attendant");
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/attendants"] });
-      setNewAttendant({ name: "", imageUrl: "" });
+      setNewAttendant({ 
+        name: "", 
+        imageUrl: "",
+        email: "",
+        phone: "",
+        department: "",
+        commission: "",
+        startDate: "",
+        status: "active"
+      });
       toast({ title: "Atendente criado com sucesso!" });
     },
     onError: () => {
@@ -528,7 +543,10 @@ export default function Admin() {
 
   const updateAttendantMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: { name: string; imageUrl: string; email?: string; phone?: string; department?: string; commission?: string; startDate?: string; status?: string } }) => {
-      const response = await apiRequest("PUT", `/api/attendants/${id}`, data);
+      const response = await apiRequest(`/api/attendants/${id}`, { 
+        method: "PUT", 
+        data 
+      });
       if (!response.ok) throw new Error("Failed to update attendant");
       return response.json();
     },
@@ -556,7 +574,10 @@ export default function Admin() {
   const createAdminMutation = useMutation({
     mutationFn: async (data: { username: string; password: string; email: string; role: string }) => {
       const currentUser = JSON.parse(localStorage.getItem('admin_user') || '{}');
-      const response = await apiRequest("POST", "/api/admin/users", { ...data, createdBy: currentUser.id });
+      const response = await apiRequest("/api/admin/users", { 
+        method: "POST", 
+        data: { ...data, createdBy: currentUser.id } 
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to create admin");
@@ -575,7 +596,7 @@ export default function Admin() {
 
   const deleteAdminMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/users/${id}`);
+      const response = await apiRequest(`/api/admin/users/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to delete admin");
       return response.json();
     },
@@ -591,7 +612,7 @@ export default function Admin() {
   const toggleAdminStatusMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
       const endpoint = isActive ? "activate" : "deactivate";
-      const response = await apiRequest("PUT", `/api/admin/users/${id}/${endpoint}`);
+      const response = await apiRequest(`/api/admin/users/${id}/${endpoint}`, { method: "PUT" });
       if (!response.ok) throw new Error("Failed to update admin status");
       return response.json();
     },
@@ -606,7 +627,7 @@ export default function Admin() {
 
   const deleteSaleMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/sales/${id}`);
+      const response = await apiRequest(`/api/sales/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to delete sale");
       return response.json();
     },
@@ -622,7 +643,10 @@ export default function Admin() {
 
   const createSaleMutation = useMutation({
     mutationFn: async (data: { attendantId: number; value: string }) => {
-      const response = await apiRequest("POST", "/api/sales", data);
+      const response = await apiRequest("/api/sales", { 
+        method: "POST", 
+        data 
+      });
       if (!response.ok) throw new Error("Failed to create sale");
       return response.json();
     },
@@ -640,7 +664,10 @@ export default function Admin() {
 
   const updateSaleMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: { attendantId: number; value: string } }) => {
-      const response = await apiRequest("PUT", `/api/sales/${id}`, data);
+      const response = await apiRequest(`/api/sales/${id}`, { 
+        method: "PUT", 
+        data 
+      });
       if (!response.ok) throw new Error("Failed to update sale");
       return response.json();
     },
@@ -659,7 +686,7 @@ export default function Admin() {
 
   const deleteGoalMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/goals/${id}`);
+      const response = await apiRequest(`/api/goals/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to delete goal");
       return response.json();
     },
@@ -675,10 +702,13 @@ export default function Admin() {
   // Goal mutations
   const createGoalMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/goals", {
-        ...data,
-        attendantId: parseInt(data.attendantId),
-        currentValue: "0.00"
+      const response = await apiRequest("/api/goals", {
+        method: "POST",
+        data: {
+          ...data,
+          attendantId: parseInt(data.attendantId),
+          currentValue: "0.00"
+        }
       });
       if (!response.ok) throw new Error("Failed to create goal");
       return response.json();
@@ -696,9 +726,12 @@ export default function Admin() {
 
   const updateGoalMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await apiRequest("PUT", `/api/goals/${id}`, {
-        ...data,
-        attendantId: parseInt(data.attendantId)
+      const response = await apiRequest(`/api/goals/${id}`, {
+        method: "PUT",
+        data: {
+          ...data,
+          attendantId: parseInt(data.attendantId)
+        }
       });
       if (!response.ok) throw new Error("Failed to update goal");
       return response.json();
@@ -717,11 +750,14 @@ export default function Admin() {
   // Achievement mutations
   const createAchievementMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/achievements", {
-        ...data,
-        attendantId: parseInt(data.attendantId),
-        pointsAwarded: parseInt(data.pointsAwarded),
-        achievedAt: new Date().toISOString()
+      const response = await apiRequest("/api/achievements", {
+        method: "POST",
+        data: {
+          ...data,
+          attendantId: parseInt(data.attendantId),
+          pointsAwarded: parseInt(data.pointsAwarded),
+          achievedAt: new Date().toISOString()
+        }
       });
       if (!response.ok) throw new Error("Failed to create achievement");
       return response.json();
@@ -739,10 +775,13 @@ export default function Admin() {
 
   const updateAchievementMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await apiRequest("PUT", `/api/achievements/${id}`, {
-        ...data,
-        attendantId: parseInt(data.attendantId),
-        pointsAwarded: parseInt(data.pointsAwarded)
+      const response = await apiRequest(`/api/achievements/${id}`, {
+        method: "PUT",
+        data: {
+          ...data,
+          attendantId: parseInt(data.attendantId),
+          pointsAwarded: parseInt(data.pointsAwarded)
+        }
       });
       if (!response.ok) throw new Error("Failed to update achievement");
       return response.json();
@@ -760,7 +799,7 @@ export default function Admin() {
 
   const deleteAchievementMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/achievements/${id}`);
+      const response = await apiRequest(`/api/achievements/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to delete achievement");
       return response.json();
     },
@@ -1297,7 +1336,7 @@ export default function Admin() {
                         name: attendant.name,
                         earnings: attendant.earnings,
                         sales: sales?.filter(sale => sale.attendantId === attendant.id).length || 0,
-                        created: new Date(attendant.createdAt).toLocaleDateString('pt-BR')
+                        created: new Date((attendant as any).createdAt).toLocaleDateString('pt-BR')
                       }));
 
                       const csv = [
@@ -1583,9 +1622,9 @@ export default function Admin() {
                                     variant="outline"
                                     size="sm"
                                     className="flex-1 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
-                                    title={(attendant.status === 'active' ? 'Desativar' : 'Ativar') + ' atendente'}
+                                    title={((attendant as any).status === 'active' ? 'Desativar' : 'Ativar') + ' atendente'}
                                   >
-                                    {attendant.status === 'active' ? <UserX size={12} /> : <UserCheck size={12} />}
+                                    {(attendant as any).status === 'active' ? <UserX size={12} /> : <UserCheck size={12} />}
                                   </Button>
                                   <Button
                                     onClick={() => deleteAttendantMutation.mutate(attendant.id)}
@@ -1706,9 +1745,9 @@ export default function Admin() {
                                         variant="outline"
                                         size="sm"
                                         className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
-                                        title={attendant.status === 'active' ? 'Desativar' : 'Ativar'}
+                                        title={(attendant as any).status === 'active' ? 'Desativar' : 'Ativar'}
                                       >
-                                        {attendant.status === 'active' ? <UserX size={12} /> : <UserCheck size={12} />}
+                                        {(attendant as any).status === 'active' ? <UserX size={12} /> : <UserCheck size={12} />}
                                       </Button>
                                       <Button
                                         onClick={() => deleteAttendantMutation.mutate(attendant.id)}
@@ -1747,7 +1786,7 @@ export default function Admin() {
                                     <h3 className="text-xl font-bold text-primary-light">{attendant.name}</h3>
                                     <p className="text-success text-lg font-semibold">R$ {attendant.earnings}</p>
                                     <p className="text-secondary-light text-sm">
-                                      Cadastrado em {new Date(attendant.createdAt).toLocaleDateString('pt-BR')}
+                                      Cadastrado em {new Date((attendant as any).createdAt).toLocaleDateString('pt-BR')}
                                     </p>
                                   </div>
                                 </div>
@@ -1860,9 +1899,9 @@ export default function Admin() {
                                       variant="outline"
                                       size="sm"
                                       className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white"
-                                      title={(attendant.status === 'active' ? 'Desativar' : 'Ativar') + ' atendente'}
+                                      title={((attendant as any).status === 'active' ? 'Desativar' : 'Ativar') + ' atendente'}
                                     >
-                                      {attendant.status === 'active' ? <UserX size={14} /> : <UserCheck size={14} />}
+                                      {(attendant as any).status === 'active' ? <UserX size={14} /> : <UserCheck size={14} />}
                                     </Button>
                                     <Button
                                       onClick={() => deleteAttendantMutation.mutate(attendant.id)}
@@ -2615,7 +2654,7 @@ export default function Admin() {
                     <h3 className="text-2xl font-bold text-primary-light">{selectedAttendant.name}</h3>
                     <p className="text-success text-xl font-semibold">R$ {selectedAttendant.earnings}</p>
                     <p className="text-secondary-light">
-                      Membro desde {new Date(selectedAttendant.createdAt).toLocaleDateString('pt-BR')}
+                      Membro desde {new Date((selectedAttendant as any).createdAt).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
                 </div>
@@ -2786,7 +2825,7 @@ export default function Admin() {
                     <h4 className="text-lg font-semibold text-primary-light">{editingAttendant.name}</h4>
                     <p className="text-success font-bold text-xl">R$ {editingAttendant.earnings}</p>
                     <p className="text-secondary-light text-sm">
-                      Cadastrado em {new Date(editingAttendant.createdAt).toLocaleDateString('pt-BR')}
+                      Cadastrado em {new Date((editingAttendant as any).createdAt).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
                 </div>

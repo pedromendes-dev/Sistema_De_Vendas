@@ -4,7 +4,7 @@ import { DollarSign, Trophy, History, Users, Shield, Target, LayoutDashboard, Us
 interface NavigationItem {
   path: string;
   label: string;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: React.ComponentType<any>;
 }
 
 const navigationItems: NavigationItem[] = [

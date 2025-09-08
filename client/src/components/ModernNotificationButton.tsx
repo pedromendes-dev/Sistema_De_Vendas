@@ -75,7 +75,7 @@ export default function ModernNotificationButton() {
   const queryClient = useQueryClient();
 
   // Fetch unread notifications com otimização
-  const { data: unreadNotifications = [] } = useQuery({
+  const { data: unreadNotifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications/unread"],
     refetchInterval: 30000, // Reduzido para 30 segundos
     staleTime: 15000, // Cache válido por 15 segundos
@@ -83,7 +83,7 @@ export default function ModernNotificationButton() {
   });
 
   // Fetch all notifications when dropdown is open
-  const { data: allNotifications = [] } = useQuery({
+  const { data: allNotifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
     enabled: isOpen,
   });
@@ -100,7 +100,7 @@ export default function ModernNotificationButton() {
   // Mark notification as read
   const markAsReadMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("PATCH", `/api/notifications/${id}/read`);
+      const response = await apiRequest(`/api/notifications/${id}/read`, { method: "PATCH" });
       if (!response.ok) throw new Error("Failed to mark as read");
       return response.json();
     },
@@ -113,7 +113,7 @@ export default function ModernNotificationButton() {
   // Mark all as read
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("PATCH", "/api/notifications/read-all");
+      const response = await apiRequest("/api/notifications/read-all", { method: "PATCH" });
       if (!response.ok) throw new Error("Failed to mark all as read");
       return response.json();
     },
@@ -130,7 +130,7 @@ export default function ModernNotificationButton() {
   // Delete notification
   const deleteNotificationMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/notifications/${id}`);
+      const response = await apiRequest(`/api/notifications/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to delete notification");
       return response.json();
     },

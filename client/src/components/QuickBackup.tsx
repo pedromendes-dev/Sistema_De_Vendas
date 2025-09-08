@@ -35,7 +35,7 @@ export default function QuickBackup() {
   // Create backup mutation
   const createBackupMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('GET', '/api/backup/create');
+      const response = await apiRequest('/api/backup/create');
       return response.json();
     },
     onSuccess: (data) => {

@@ -45,7 +45,10 @@ export function BackupManager() {
 
   // Create backup mutation
   const createBackup = useMutation({
-    mutationFn: () => apiRequest('/api/backup/create'),
+    mutationFn: async () => {
+      const response = await apiRequest('/api/backup/create');
+      return response.json();
+    },
     onSuccess: (data) => {
       toast({
         title: "Backup Criado!",
@@ -67,7 +70,10 @@ export function BackupManager() {
 
   // Clean old backups mutation
   const cleanBackups = useMutation({
-    mutationFn: () => apiRequest('/api/backup/clean?days=30', { method: 'DELETE' }),
+    mutationFn: async () => {
+      const response = await apiRequest('/api/backup/clean?days=30', { method: 'DELETE' });
+      return response.json();
+    },
     onSuccess: (data) => {
       toast({
         title: "Limpeza Concluída",
@@ -158,7 +164,7 @@ export function BackupManager() {
         toast({
           title: "Recomendação de Backup",
           description: `Último backup foi há ${daysSinceBackup} dias. Recomendamos criar um novo backup.`,
-          variant: "warning"
+          variant: "success"
         });
       }
     }

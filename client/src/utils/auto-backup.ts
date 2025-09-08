@@ -49,7 +49,7 @@ export const createAutoBackup = async (trigger: 'sale' | 'attendant' | 'goal' | 
     }
 
     // Create backup
-    const response = await apiRequest('GET', '/api/backup/create');
+    const response = await apiRequest('/api/backup/create');
     const data = await response.json();
     
     if (data.filename) {

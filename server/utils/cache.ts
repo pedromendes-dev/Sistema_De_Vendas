@@ -17,7 +17,7 @@ export function createCachedFunction<T extends (...args: any[]) => Promise<any>>
     promise: true,
     maxAge: options?.ttl || CACHE_TTL,
     max: options?.maxSize || CACHE_MAX_SIZE,
-    normalizer: options?.keyGenerator || JSON.stringify,
+    normalizer: options?.keyGenerator || ((args: Parameters<T>) => JSON.stringify(args)) as any,
     preFetch: 0.5, // Prefetch when 50% of TTL has passed
   }) as T;
 }

@@ -8,10 +8,12 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  method: string,
   url: string,
-  data?: unknown | undefined,
+  options?: { method?: string; data?: unknown }
 ): Promise<Response> {
+  const method = options?.method || 'GET';
+  const data = options?.data;
+  
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
@@ -53,7 +55,6 @@ export const queryClient = new QueryClient({
       gcTime: 5 * 60 * 1000, // 5 minutos de cache
       retry: 2, // Retry 2 vezes
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Backoff exponencial
-      suspense: false, // Evita suspense para melhor controle
     },
     mutations: {
       retry: 2,

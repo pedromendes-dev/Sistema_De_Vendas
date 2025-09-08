@@ -34,12 +34,12 @@ export default function NotificationCenter({ className = "" }: NotificationCente
   const queryClient = useQueryClient();
 
   // Fetch notifications
-  const { data: notifications = [], isLoading } = useQuery({
+  const { data: notifications = [], isLoading } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
     refetchInterval: 15000,
   });
 
-  const { data: unreadNotifications = [] } = useQuery({
+  const { data: unreadNotifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications/unread"],
     refetchInterval: 15000,
   });
@@ -47,7 +47,7 @@ export default function NotificationCenter({ className = "" }: NotificationCente
   // Mark notification as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("PATCH", `/api/notifications/${id}/read`);
+      const response = await apiRequest(`/api/notifications/${id}/read`, { method: "PATCH" });
       if (!response.ok) throw new Error("Failed to mark as read");
       return response.json();
     },
@@ -60,7 +60,7 @@ export default function NotificationCenter({ className = "" }: NotificationCente
   // Mark all as read mutation
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("PATCH", "/api/notifications/read-all");
+      const response = await apiRequest("/api/notifications/read-all", { method: "PATCH" });
       if (!response.ok) throw new Error("Failed to mark all as read");
       return response.json();
     },
@@ -77,7 +77,7 @@ export default function NotificationCenter({ className = "" }: NotificationCente
   // Delete notification mutation
   const deleteNotificationMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/notifications/${id}`);
+      const response = await apiRequest(`/api/notifications/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to delete notification");
       return response.json();
     },

@@ -104,7 +104,6 @@ export function DashboardAdvanced() {
       totalSales: sales.length,
       averageTicket,
       topPerformers,
-      salesByPeriod,
       generatedAt: new Date().toISOString()
     };
     
@@ -213,7 +212,7 @@ export function DashboardAdvanced() {
         }
         return acc;
       }, {} as Record<string, number>);
-      return Object.values(customerCounts).filter(count => count > 1).length;
+      return Object.values(customerCounts).filter((count: any) => typeof count === 'number' && count > 1).length;
     })(),
     averageCustomerValue: 0
   };

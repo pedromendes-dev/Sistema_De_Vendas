@@ -56,7 +56,7 @@ export default function Attendants() {
   // Create attendant mutation
   const createAttendantMutation = useMutation({
     mutationFn: async (data: { name: string; imageUrl: string }) => {
-      const response = await apiRequest("POST", "/api/attendants", data);
+      const response = await apiRequest("/api/attendants", { method: "POST", data });
       return response.json();
     },
     onSuccess: () => {
@@ -106,9 +106,12 @@ export default function Attendants() {
   // Edit attendant mutation
   const editAttendantMutation = useMutation({
     mutationFn: async (data: { id: number; name: string; imageUrl: string }) => {
-      const response = await apiRequest("PUT", `/api/attendants/${data.id}`, {
-        name: data.name,
-        imageUrl: data.imageUrl,
+      const response = await apiRequest(`/api/attendants/${data.id}`, { 
+        method: "PUT", 
+        data: {
+          name: data.name,
+          imageUrl: data.imageUrl,
+        }
       });
       return response.json();
     },
@@ -135,7 +138,7 @@ export default function Attendants() {
   // Delete attendant mutation
   const deleteAttendantMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/attendants/${id}`, {});
+      const response = await apiRequest(`/api/attendants/${id}`, { method: "DELETE" });
       return response.json();
     },
     onSuccess: () => {

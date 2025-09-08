@@ -593,7 +593,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/goals/:id/deactivate", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const goal = await storage.updateGoal(id.toString(), { isActive: 0 });
+      const goal = await storage.updateGoal(id.toString(), { isActive: false });
       res.json(goal);
     } catch (error) {
       res.status(500).json({ message: "Failed to deactivate goal" });
@@ -651,7 +651,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const { attendantId, title, description, pointsAwarded, badgeColor } = req.body;
       
-      const updates = { attendantId, title, description, pointsAwarded, badgeColor };
+      const updates = { 
+        attendantId, 
+        title, 
+        description, 
+        pointsAwarded, 
+        badgeColor,
+        achievedAt: new Date().toISOString()
+      };
       const updatedAchievement = await storage.createAchievement(updates);
       if (!updatedAchievement) {
         return res.status(404).json({ message: "Achievement not found" });
@@ -815,8 +822,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const matchesValue = s.value.toString().includes(searchTerm);
             const matchesClient = s.clientName?.toLowerCase().includes(searchTerm) ||
                                 s.clientPhone?.includes(searchTerm) ||
-                                s.clientEmail?.toLowerCase().includes(searchTerm) ||
-                                (s as any).clientAddress?.toLowerCase().includes(searchTerm);
+                                s.clientEmail?.toLowerCase().includes(searchTerm);
             if (!matchesValue && !matchesClient) return false;
           }
           
@@ -854,8 +860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return true;
         }).map(g => ({
           ...g,
-          attendant: attendants.find(a => a.id === g.attendantId),
-          deadline: (g as any).deadline || null
+          attendant: attendants.find(a => a.id === g.attendantId)
         }));
       }
 
@@ -872,8 +877,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return true;
         }).map(a => ({
           ...a,
-          attendant: attendants.find(att => att.id === a.attendantId),
-          unlockedAt: (a as any).unlockedAt || null
+          attendant: attendants.find(att => att.id === a.attendantId)
         }));
       }
 

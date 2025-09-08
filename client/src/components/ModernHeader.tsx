@@ -149,7 +149,7 @@ export default function ModernHeader() {
     const filteredAchievements = achievements.filter(achievement => {
       const attendant = attendants.find(a => a.id === achievement.attendantId);
       return achievement.title.toLowerCase().includes(query) ||
-             achievement.description.toLowerCase().includes(query) ||
+             (achievement.description && achievement.description.toLowerCase().includes(query)) ||
              attendant?.name.toLowerCase().includes(query);
     });
 

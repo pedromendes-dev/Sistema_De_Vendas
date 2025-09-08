@@ -66,7 +66,7 @@ export default function HistoryPage() {
   // Delete sale mutation
   const deleteSaleMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/sales/${id}`, {});
+      const response = await apiRequest(`/api/sales/${id}`, { method: "DELETE" });
       return response.json();
     },
     onSuccess: () => {

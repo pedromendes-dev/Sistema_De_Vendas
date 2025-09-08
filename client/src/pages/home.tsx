@@ -29,7 +29,7 @@ export default function Home() {
   // Create sale mutation
   const createSaleMutation = useMutation({
     mutationFn: async (data: { attendantId: number; value: string; clientName?: string; clientPhone?: string; clientEmail?: string }) => {
-      const response = await apiRequest("POST", "/api/sales", data);
+      const response = await apiRequest("/api/sales", { method: "POST", data });
       return response.json();
     },
     onSuccess: async () => {

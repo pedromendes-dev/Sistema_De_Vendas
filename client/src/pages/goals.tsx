@@ -48,14 +48,17 @@ export default function GoalsPage() {
   // Create goal mutation
   const createGoalMutation = useMutation({
     mutationFn: async (goalData: any) => {
-      const response = await apiRequest("POST", "/api/goals", {
-        attendantId: parseInt(goalData.attendantId),
-        title: goalData.title,
-        description: goalData.description,
-        targetValue: goalData.targetValue,
-        goalType: goalData.goalType,
-        startDate: new Date(goalData.startDate),
-        endDate: new Date(goalData.endDate),
+      const response = await apiRequest("/api/goals", { 
+        method: "POST", 
+        data: {
+          attendantId: parseInt(goalData.attendantId),
+          title: goalData.title,
+          description: goalData.description,
+          targetValue: goalData.targetValue,
+          goalType: goalData.goalType,
+          startDate: new Date(goalData.startDate),
+          endDate: new Date(goalData.endDate),
+        }
       });
       return response.json();
     },
@@ -88,7 +91,7 @@ export default function GoalsPage() {
   // Deactivate goal mutation
   const deactivateGoalMutation = useMutation({
     mutationFn: async (goalId: number) => {
-      const response = await apiRequest("PUT", `/api/goals/${goalId}/deactivate`, {});
+      const response = await apiRequest(`/api/goals/${goalId}/deactivate`, { method: "PUT" });
       return response.json();
     },
     onSuccess: () => {
