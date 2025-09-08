@@ -1,10 +1,18 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
-import { storage } from "./storage";
+import { storage } from "./storage-supabase";
 import { z } from "zod";
 import { registerReportRoutes } from "./routes/reports";
 import { backupManager } from "./utils/backup";
+import { 
+  insertAttendantSchema, 
+  insertSaleSchema, 
+  insertAdminSchema,
+  insertGoalSchema,
+  insertAchievementSchema,
+  insertNotificationSchema 
+} from "@shared/schema-supabase";
 
 // WebSocket clients storage
 const wsClients = new Set<WebSocket>();
@@ -44,8 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/attendants", async (req, res) => {
     try {
       const attendants = await storage.getAllAttendants();
-      const adaptedAttendants = attendants.map(adaptFirestoreAttendant);
-      res.json(adaptedAttendants);
+      res.json(attendants);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch attendants" });
     }
@@ -59,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!attendant) {
         return res.status(404).json({ message: "Attendant not found" });
       }
-      res.json(adaptFirestoreAttendant(attendant));
+      res.json(attendant);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch attendant" });
     }
@@ -69,9 +76,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/attendants", async (req, res) => {
     try {
       const validatedData = insertAttendantSchema.parse(req.body);
-      const firestoreData = adaptToFirestoreAttendant(validatedData);
-      const attendant = await storage.createAttendant(firestoreData);
-      res.status(201).json(adaptFirestoreAttendant(attendant));
+      const attendant = await storage.createAttendant(validatedData);
+      res.status(201).json(attendant);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
@@ -127,8 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Attendant not found" });
       }
 
-      const firestoreData = adaptToFirestoreSale(validatedData);
-      const sale = await storage.createSale(firestoreData);
+      const sale = await storage.createSale(validatedData);
       
       // Update goal progress for the attendant
       const activeGoals = await storage.getActiveGoalsByAttendant(validatedData.attendantId.toString());
@@ -990,4 +995,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   return httpServer;
+}
+
+// Helper functions to adapt data formats
+function adaptFirestoreSale(sale: any): any {
+  return {
+    id: sale.id,
+    attendantId: sale.attendantId,
+    value: sale.value,
+    clientName: sale.clientName,
+    clientPhone: sale.clientPhone,
+    clientEmail: sale.clientEmail,
+    createdAt: sale.createdAt
+  };
+}
+
+function adaptFirestoreNotification(notification: any): any {
+  return {
+    id: notification.id,
+    title: notification.title,
+    message: notification.message,
+    type: notification.type,
+    isRead: notification.isRead,
+    createdAt: notification.createdAt
+  };
 }

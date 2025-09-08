@@ -16,14 +16,17 @@ async function migrateData() {
     console.log('POSTGRES_URL:', process.env.POSTGRES_URL ? '✅ Definida' : '❌ Não definida');
     console.log('SUPABASE_URL:', process.env.SUPABASE_URL ? '✅ Definida' : '❌ Não definida');
     
-    if (!process.env.POSTGRES_URL) {
-      throw new Error('POSTGRES_URL não está definida. Execute: vercel env pull .env.local');
+    // URL do Supabase (você precisa substituir [YOUR_PASSWORD] pela senha real)
+    const supabaseUrl = process.env.POSTGRES_URL || 'postgresql://postgres:[YOUR_PASSWORD]@db.wgxnylsmfvzyhzubzjb.supabase.co:5432/postgres';
+    
+    if (supabaseUrl.includes('[YOUR_PASSWORD]')) {
+      throw new Error('Por favor, substitua [YOUR_PASSWORD] na URL do Supabase pela senha real do banco de dados');
     }
     
     // Configuração do banco Supabase usando a URL completa
     console.log('🔌 Conectando ao Supabase...');
     pool = new Pool({
-      connectionString: process.env.POSTGRES_URL,
+      connectionString: supabaseUrl,
       ssl: {
         rejectUnauthorized: false
       }
