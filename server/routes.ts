@@ -287,33 +287,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete attendant
-  app.delete("/api/attendants/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const deleted = await storage.deleteAttendant(id.toString());
-      if (!deleted) {
-        return res.status(404).json({ message: "Attendant not found" });
-      }
-      res.json({ message: "Attendant deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete attendant" });
-    }
-  });
+  // (duplicate delete attendant route removed)
 
-  // Delete goal
-  app.delete("/api/goals/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const deleted = await storage.deleteGoal(id.toString());
-      if (!deleted) {
-        return res.status(404).json({ message: "Goal not found" });
-      }
-      res.json({ message: "Goal deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to delete goal" });
-    }
-  });
+  // (duplicate delete goal route removed)
 
   // Admin authentication
   app.post("/api/admin/login", async (req, res) => {
@@ -649,17 +625,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/achievements/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { attendantId, title, description, pointsAwarded, badgeColor } = req.body;
-      
-      const updates = { 
-        attendantId, 
-        title, 
-        description, 
-        pointsAwarded, 
-        badgeColor,
-        achievedAt: new Date().toISOString()
-      };
-      const updatedAchievement = await storage.createAchievement(updates);
+      const { attendantId, title, description, pointsAwarded, badgeColor, icon, points, achievedAt, unlockedAt } = req.body;
+
+      const updates: any = {};
+      if (attendantId !== undefined) updates.attendantId = attendantId;
+      if (title !== undefined) updates.title = title;
+      if (description !== undefined) updates.description = description;
+      if (pointsAwarded !== undefined) updates.pointsAwarded = pointsAwarded;
+      if (badgeColor !== undefined) updates.badgeColor = badgeColor;
+      if (icon !== undefined) updates.icon = icon;
+      if (points !== undefined) updates.points = points;
+      if (achievedAt !== undefined) updates.achievedAt = achievedAt;
+      if (unlockedAt !== undefined) updates.unlockedAt = unlockedAt;
+
+      const updatedAchievement = await storage.updateAchievement(id.toString(), updates);
       if (!updatedAchievement) {
         return res.status(404).json({ message: "Achievement not found" });
       }

@@ -1,4 +1,3 @@
-import { db } from "../db";
 import { 
   attendants, 
   sales, 
@@ -56,6 +55,7 @@ export class BackupManager {
     await this.ensureBackupDirectory();
 
     // Fetch all data from database
+    const { db } = await import('../db');
     const [
       attendantsData,
       salesData,
@@ -184,6 +184,7 @@ export class BackupManager {
 
   async exportToSQL(): Promise<string> {
     // Fetch all data
+    const { db } = await import('../db');
     const [
       attendantsData,
       salesData,
