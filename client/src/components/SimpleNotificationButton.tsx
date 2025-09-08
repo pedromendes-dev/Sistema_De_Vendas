@@ -42,7 +42,7 @@ export default function SimpleNotificationButton() {
   // Mark as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: (notificationId: number) => 
-      apiRequest(`/api/notifications/${notificationId}/read`, { method: 'PUT' }),
+      apiRequest(`/api/notifications/${notificationId}/read`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread'] });
@@ -52,7 +52,7 @@ export default function SimpleNotificationButton() {
   // Delete notification mutation
   const deleteNotificationMutation = useMutation({
     mutationFn: (notificationId: number) => 
-      apiRequest(`/api/notifications/${notificationId}`, { method: 'DELETE' }),
+      apiRequest(`/api/notifications/${notificationId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread'] });
@@ -65,7 +65,7 @@ export default function SimpleNotificationButton() {
 
   // Mark all as read mutation
   const markAllAsReadMutation = useMutation({
-    mutationFn: () => apiRequest('/api/notifications/read-all', { method: 'PUT' }),
+    mutationFn: () => apiRequest('/api/notifications/read-all'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread'] });

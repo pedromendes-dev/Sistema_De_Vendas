@@ -50,7 +50,7 @@ export const queryClient = new QueryClient({
       refetchOnMount: true, // Sempre refetch ao montar componente
       refetchOnReconnect: true, // Refetch ao reconectar
       staleTime: 30 * 1000, // 30 segundos - mais rápido para empresa em tempo real
-      cacheTime: 5 * 60 * 1000, // 5 minutos de cache
+      gcTime: 5 * 60 * 1000, // 5 minutos de cache
       retry: 2, // Retry 2 vezes
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Backoff exponencial
       suspense: false, // Evita suspense para melhor controle

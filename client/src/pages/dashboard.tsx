@@ -85,11 +85,11 @@ export default function DashboardPage() {
           });
           
           dailyData.forEach((data, date) => {
-            data.push({
+            (data as any[]).push({
               'Data': date,
               'Vendas': data.count,
               'Faturamento': `R$ ${data.value.toFixed(2)}`
-            } as any);
+            });
           });
           
           filename = `relatorio_${format(new Date(), "yyyy-MM-dd")}.csv`;

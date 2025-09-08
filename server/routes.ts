@@ -147,11 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: "sale",
           title: "Nova Venda Registrada!",
           message: `${updatedAttendant.name} registrou uma venda de R$ ${validatedData.value}`,
-          attendantId: validatedData.attendantId.toString(),
-          metadata: JSON.stringify({ saleValue: validatedData.value, totalEarnings: currentEarnings }),
-          priority: "normal",
-          isRead: false,
-          createdAt: new Date()
+          isRead: false
         });
         
         broadcastNotification(adaptFirestoreNotification(saleNotification));
@@ -170,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               icon: "trophy",
               badgeColor: "#10b981",
               pointsAwarded: 100,
-              achievedAt: new Date()
+              achievedAt: new Date().toISOString()
             });
             
             // Create achievement notification
@@ -178,11 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               type: "achievement",
               title: "Nova Conquista Desbloqueada!",
               message: `${updatedAttendant.name} conquistou: ${achievement.title}`,
-              attendantId: validatedData.attendantId.toString(),
-              metadata: JSON.stringify({ achievementId: achievement.id, pointsAwarded: 100 }),
-              priority: "high",
-              isRead: false,
-              createdAt: new Date()
+              isRead: false
             });
             
             broadcastNotification(adaptFirestoreNotification(achievementNotification));
@@ -213,10 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             type: "team_milestone",
             title: "Marco da Equipe Alcançado!",
             message: `A equipe alcançou ${allSales.length} vendas registradas!`,
-            metadata: JSON.stringify({ milestone: allSales.length }),
-            priority: "high",
-            isRead: false,
-            createdAt: new Date()
+            isRead: false
           });
           
           broadcastNotification(adaptFirestoreNotification(milestoneNotification));
@@ -356,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      if (admin.isActive === 0) {
+      if (!admin.isActive) {
         return res.status(401).json({ message: "Account is inactive" });
       }
       
@@ -435,7 +424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: "admin",
         title: "Novo Administrador",
         message: `Administrador "${username}" foi criado com sucesso`,
-        priority: "normal"
+        isRead: false
       });
 
       res.status(201).json(safeAdmin);
@@ -604,7 +593,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/goals/:id/deactivate", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const goal = await storage.deactivateGoal(id);
+      const goal = await storage.updateGoal(id.toString(), { isActive: 0 });
       res.json(goal);
     } catch (error) {
       res.status(500).json({ message: "Failed to deactivate goal" });
@@ -614,7 +603,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/goals/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const success = await storage.deleteGoal(id);
+      const success = await storage.deleteGoal(id.toString());
       if (!success) {
         return res.status(404).json({ message: "Goal not found" });
       }
@@ -637,7 +626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/achievements/attendant/:attendantId", async (req, res) => {
     try {
       const attendantId = parseInt(req.params.attendantId);
-      const achievements = await storage.getAchievementsByAttendant(attendantId);
+      const achievements = await storage.getAchievementsByAttendant(attendantId.toString());
       res.json(achievements);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch achievements" });
@@ -663,7 +652,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { attendantId, title, description, pointsAwarded, badgeColor } = req.body;
       
       const updates = { attendantId, title, description, pointsAwarded, badgeColor };
-      const updatedAchievement = await storage.updateAchievement(id, updates);
+      const updatedAchievement = await storage.createAchievement(updates);
       if (!updatedAchievement) {
         return res.status(404).json({ message: "Achievement not found" });
       }
@@ -677,7 +666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       
-      const success = await storage.deleteAchievement(id);
+      const success = await storage.deleteAchievement(id.toString());
       if (!success) {
         return res.status(404).json({ message: "Achievement not found" });
       }
@@ -700,7 +689,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/leaderboard/attendant/:attendantId", async (req, res) => {
     try {
       const attendantId = parseInt(req.params.attendantId);
-      const entry = await storage.getLeaderboardByAttendant(attendantId);
+      const entry = await storage.getLeaderboardByAttendant(attendantId.toString());
       res.json(entry);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch leaderboard entry" });
@@ -757,7 +746,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/notifications/:id/read", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const success = await storage.markNotificationAsRead(id);
+      const success = await storage.markNotificationAsRead(id.toString());
       if (!success) {
         return res.status(404).json({ message: "Notification not found" });
       }
@@ -779,7 +768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/notifications/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const success = await storage.deleteNotification(id);
+      const success = await storage.deleteNotification(id.toString());
       if (!success) {
         return res.status(404).json({ message: "Notification not found" });
       }
@@ -807,7 +796,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const attendants = await storage.getAllAttendants();
         results.attendants = attendants.filter(a => {
           if (q && !a.name.toLowerCase().includes(q.toString().toLowerCase())) return false;
-          if (attendantId && a.id !== parseInt(attendantId.toString())) return false;
+          if (attendantId && a.id !== attendantId) return false;
           return true;
         }).map(a => ({
           ...a,
@@ -823,7 +812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results.sales = sales.filter(s => {
           if (q) {
             const searchTerm = q.toString().toLowerCase();
-            const matchesValue = s.value.includes(searchTerm);
+            const matchesValue = s.value.toString().includes(searchTerm);
             const matchesClient = s.clientName?.toLowerCase().includes(searchTerm) ||
                                 s.clientPhone?.includes(searchTerm) ||
                                 s.clientEmail?.toLowerCase().includes(searchTerm) ||
@@ -833,9 +822,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (dateFrom && new Date(s.createdAt) < new Date(dateFrom.toString())) return false;
           if (dateTo && new Date(s.createdAt) > new Date(dateTo.toString())) return false;
-          if (attendantId && s.attendantId !== parseInt(attendantId.toString())) return false;
-          if (minValue && parseFloat(s.value) < parseFloat(minValue.toString())) return false;
-          if (maxValue && parseFloat(s.value) > parseFloat(maxValue.toString())) return false;
+          if (attendantId && s.attendantId !== attendantId) return false;
+          if (minValue && parseFloat(s.value.toString()) < parseFloat(minValue.toString())) return false;
+          if (maxValue && parseFloat(s.value.toString()) > parseFloat(maxValue.toString())) return false;
           
           return true;
         }).map(s => ({
@@ -859,7 +848,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         results.goals = goals.filter(g => {
           if (q && !g.title.toLowerCase().includes(q.toString().toLowerCase())) return false;
-          if (attendantId && g.attendantId !== parseInt(attendantId.toString())) return false;
+          if (attendantId && g.attendantId !== attendantId) return false;
           if (dateFrom && new Date(g.endDate) < new Date(dateFrom.toString())) return false;
           if (dateTo && new Date(g.endDate) > new Date(dateTo.toString())) return false;
           return true;
@@ -877,7 +866,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         results.achievements = achievements.filter(a => {
           if (q && !a.title.toLowerCase().includes(q.toString().toLowerCase())) return false;
-          if (attendantId && a.attendantId !== parseInt(attendantId.toString())) return false;
+          if (attendantId && a.attendantId !== attendantId) return false;
           if (dateFrom && new Date(a.achievedAt) < new Date(dateFrom.toString())) return false;
           if (dateTo && new Date(a.achievedAt) > new Date(dateTo.toString())) return false;
           return true;
