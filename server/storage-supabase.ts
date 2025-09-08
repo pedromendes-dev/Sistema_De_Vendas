@@ -50,6 +50,7 @@ export interface IStorage {
   getAllAchievements(): Promise<Achievement[]>;
   getAchievementsByAttendant(attendantId: string): Promise<Achievement[]>;
   createAchievement(achievement: InsertAchievement): Promise<Achievement>;
+  updateAchievement(id: string, updates: Partial<Achievement>): Promise<Achievement | undefined>;
   deleteAchievement(id: string): Promise<boolean>;
   
   // Notifications
@@ -485,13 +486,41 @@ export const storage: IStorage = {
         attendant_id: achievement.attendantId,
         title: achievement.title,
         description: achievement.description,
-        achieved_at: achievement.achievedAt
+        achieved_at: achievement.achievedAt,
+        icon: (achievement as any).icon,
+        badge_color: (achievement as any).badgeColor,
+        points_awarded: (achievement as any).pointsAwarded,
+        points: (achievement as any).points,
+        unlocked_at: (achievement as any).unlockedAt
       })
       .select()
       .single();
     
     if (error) throw error;
     return convertSupabaseAchievement(data);
+  },
+
+  async updateAchievement(id: string, updates: Partial<Achievement>): Promise<Achievement | undefined> {
+    const updateData: any = {};
+    if (updates.attendantId !== undefined) updateData.attendant_id = updates.attendantId;
+    if (updates.title !== undefined) updateData.title = updates.title;
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if ((updates as any).icon !== undefined) updateData.icon = (updates as any).icon;
+    if (updates.badgeColor !== undefined) updateData.badge_color = updates.badgeColor as any;
+    if (updates.pointsAwarded !== undefined) updateData.points_awarded = updates.pointsAwarded as any;
+    if (updates.points !== undefined) updateData.points = updates.points as any;
+    if (updates.achievedAt !== undefined) updateData.achieved_at = updates.achievedAt as any;
+    if (updates.unlockedAt !== undefined) updateData.unlocked_at = updates.unlockedAt as any;
+
+    const { data, error } = await supabase
+      .from('achievements')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) return undefined;
+    return data ? convertSupabaseAchievement(data) : undefined;
   },
 
   async deleteAchievement(id: string): Promise<boolean> {
