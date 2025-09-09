@@ -13,6 +13,21 @@ import {
   insertAchievementSchema,
   insertNotificationSchema 
 } from "@shared/schema-supabase";
+import { 
+  validateAttendant, 
+  validateSale, 
+  validateAdmin, 
+  validateGoal, 
+  validateId, 
+  validateSearch, 
+  validatePagination 
+} from "./middleware/validation";
+import { 
+  parsePagination, 
+  createPaginatedResponse, 
+  getPaginationInfo 
+} from "./middleware/pagination";
+import { cacheMiddleware, invalidateCache } from "./middleware/cache";
 
 // WebSocket clients storage
 const wsClients = new Set<WebSocket>();
@@ -49,10 +64,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register report routes
   registerReportRoutes(app);
   // Get all attendants
-  app.get("/api/attendants", async (req, res) => {
+  app.get("/api/attendants", cacheMiddleware(2 * 60 * 1000), parsePagination, validatePagination, async (req, res) => {
     try {
-      const attendants = await storage.getAllAttendants();
-      res.json(attendants);
+      const { page, limit } = getPaginationInfo(req);
+      const { data: attendants, total } = await storage.getAllAttendants(page, limit);
+      
+      const response = createPaginatedResponse(attendants, total, page, limit);
+      res.json(response);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch attendants" });
     }
@@ -73,10 +91,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new attendant
-  app.post("/api/attendants", async (req, res) => {
+  app.post("/api/attendants", validateAttendant, async (req, res) => {
     try {
       const validatedData = insertAttendantSchema.parse(req.body);
       const attendant = await storage.createAttendant(validatedData);
+      
+      // Invalidate cache
+      invalidateCache('/api/attendants');
+      
       res.status(201).json(attendant);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -123,7 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new sale
-  app.post("/api/sales", async (req, res) => {
+  app.post("/api/sales", validateSale, async (req, res) => {
     try {
       const validatedData = insertSaleSchema.parse(req.body);
       
@@ -362,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new admin
-  app.post("/api/admin/users", async (req, res) => {
+  app.post("/api/admin/users", validateAdmin, async (req, res) => {
     try {
       const { username, password, email, role = "admin", createdBy } = req.body;
       
@@ -526,7 +548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/goals", async (req, res) => {
+  app.post("/api/goals", validateGoal, async (req, res) => {
     try {
       const validatedData = insertGoalSchema.parse(req.body);
       const goal = await storage.createGoal(validatedData);
@@ -765,7 +787,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search route
-  app.get('/api/search', async (req, res) => {
+  app.get('/api/search', validateSearch, async (req, res) => {
     try {
       const { q, type, dateFrom, dateTo, attendantId, minValue, maxValue } = req.query;
       

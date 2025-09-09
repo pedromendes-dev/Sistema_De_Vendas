@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm build",
+  "buildCommand": "node vercel-build.js",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "framework": "vite",
@@ -17,5 +17,10 @@
   ],
   "env": {
     "NODE_ENV": "production"
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
   }
 }
