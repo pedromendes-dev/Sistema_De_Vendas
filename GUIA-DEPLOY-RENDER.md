@@ -36,7 +36,7 @@ O projeto já está configurado com:
    - **Name**: `sistema-vendas`
    - **Environment**: `Node`
    - **Root Directory**: (deixe vazio)
-   - **Build Command**: `pnpm install --no-frozen-lockfile; pnpm run build:render`
+   - **Build Command**: `pnpm run build:render`
    - **Start Command**: `pnpm run start:render`
    - **Plan**: Starter (gratuito)
 

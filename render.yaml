@@ -3,7 +3,7 @@ services:
     name: sistema-vendas
     env: node
     plan: starter
-    buildCommand: pnpm install --frozen-lockfile && pnpm run build:render
+    buildCommand: pnpm run build:render
     startCommand: pnpm run start:render
     envVars:
       - key: NODE_ENV
