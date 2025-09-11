@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: sistema-vendas
+    env: node
+    plan: starter
+    buildCommand: pnpm install --frozen-lockfile && pnpm run build:render
+    startCommand: pnpm run start:render
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    healthCheckPath: /health
+    autoDeploy: true
+    branch: main
+    rootDir: .
+    dockerfilePath: ./Dockerfile
+
+  - type: pserv
+    name: sistema-vendas-db
+    env: postgresql
+    plan: starter
+    databaseName: sistemav
+    databaseUser: sistemav_user
+    autoDeploy: true
+    branch: main
