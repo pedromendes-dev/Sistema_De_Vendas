@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express, { type Request, type Response, type NextFunction } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { registerRoutes } from "../server/routes";
 import { setupVite, serveStatic, log } from "../server/vite";
 
@@ -9,21 +9,21 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
-  const path = req.path;
+  const pathUrl = req.path as string;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
+  const originalResJson = res.json.bind(res);
+  res.json = function (bodyJson: any, ...args: any[]) {
     capturedJsonResponse = bodyJson;
     return originalResJson.apply(res, [bodyJson, ...args]);
   };
 
-  res.on('finish', () => {
+  (res as any).on('finish', () => {
     const duration = Date.now() - start;
     const status = res.statusCode;
     const method = req.method;
     
-    log(`${method} ${path} - ${status} - ${duration}ms`);
+    log(`${method} ${pathUrl} - ${status} - ${duration}ms`);
     
     if (capturedJsonResponse && status >= 400) {
       log(`Error response: ${JSON.stringify(capturedJsonResponse, null, 2)}`);
