@@ -56,7 +56,7 @@ npm run build
 - Notificações de conquistas
 
 ### Painel Administrativo
-- Login seguro (admin/root123)
+- Login seguro 
 - Controle total do sistema
 - Configurações personalizáveis
 - Relatórios e exportações
