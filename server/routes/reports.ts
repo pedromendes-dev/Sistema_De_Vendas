@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { generateSalesReport, exportToCSV } from "../utils/reports";
 import { z } from "zod";
@@ -6,7 +6,7 @@ import { startOfMonth, endOfMonth, parseISO } from "date-fns";
 
 export function registerReportRoutes(app: Express) {
   // Get sales report
-  app.get("/api/reports/sales", async (req, res) => {
+  app.get("/api/reports/sales", async (req: Request, res: Response) => {
     try {
       const { startDate, endDate } = req.query;
       
@@ -33,7 +33,7 @@ export function registerReportRoutes(app: Express) {
   });
   
   // Export sales data as CSV
-  app.get("/api/reports/export/sales", async (req, res) => {
+  app.get("/api/reports/export/sales", async (_req: Request, res: Response) => {
     try {
       const sales = await storage.getAllSales();
       const attendants = await storage.getAllAttendants();
@@ -62,7 +62,7 @@ export function registerReportRoutes(app: Express) {
   });
   
   // Export attendants data as CSV
-  app.get("/api/reports/export/attendants", async (req, res) => {
+  app.get("/api/reports/export/attendants", async (_req: Request, res: Response) => {
     try {
       const attendants = await storage.getAllAttendants();
       const sales = await storage.getAllSales();
@@ -95,7 +95,7 @@ export function registerReportRoutes(app: Express) {
   });
   
   // Get performance metrics
-  app.get("/api/reports/metrics", async (req, res) => {
+  app.get("/api/reports/metrics", async (_req: Request, res: Response) => {
     try {
       const [sales, attendants, goals, achievements] = await Promise.all([
         storage.getAllSales(),
