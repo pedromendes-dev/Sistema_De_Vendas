@@ -1,4 +1,4 @@
-import type { Express, Request, Response } from "express";
+import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage-supabase";
@@ -13,21 +13,6 @@ import {
   insertAchievementSchema,
   insertNotificationSchema 
 } from "@shared/schema-supabase";
-import { 
-  validateAttendant, 
-  validateSale, 
-  validateAdmin, 
-  validateGoal, 
-  validateId, 
-  validateSearch, 
-  validatePagination 
-} from "./middleware/validation";
-import { 
-  parsePagination, 
-  createPaginatedResponse, 
-  getPaginationInfo 
-} from "./middleware/pagination";
-import { cacheMiddleware, invalidateCache } from "./middleware/cache";
 
 // WebSocket clients storage
 const wsClients = new Set<WebSocket>();
@@ -64,20 +49,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register report routes
   registerReportRoutes(app);
   // Get all attendants
-  app.get("/api/attendants", cacheMiddleware(2 * 60 * 1000), parsePagination, validatePagination, async (req: Request, res: Response) => {
+  app.get("/api/attendants", async (req, res) => {
     try {
-      const { page, limit } = getPaginationInfo(req);
-      const { data: attendants, total } = await storage.getAllAttendants(page, limit);
-      
-      const response = createPaginatedResponse(attendants, total, page, limit);
-      res.json(response);
+      const attendants = await storage.getAllAttendants();
+      res.json(attendants);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch attendants" });
     }
   });
 
   // Get attendant by ID
-  app.get("/api/attendants/:id", async (req: Request, res: Response) => {
+  app.get("/api/attendants/:id", async (req, res) => {
     try {
       const id = req.params.id;
       const attendant = await storage.getAttendant(id);
@@ -91,14 +73,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new attendant
-  app.post("/api/attendants", validateAttendant, async (req: Request, res: Response) => {
+  app.post("/api/attendants", async (req, res) => {
     try {
       const validatedData = insertAttendantSchema.parse(req.body);
       const attendant = await storage.createAttendant(validatedData);
-      
-      // Invalidate cache
-      invalidateCache('/api/attendants');
-      
       res.status(201).json(attendant);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -109,7 +87,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update attendant
-  app.put("/api/attendants/:id", async (req: Request, res: Response) => {
+  app.put("/api/attendants/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { name, imageUrl } = req.body;
@@ -131,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete attendant
-  app.delete("/api/attendants/:id", async (req: Request, res: Response) => {
+  app.delete("/api/attendants/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteAttendant(id.toString());
@@ -145,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new sale
-  app.post("/api/sales", validateSale, async (req: Request, res: Response) => {
+  app.post("/api/sales", async (req, res) => {
     try {
       const validatedData = insertSaleSchema.parse(req.body);
       
@@ -244,7 +222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all sales
-  app.get("/api/sales", async (_req: Request, res: Response) => {
+  app.get("/api/sales", async (req, res) => {
     try {
       const sales = await storage.getAllSales();
       const adaptedSales = sales.map(adaptFirestoreSale);
@@ -255,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update sale
-  app.put("/api/sales/:id", async (req: Request, res: Response) => {
+  app.put("/api/sales/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { attendantId, value } = req.body;
@@ -285,7 +263,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete sale
-  app.delete("/api/sales/:id", async (req: Request, res: Response) => {
+  app.delete("/api/sales/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteSale(id.toString());
@@ -299,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get sales by attendant
-  app.get("/api/sales/attendant/:attendantId", async (req: Request, res: Response) => {
+  app.get("/api/sales/attendant/:attendantId", async (req, res) => {
     try {
       const attendantId = parseInt(req.params.attendantId);
       const sales = await storage.getSalesByAttendant(attendantId.toString());
@@ -314,7 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // (duplicate delete goal route removed)
 
   // Admin authentication
-  app.post("/api/admin/login", async (req: Request, res: Response) => {
+  app.post("/api/admin/login", async (req, res) => {
     try {
       const { username, password } = req.body;
       
@@ -328,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Verificar senha com bcrypt (compatível com senhas antigas)
+      // Verificar senha com bcryptjs (compatível com senhas antigas)
       let isValidPassword = false;
       if (admin.password.startsWith('$2')) {
         // Senha já está hasheada
@@ -363,7 +341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all admins
-  app.get("/api/admin/users", async (_req: Request, res: Response) => {
+  app.get("/api/admin/users", async (req, res) => {
     try {
       const admins = await storage.getAllAdmins();
       const safeAdmins = admins.map(admin => ({
@@ -384,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new admin
-  app.post("/api/admin/users", validateAdmin, async (req: Request, res: Response) => {
+  app.post("/api/admin/users", async (req, res) => {
     try {
       const { username, password, email, role = "admin", createdBy } = req.body;
       
@@ -433,7 +411,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update admin
-  app.put("/api/admin/users/:id", async (req: Request, res: Response) => {
+  app.put("/api/admin/users/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const { username, email, role, isActive } = req.body;
@@ -468,7 +446,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete admin
-  app.delete("/api/admin/users/:id", async (req: Request, res: Response) => {
+  app.delete("/api/admin/users/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deleteAdmin(id);
@@ -485,7 +463,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Activate admin
-  app.put("/api/admin/users/:id/activate", async (req: Request, res: Response) => {
+  app.put("/api/admin/users/:id/activate", async (req, res) => {
     try {
       const { id } = req.params;
       const admin = await storage.activateAdmin(id);
@@ -502,7 +480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Deactivate admin
-  app.put("/api/admin/users/:id/deactivate", async (req: Request, res: Response) => {
+  app.put("/api/admin/users/:id/deactivate", async (req, res) => {
     try {
       const { id } = req.params;
       const admin = await storage.deactivateAdmin(id);
@@ -519,7 +497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Goals routes
-  app.get("/api/goals", async (_req: Request, res: Response) => {
+  app.get("/api/goals", async (req, res) => {
     try {
       const goals = await storage.getAllGoals();
       res.json(goals);
@@ -528,7 +506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/goals/attendant/:attendantId", async (req: Request, res: Response) => {
+  app.get("/api/goals/attendant/:attendantId", async (req, res) => {
     try {
       const attendantId = parseInt(req.params.attendantId);
       const goals = await storage.getGoalsByAttendant(attendantId.toString());
@@ -538,7 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/goals/active/:attendantId", async (req: Request, res: Response) => {
+  app.get("/api/goals/active/:attendantId", async (req, res) => {
     try {
       const attendantId = parseInt(req.params.attendantId);
       const goals = await storage.getActiveGoalsByAttendant(attendantId.toString());
@@ -548,7 +526,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/goals", validateGoal, async (req: Request, res: Response) => {
+  app.post("/api/goals", async (req, res) => {
     try {
       const validatedData = insertGoalSchema.parse(req.body);
       const goal = await storage.createGoal(validatedData);
@@ -561,7 +539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/goals/:id", async (req: Request, res: Response) => {
+  app.put("/api/goals/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { attendantId, title, description, targetValue, type } = req.body;
@@ -577,7 +555,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/goals/:id/progress", async (req: Request, res: Response) => {
+  app.put("/api/goals/:id/progress", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { currentValue } = req.body;
@@ -588,7 +566,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/goals/:id/deactivate", async (req: Request, res: Response) => {
+  app.put("/api/goals/:id/deactivate", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const goal = await storage.updateGoal(id.toString(), { isActive: false });
@@ -598,7 +576,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/goals/:id", async (req: Request, res: Response) => {
+  app.delete("/api/goals/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteGoal(id.toString());
@@ -612,7 +590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Achievements routes
-  app.get("/api/achievements", async (_req: Request, res: Response) => {
+  app.get("/api/achievements", async (req, res) => {
     try {
       const achievements = await storage.getAllAchievements();
       res.json(achievements);
@@ -621,7 +599,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/achievements/attendant/:attendantId", async (req: Request, res: Response) => {
+  app.get("/api/achievements/attendant/:attendantId", async (req, res) => {
     try {
       const attendantId = parseInt(req.params.attendantId);
       const achievements = await storage.getAchievementsByAttendant(attendantId.toString());
@@ -631,7 +609,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/achievements", async (req: Request, res: Response) => {
+  app.post("/api/achievements", async (req, res) => {
     try {
       const validatedData = insertAchievementSchema.parse(req.body);
       const achievement = await storage.createAchievement(validatedData);
@@ -644,7 +622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/achievements/:id", async (req: Request, res: Response) => {
+  app.put("/api/achievements/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { attendantId, title, description, pointsAwarded, badgeColor, icon, points, achievedAt, unlockedAt } = req.body;
@@ -670,7 +648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/achievements/:id", async (req: Request, res: Response) => {
+  app.delete("/api/achievements/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -685,7 +663,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Leaderboard routes
-  app.get("/api/leaderboard", async (_req: Request, res: Response) => {
+  app.get("/api/leaderboard", async (req, res) => {
     try {
       const leaderboard = await storage.getAllLeaderboard();
       res.json(leaderboard);
@@ -694,7 +672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/leaderboard/attendant/:attendantId", async (req: Request, res: Response) => {
+  app.get("/api/leaderboard/attendant/:attendantId", async (req, res) => {
     try {
       const attendantId = parseInt(req.params.attendantId);
       const entry = await storage.getLeaderboardByAttendant(attendantId.toString());
@@ -704,7 +682,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/leaderboard/update", async (req: Request, res: Response) => {
+  app.post("/api/leaderboard/update", async (req, res) => {
     try {
       const { attendantId, totalPoints, currentStreak, bestStreak } = req.body;
       const entry = await storage.updateLeaderboard(attendantId, totalPoints, currentStreak, bestStreak);
@@ -716,7 +694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Notification routes
-  app.get("/api/notifications", async (_req: Request, res: Response) => {
+  app.get("/api/notifications", async (req, res) => {
     try {
       const notifications = await storage.getAllNotifications();
       res.json(notifications);
@@ -725,7 +703,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/notifications/unread", async (_req: Request, res: Response) => {
+  app.get("/api/notifications/unread", async (req, res) => {
     try {
       const notifications = await storage.getUnreadNotifications();
       res.json(notifications);
@@ -734,7 +712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/notifications", async (req: Request, res: Response) => {
+  app.post("/api/notifications", async (req, res) => {
     try {
       const validatedData = insertNotificationSchema.parse(req.body);
       const notification = await storage.createNotification(validatedData);
@@ -751,7 +729,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/notifications/:id/read", async (req: Request, res: Response) => {
+  app.patch("/api/notifications/:id/read", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.markNotificationAsRead(id.toString());
@@ -764,7 +742,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/notifications/read-all", async (_req: Request, res: Response) => {
+  app.patch("/api/notifications/read-all", async (req, res) => {
     try {
       const success = await storage.markAllNotificationsAsRead();
       res.json({ message: "All notifications marked as read" });
@@ -773,7 +751,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/notifications/:id", async (req: Request, res: Response) => {
+  app.delete("/api/notifications/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteNotification(id.toString());
@@ -787,7 +765,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search route
-  app.get('/api/search', validateSearch, async (req, res) => {
+  app.get('/api/search', async (req, res) => {
     try {
       const { q, type, dateFrom, dateTo, attendantId, minValue, maxValue } = req.query;
       

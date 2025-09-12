@@ -1,4 +1,4 @@
-// Script para migrar senhas existentes para hash bcrypt
+// Script para migrar senhas existentes para hash bcryptjs
 import { db } from "../db";
 import { admins } from "@shared/schema";
 import { hashPassword } from "../utils/auth";

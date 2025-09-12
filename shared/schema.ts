@@ -85,27 +85,20 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertAttendantSchema = z.object({
-  name: z.string(),
-  imageUrl: z.string(),
+export const insertAttendantSchema = createInsertSchema(attendants).omit({
+  id: true,
+  earnings: true,
 });
 
-export const insertSaleSchema = z.object({
-  attendantId: z.number(),
-  value: z.string(),
-  clientName: z.string().optional(),
-  clientPhone: z.string().optional(),
-  clientEmail: z.string().optional(),
-  clientAddress: z.string().optional(),
+export const insertSaleSchema = createInsertSchema(sales).omit({
+  id: true,
+  createdAt: true,
 });
 
-export const insertAdminSchema = z.object({
-  username: z.string(),
-  password: z.string(),
-  email: z.string().optional(),
-  role: z.string().default("admin"),
-  isActive: z.number().default(1),
-  createdBy: z.number().optional(),
+export const insertAdminSchema = createInsertSchema(admins).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertGoalSchema = z.object({
@@ -116,40 +109,22 @@ export const insertGoalSchema = z.object({
   goalType: z.string(),
   startDate: z.string().transform(val => new Date(val)),
   endDate: z.string().transform(val => new Date(val)),
-  deadline: z.string().transform(val => new Date(val)).optional(),
   isActive: z.number().default(1).optional(),
 });
 
-export const insertAchievementSchema = z.object({
-  attendantId: z.number(),
-  title: z.string(),
-  description: z.string().optional(),
-  icon: z.string(),
-  badgeColor: z.string().default("#10b981"),
-  pointsAwarded: z.number().default(0),
-  points: z.number().default(0),
-  unlockedAt: z.string().transform(val => new Date(val)).optional(),
+export const insertAchievementSchema = createInsertSchema(achievements).omit({
+  id: true,
+  achievedAt: true,
 });
 
-export const insertLeaderboardSchema = z.object({
-  attendantId: z.number(),
-  totalPoints: z.number().default(0),
-  currentStreak: z.number().default(0),
-  bestStreak: z.number().default(0),
-  rank: z.number().default(0),
-  points: z.number().default(0),
-  salesStreak: z.number().default(0),
-  lastSaleDate: z.string().transform(val => new Date(val)).optional(),
+export const insertLeaderboardSchema = createInsertSchema(leaderboard).omit({
+  id: true,
+  updatedAt: true,
 });
 
-export const insertNotificationSchema = z.object({
-  type: z.string(),
-  title: z.string(),
-  message: z.string(),
-  attendantId: z.number().optional(),
-  metadata: z.string().optional(),
-  isRead: z.number().default(0),
-  priority: z.string().default("normal"),
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
 });
 
 export type InsertAttendant = z.infer<typeof insertAttendantSchema>;

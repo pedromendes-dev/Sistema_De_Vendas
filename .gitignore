@@ -77,4 +77,3 @@ latest_backup.json
 .vercel
 .env*.local
 .env.vercel
-NUL

@@ -16,7 +16,7 @@ import type {
 
 export interface IStorage {
   // Attendants
-  getAllAttendants(page?: number, limit?: number): Promise<{ data: Attendant[]; total: number }>;
+  getAllAttendants(): Promise<Attendant[]>;
   getAttendant(id: string): Promise<Attendant | undefined>;
   createAttendant(attendant: InsertAttendant): Promise<Attendant>;
   updateAttendant(id: string, updates: Partial<Attendant>): Promise<Attendant | undefined>;
@@ -157,29 +157,14 @@ function convertSupabaseNotification(data: any): Notification {
 
 export const storage: IStorage = {
   // Attendants
-  async getAllAttendants(page: number = 1, limit: number = 20): Promise<{ data: Attendant[]; total: number }> {
-    const offset = (page - 1) * limit;
-    
-    // Get total count
-    const { count, error: countError } = await supabase
-      .from('attendants')
-      .select('*', { count: 'exact', head: true });
-    
-    if (countError) throw countError;
-    
-    // Get paginated data
+  async getAllAttendants(): Promise<Attendant[]> {
     const { data, error } = await supabase
       .from('attendants')
       .select('*')
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .order('created_at', { ascending: false });
     
     if (error) throw error;
-    
-    return {
-      data: data?.map(convertSupabaseAttendant) || [],
-      total: count || 0
-    };
+    return data?.map(convertSupabaseAttendant) || [];
   },
 
   async getAttendant(id: string): Promise<Attendant | undefined> {
